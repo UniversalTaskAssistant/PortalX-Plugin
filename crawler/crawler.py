@@ -11,7 +11,6 @@ class MySpider(scrapy.Spider):
 
     def parse(self, response):
         from bs4 import BeautifulSoup
-        import json
         import os
         from datetime import datetime
 
@@ -26,6 +25,70 @@ class MySpider(scrapy.Spider):
             if section and section['heading'] and section['heading']['level']:
                 return int(section['heading']['level'][1])
             return 0
+
+        def section_to_html(section, indent=0):
+            html = []
+            indent_str = '    ' * indent
+            
+            # Add heading
+            if section['heading']:
+                level = section['heading']['level']
+                text = section['heading']['text']
+                html.append(f'{indent_str}<{level}>{text}</{level}>')
+            
+            # Track list items for combining with links
+            current_list = []
+            current_list_type = None
+            
+            # Add content
+            for item in section['content']:
+                if item['type'] == 'paragraph':
+                    # First output any pending list
+                    if current_list:
+                        html.append(f'{indent_str}<{current_list_type}>')
+                        for li in current_list:
+                            html.append(f'{indent_str}    <li>{li}</li>')
+                        html.append(f'{indent_str}</{current_list_type}>')
+                        current_list = []
+                    html.append(f'{indent_str}<p>{item["text"]}</p>')
+                elif item['type'] == 'image':
+                    if current_list:
+                        html.append(f'{indent_str}<{current_list_type}>')
+                        for li in current_list:
+                            html.append(f'{indent_str}    <li>{li}</li>')
+                        html.append(f'{indent_str}</{current_list_type}>')
+                        current_list = []
+                    html.append(f'{indent_str}<img src="{item["src"]}" alt="{item["alt"] or ""}"/>')
+                elif item['type'] == 'list':
+                    current_list_type = item['list_type']
+                    current_list.extend(item['items'])
+                elif item['type'] == 'link':
+                    # If we have a matching list item, combine them
+                    if current_list and item['text'] in current_list:
+                        idx = current_list.index(item['text'])
+                        current_list[idx] = f'<a href="{item["href"]}">{item["text"]}</a>'
+                    else:
+                        # First output any pending list
+                        if current_list:
+                            html.append(f'{indent_str}<{current_list_type}>')
+                            for li in current_list:
+                                html.append(f'{indent_str}    <li>{li}</li>')
+                            html.append(f'{indent_str}</{current_list_type}>')
+                            current_list = []
+                        html.append(f'{indent_str}<a href="{item["href"]}">{item["text"]}</a>')
+            
+            # Output any remaining list items
+            if current_list:
+                html.append(f'{indent_str}<{current_list_type}>')
+                for li in current_list:
+                    html.append(f'{indent_str}    <li>{li}</li>')
+                html.append(f'{indent_str}</{current_list_type}>')
+            
+            # Add subsections
+            for subsection in section['subsections']:
+                html.extend(section_to_html(subsection, indent + 1))
+            
+            return html
 
         # Parse HTML
         soup = BeautifulSoup(response.text, 'html.parser')
@@ -49,14 +112,12 @@ class MySpider(scrapy.Spider):
                     'level': element.name,
                     'text': element.get_text(strip=True)
                 }
-                # Start new section
                 new_section = create_section(element.name)
                 new_section['heading'] = content
                 
                 if not sections:
                     sections.append(new_section)
                 else:
-                    # Find appropriate parent section
                     current_level = int(element.name[1])
                     while sections and get_heading_level(sections[-1]) >= current_level:
                         sections.pop()
@@ -101,14 +162,13 @@ class MySpider(scrapy.Spider):
                         'items': items
                     }
 
-            # Add content to current section
             if content:
                 if not sections:
                     default_section = create_section()
                     sections.append(default_section)
                 sections[-1]['content'].append(content)
 
-        # Find root sections (only keep the top-level ones)
+        # Find root sections
         root_sections = []
         current_level = 0
         for section in sections:
@@ -117,21 +177,47 @@ class MySpider(scrapy.Spider):
                 root_sections.append(section)
                 current_level = level
 
-        # Save to JSON
-        data = {
-            'url': response.url,
-            'timestamp': datetime.now().isoformat(),
-            'title': soup.title.string if soup.title else None,
-            'sections': root_sections
-        }
+        # Create HTML output
+        html_content = [
+            '<!DOCTYPE html>',
+            '<html>',
+            '<head>',
+            f'    <title>{soup.title.string if soup.title else "Scraped Page"}</title>',
+            '    <meta charset="utf-8">',
+            '    <style>',
+            '        body { font-family: Arial, sans-serif; line-height: 1.6; max-width: 800px; margin: 0 auto; padding: 20px; }',
+            '        img { max-width: 100%; height: auto; }',
+            '        h1, h2, h3 { color: #333; }',
+            '        a { color: #0066cc; text-decoration: none; }',
+            '        a:hover { text-decoration: underline; }',
+            '    </style>',
+            '</head>',
+            '<body>',
+            f'    <p><strong>Source URL:</strong> <a href="{response.url}">{response.url}</a></p>',
+            f'    <p><strong>Scraped on:</strong> {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}</p>',
+            '    <hr>'
+        ]
 
-        filename = f"page_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+        for section in root_sections:
+            html_content.extend(section_to_html(section, indent=1))
+
+        html_content.extend([
+            '</body>',
+            '</html>'
+        ])
+
+        filename = f"page_{datetime.now().strftime('%Y%m%d_%H%M%S')}.html"
         os.makedirs('scraped_data', exist_ok=True)
         
         with open(f'scraped_data/{filename}', 'w', encoding='utf-8') as f:
-            json.dump(data, f, ensure_ascii=False, indent=2)
+            f.write('\n'.join(html_content))
 
-        yield data
+        print(f"Data saved to scraped_data/{filename}")
+
+        yield {
+            'url': response.url,
+            'file': filename
+        }
 
 process = CrawlerProcess()
 process.crawl(MySpider)
