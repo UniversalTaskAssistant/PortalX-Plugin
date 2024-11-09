@@ -10,10 +10,6 @@ class MySpider(scrapy.Spider):
     start_urls = ['https://www.bmw.com/en-au/home.html']
 
     def parse(self, response):
-        from bs4 import BeautifulSoup
-        import os
-        from datetime import datetime
-
         def create_section(level='h1'):
             return {
                 'heading': None,
