@@ -28,10 +28,17 @@ class MySpider(scrapy.Spider):
         # Remove all attributes except the allowed ones
         allowed_attrs = ['href', 'src', 'aria-label']
         for tag in soup.find_all():
-            attrs = dict(tag.attrs)
-            for attr in attrs:
-                if attr not in allowed_attrs:
-                    del tag[attr]
+            # Special handling for <i> tags
+            if tag.name == 'i':
+                attrs = dict(tag.attrs)
+                for attr in attrs:
+                    if attr not in allowed_attrs + ['class', 'data-icon']:
+                        del tag[attr]
+            else:
+                attrs = dict(tag.attrs)
+                for attr in attrs:
+                    if attr not in allowed_attrs:
+                        del tag[attr]
         
         # Remove redundant divs (divs with single child that's another div)
         self.remove_redundant_divs(soup)
@@ -51,11 +58,11 @@ class MySpider(scrapy.Spider):
         while True:
             redundant_found = False
             for div in soup.find_all('div'):
-                # Check if div has exactly one child and it's another div
+                # Check if div has exactly one child (any tag type)
                 children = list(div.children)
                 children = [c for c in children if not isinstance(c, str) or c.strip()]
                 
-                if len(children) == 1 and children[0].name == 'div':
+                if len(children) == 1:
                     # Replace the parent div with its child's contents
                     div.replace_with(children[0])
                     redundant_found = True
