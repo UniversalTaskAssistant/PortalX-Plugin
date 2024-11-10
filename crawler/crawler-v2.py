@@ -89,6 +89,7 @@ class MySpider(scrapy.Spider):
             
             # Close section div
             html.append(f'{indent_str}</div>')
+            
             return html
 
         # Parse HTML
