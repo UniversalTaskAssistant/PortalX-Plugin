@@ -5,7 +5,7 @@ import json
 import os
 from datetime import datetime
 
-class MySpider(scrapy.Spider):
+class Spider(scrapy.Spider):
     name = 'myspider'
     start_urls = ['https://www.bmw.com/en-au/home.html']
 
@@ -91,5 +91,5 @@ class MySpider(scrapy.Spider):
 process = CrawlerProcess({
     'LOG_ENABLED': False
 })
-process.crawl(MySpider)
+process.crawl(Spider)
 process.start()
