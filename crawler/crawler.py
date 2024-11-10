@@ -26,13 +26,20 @@ class MySpider(scrapy.Spider):
             html = []
             indent_str = '    ' * indent
             
+            # Convert list to html
+            def flush_list():
+                if current_list:
+                    html.append(f'{indent_str}<{current_list_type}>')
+                    html.extend(f'{indent_str}    <li>{item}</li>' for item in current_list)
+                    html.append(f'{indent_str}</{current_list_type}>')
+                    current_list.clear()
+            
             # Start section div
             html.append(f'{indent_str}<div class="section">')
             
             # Add heading
             if section['heading']:
-                level = section['heading']['level']
-                text = section['heading']['text']
+                level, text = section['heading']['level'], section['heading']['text']
                 html.append(f'{indent_str}    <{level}>{text}</{level}>')
             
             # Track list items for combining with links
@@ -41,47 +48,31 @@ class MySpider(scrapy.Spider):
             
             # Add content
             for item in section['content']:
-                if item['type'] == 'paragraph':
-                    # First output any pending list
-                    if current_list:
-                        html.append(f'{indent_str}<{current_list_type}>')
-                        for li in current_list:
-                            html.append(f'{indent_str}    <li>{li}</li>')
-                        html.append(f'{indent_str}</{current_list_type}>')
-                        current_list = []
+                item_type = item['type']
+
+                if item_type == 'paragraph':
+                    flush_list()
                     html.append(f'{indent_str}<p>{item["text"]}</p>')
-                elif item['type'] == 'image':
-                    if current_list:
-                        html.append(f'{indent_str}<{current_list_type}>')
-                        for li in current_list:
-                            html.append(f'{indent_str}    <li>{li}</li>')
-                        html.append(f'{indent_str}</{current_list_type}>')
-                        current_list = []
-                    html.append(f'{indent_str}<img src="{item["src"]}" alt="{item["alt"] or ""}"/>')
-                elif item['type'] == 'list':
-                    current_list_type = item['list_type']
-                    current_list.extend(item['items'])
-                elif item['type'] == 'link':
+
+                elif item_type == 'image':
+                    flush_list()
+                    html.append(f'{indent_str}<img src="{item["src"]}" alt="{item.get("alt", "")}"/>')
+                
+                elif item_type == 'link':
                     # If we have a matching list item, combine them
                     if current_list and item['text'] in current_list:
                         idx = current_list.index(item['text'])
                         current_list[idx] = f'<a href="{item["href"]}">{item["text"]}</a>'
                     else:
-                        # First output any pending list
-                        if current_list:
-                            html.append(f'{indent_str}<{current_list_type}>')
-                            for li in current_list:
-                                html.append(f'{indent_str}    <li>{li}</li>')
-                            html.append(f'{indent_str}</{current_list_type}>')
-                            current_list = []
+                        flush_list()
                         html.append(f'{indent_str}<a href="{item["href"]}">{item["text"]}</a>')
             
+                elif item_type == 'list':
+                    current_list_type = item['list_type']
+                    current_list.extend(item['items'])
+                
             # Output any remaining list items
-            if current_list:
-                html.append(f'{indent_str}<{current_list_type}>')
-                for li in current_list:
-                    html.append(f'{indent_str}    <li>{li}</li>')
-                html.append(f'{indent_str}</{current_list_type}>')
+            flush_list()
             
             # Add subsections
             for subsection in section['subsections']:
