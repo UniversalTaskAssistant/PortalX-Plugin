@@ -25,6 +25,19 @@ class MySpider(scrapy.Spider):
         for tag in soup.find_all(['script', 'style']):
             tag.decompose()
         
+        # Add source URL and title stamp at the beginning of body
+        body = soup.find('body')
+        if body:
+            title_text = soup.find('title').string if soup.find('title') else "No title"
+            stamp_html = f'''
+            <div>
+                <h1>Source URL: <a href="{response.url}">{response.url}</a>
+                <br>Title: {title_text}</h1>
+                <hr>
+            </div>
+            '''
+            body.insert(0, BeautifulSoup(stamp_html, 'html.parser'))
+        
         # Remove all attributes except the allowed ones
         allowed_attrs = ['href', 'src', 'aria-label']
         for tag in soup.find_all():
