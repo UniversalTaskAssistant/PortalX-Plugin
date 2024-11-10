@@ -59,11 +59,11 @@ class MySpider(scrapy.Spider):
         # Create output directory if it doesn't exist
         os.makedirs('output', exist_ok=True)
         
-        # Save simplified HTML
+        # Save compressed HTML
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
         output_path = f'output/simplified_{timestamp}.html'
         with open(output_path, 'w', encoding='utf-8') as f:
-            f.write(str(soup.prettify()))
+            f.write(str(soup.prettify(formatter="minimal")))
         
         self.log(f'Simplified HTML saved to {output_path}')
 
