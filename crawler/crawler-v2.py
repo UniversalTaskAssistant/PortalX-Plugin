@@ -13,6 +13,18 @@ class MySpider(scrapy.Spider):
         # Create BeautifulSoup object from response
         soup = BeautifulSoup(response.text, 'html.parser')
         
+        # Clean head section
+        head = soup.find('head')
+        if head:
+            # Remove all elements from head except title
+            for tag in head.find_all():
+                if tag.name != 'title':
+                    tag.decompose()
+        
+        # Remove script and style tags
+        for tag in soup.find_all(['script', 'style']):
+            tag.decompose()
+        
         # Remove all attributes except the allowed ones
         allowed_attrs = ['href', 'src', 'aria-label']
         for tag in soup.find_all():
