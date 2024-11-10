@@ -67,6 +67,11 @@ class MySpider(scrapy.Spider):
                         flush_list()
                         html.append(f'{indent_str}<a href="{item["href"]}">{item["text"]}</a>')
             
+                elif item_type == 'button':
+                    text = item.get('text', None)
+                    if text:
+                        html.append(f'{indent_str}<button>{text}</button>')
+
                 elif item_type == 'list':
                     current_list_type = item['list_type']
                     current_list.extend(item['items'])
@@ -89,12 +94,9 @@ class MySpider(scrapy.Spider):
         sections = []
         
         # Process elements
-        for element in soup.find_all(['h1', 'h2', 'h3', 'p', 'img', 'a', 'ul', 'ol']):
+        for element in soup.find_all(['h1', 'h2', 'h3', 'p', 'img', 'a', 'ul', 'ol', 'button']):
+            # Skip empty elements and images that aren't inside links
             if not element.get_text(strip=True) and element.name not in ['img']:
-                continue
-
-            # Skip images that aren't inside links
-            if element.name == 'img' and not element.find_parent('a'):
                 continue
 
             # Create content object
@@ -153,6 +155,13 @@ class MySpider(scrapy.Spider):
                         'list_type': element.name,
                         'items': items
                     }
+            elif element.name == 'button':
+                text = element.get_text(strip=True)
+                if text:
+                    content = {
+                        'type': 'button',
+                        'text': text
+                    }
 
             if content:
                 if not sections:
@@ -182,6 +191,7 @@ class MySpider(scrapy.Spider):
             '        h1, h2, h3 { color: #333; }',
             '        a { color: #0066cc; text-decoration: none; }',
             '        a:hover { text-decoration: underline; }',
+            '        button { padding: 8px 16px; background-color: #0066cc; color: white; border: none; border-radius: 4px; cursor: pointer; }',
             '    </style>',
             '</head>',
             '<body>',
@@ -191,7 +201,7 @@ class MySpider(scrapy.Spider):
         ]
 
         for section in root_sections:
-            html_content.extend(section_to_html(section, indent=1))
+            html_content.extend(section_to_html(section=section, indent=1))
 
         html_content.extend([
             '</body>',
@@ -211,6 +221,8 @@ class MySpider(scrapy.Spider):
             'file': filename
         }
 
-process = CrawlerProcess()
+process = CrawlerProcess({
+    'LOG_ENABLED': False
+})
 process.crawl(MySpider)
 process.start()
