@@ -7,7 +7,7 @@ from datetime import datetime
 
 class Spider(scrapy.Spider):
     name = 'myspider'
-    start_urls = ['https://www.bmw.com/en-au/home.html']
+    start_urls = ['https://www.bmw.com/en-au/electric-cars.html']
 
     def parse(self, response):
         # Create BeautifulSoup object from response
@@ -20,11 +20,9 @@ class Spider(scrapy.Spider):
             for tag in head.find_all():
                 if tag.name != 'title':
                     tag.decompose()
-        
-        # Remove script and style tags
-        for tag in soup.find_all(['script', 'style']):
+        # Remove unused tags
+        for tag in soup.find_all(['script', 'style', 'source']):
             tag.decompose()
-        
         # Add source URL and title stamp at the beginning of body
         body = soup.find('body')
         if body:
@@ -52,20 +50,16 @@ class Spider(scrapy.Spider):
                 for attr in attrs:
                     if attr not in allowed_attrs:
                         del tag[attr]
-        
         # Remove redundant divs (divs with single child that's another div)
         self.remove_redundant_divs(soup)
-        
-        # Create output directory if it doesn't exist
+
+        # Save compressed HTML        
         os.makedirs('output', exist_ok=True)
-        
-        # Save compressed HTML
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
         output_path = f'output/simplified_{timestamp}.html'
         with open(output_path, 'w', encoding='utf-8') as f:
             f.write(str(soup.prettify(formatter="minimal")))
-        
-        self.log(f'Simplified HTML saved to {output_path}')
+        print(f'Simplified HTML saved to {output_path}')
 
     def remove_redundant_divs(self, soup):
         while True:
@@ -74,7 +68,6 @@ class Spider(scrapy.Spider):
                 # Get all children, excluding empty whitespace
                 children = list(div.children)
                 children = [c for c in children if not isinstance(c, str) or c.strip()]
-                
                 # Remove div if it's empty or has only one child
                 if len(children) == 0:
                     div.decompose()
@@ -84,7 +77,6 @@ class Spider(scrapy.Spider):
                     div.replace_with(children[0])
                     redundant_found = True
                     break
-            
             if not redundant_found:
                 break
 
