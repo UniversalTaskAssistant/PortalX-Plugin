@@ -58,12 +58,16 @@ class MySpider(scrapy.Spider):
         while True:
             redundant_found = False
             for div in soup.find_all('div'):
-                # Check if div has exactly one child (any tag type)
+                # Get all children, excluding empty whitespace
                 children = list(div.children)
                 children = [c for c in children if not isinstance(c, str) or c.strip()]
                 
-                if len(children) == 1:
-                    # Replace the parent div with its child's contents
+                # Remove div if it's empty or has only one child
+                if len(children) == 0:
+                    div.decompose()
+                    redundant_found = True
+                    break
+                elif len(children) == 1:
                     div.replace_with(children[0])
                     redundant_found = True
                     break
