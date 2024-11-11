@@ -19,6 +19,9 @@ class Spider(scrapy.Spider):
         self.timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
         os.makedirs(f'output/{self.timestamp}', exist_ok=True)
 
+    """
+    *** Main parsing ***
+    """
     def parse(self, response, depth=0):
         # Check if max urls per domain reached
         if depth >= self.max_depth:
@@ -51,6 +54,9 @@ class Spider(scrapy.Spider):
                 )
         self.save_links(response.url, links)
 
+    """
+    *** HTML cleaning ***
+    """
     def clean_html(self, response):
         soup = BeautifulSoup(response.text, 'html.parser')
         
@@ -115,6 +121,9 @@ class Spider(scrapy.Spider):
             if not redundant_found:
                 break
 
+    """
+    *** URL filtering ***
+    """
     def should_follow(self, url):
         parsed = urlparse(url)
         domain = parsed.netloc
@@ -133,6 +142,12 @@ class Spider(scrapy.Spider):
             return False
         return True
 
+    def handle_error(self, failure):
+        self.logger.error(f'Request failed: {failure.request.url}')
+
+    """
+    *** File saving ***
+    """
     def save_page_content(self, url, soup):
         domain = urlparse(url).netloc
         filename = f'output/{self.timestamp}/{domain}_{len(self.visited_urls)}.html'
@@ -150,9 +165,7 @@ class Spider(scrapy.Spider):
         filename = f'output/{self.timestamp}/{domain}_{len(self.visited_urls)}_links.json'
         with open(filename, 'w', encoding='utf-8') as f:
             json.dump(data, f, indent=2)
-
-    def handle_error(self, failure):
-        self.logger.error(f'Request failed: {failure.request.url}')
+        print(f'Saved links to {filename}')
 
 # Configure and start the crawler
 process = CrawlerProcess({
