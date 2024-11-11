@@ -42,9 +42,13 @@ class Spider(scrapy.Spider):
         # Extract and follow links
         links = []
         for link in response.css('a::attr(href)').getall():
+            # Ignore page anchor
+            if link.startswith('#'):
+                continue
             absolute_url = response.urljoin(link)
             links.append(absolute_url)
             
+            # Scrape the next page if it's valid
             if self.should_follow(absolute_url):
                 yield scrapy.Request(
                     absolute_url,
