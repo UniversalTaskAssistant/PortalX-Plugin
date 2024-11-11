@@ -5,6 +5,7 @@ from urllib.parse import urlparse
 import json
 import os
 from datetime import datetime
+from urllib.parse import urlparse, quote
 
 class Spider(scrapy.Spider):
     name = 'myspider'
@@ -17,7 +18,8 @@ class Spider(scrapy.Spider):
         self.domain_urls = {}
         self.max_urls_per_domain = 100
         self.timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-        os.makedirs(f'output/{self.timestamp}', exist_ok=True)
+        self.output_dir = f'output/bmw'
+        os.makedirs(self.output_dir, exist_ok=True)
 
     """
     *** Main parsing ***
@@ -59,7 +61,9 @@ class Spider(scrapy.Spider):
         self.save_links(response.url, links)
 
     """
+    *********************
     *** HTML cleaning ***
+    *********************
     """
     def clean_html(self, response):
         soup = BeautifulSoup(response.text, 'html.parser')
@@ -126,7 +130,9 @@ class Spider(scrapy.Spider):
                 break
 
     """
+    *********************
     *** URL filtering ***
+    *********************
     """
     def should_follow(self, url):
         parsed = urlparse(url)
@@ -150,26 +156,50 @@ class Spider(scrapy.Spider):
         self.logger.error(f'Request failed: {failure.request.url}')
 
     """
+    *******************
     *** File saving ***
+    *******************
     """
+    def filename_from_url(self, url):
+        # Parse URL and create domain directory
+        parsed_url = urlparse(url)
+        domain = parsed_url.netloc
+        domain_dir = f'{self.output_dir}/{domain}'
+        
+        # Create path for file
+        path = parsed_url.path
+        if not path or path == '/':
+            path = 'index'
+        else:
+            path = path.strip('/')
+        # Add query string if it exists, with safe encoding
+        if parsed_url.query:
+            path = f'{path}?{quote(parsed_url.query, safe="")}'
+            
+        # Create full directory path and ensure it exists
+        full_path = f'{domain_dir}/{path}'.replace('.html', '')
+        os.makedirs(os.path.dirname(full_path), exist_ok=True)
+        return full_path
+
     def save_page_content(self, url, soup):
-        domain = urlparse(url).netloc
-        filename = f'output/{self.timestamp}/{domain}_{len(self.visited_urls)}.html'
-        with open(filename, 'w', encoding='utf-8') as f:
-            f.write(str(soup.prettify(formatter="minimal")))
-        print(f'Saved cleaned HTML to {filename}')
+        # Get the filename from the URL
+        file_path = f'{self.filename_from_url(url)}.html'
+        with open(file_path, 'w', encoding='utf-8') as f:
+            f.write(str(soup))
+        print(f'Saved cleaned HTML to {file_path}')
 
     def save_links(self, source_url, links):
-        domain = urlparse(source_url).netloc
         data = {
             'source_url': source_url,
             'crawl_time': datetime.now().isoformat(),
             'links': links
         }
-        filename = f'output/{self.timestamp}/{domain}_{len(self.visited_urls)}_links.json'
-        with open(filename, 'w', encoding='utf-8') as f:
+        # Get the filename from the URL
+        file_path = f'{self.filename_from_url(source_url)}.json'
+        with open(file_path, 'w', encoding='utf-8') as f:
             json.dump(data, f, indent=2)
-        print(f'Saved links to {filename}')
+        print(f'Saved links to {file_path}')
+
 
 # Configure and start the crawler
 process = CrawlerProcess({
