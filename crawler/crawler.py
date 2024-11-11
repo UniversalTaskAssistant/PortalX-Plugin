@@ -22,7 +22,9 @@ class Spider(scrapy.Spider):
         os.makedirs(self.output_dir, exist_ok=True)
 
     """
+    ********************
     *** Main parsing ***
+    ********************
     """
     def parse(self, response, depth=0):
         # Check if max urls per domain reached
@@ -67,7 +69,6 @@ class Spider(scrapy.Spider):
     """
     def clean_html(self, response):
         soup = BeautifulSoup(response.text, 'html.parser')
-        
         # Clean head section
         head = soup.find('head')
         if head:
