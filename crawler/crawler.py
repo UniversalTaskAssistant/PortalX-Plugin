@@ -11,11 +11,13 @@ import base64
 class Spider(scrapy.Spider):
     name = 'UTASpider'
     
-    def __init__(self, start_urls=['https://www.bmw.com/en-au/index.html'], company_name='bmw', *args, **kwargs):
+    def __init__(self, start_urls=['https://www.bmw.com/en-au/index.html'], company_name='bmw', domain_limit=None,
+                  *args, **kwargs):
         super(Spider, self).__init__(*args, **kwargs)
         self.name = company_name
         self.start_urls = start_urls 
         self.company_name = company_name 
+        self.domain_limit = domain_limit
 
         self.max_depth = 5
         self.max_urls_per_domain = 1000
@@ -159,7 +161,7 @@ class Spider(scrapy.Spider):
         domain = parsed.netloc
         if url.startswith('#'):
             return False
-        if domain != 'www.bmw.com':
+        if self.domain_limit and self.domain_limit not in url:
             return False
         return True
 
@@ -271,5 +273,5 @@ process = CrawlerProcess({
     'DOWNLOAD_TIMEOUT': 10
 })
 
-process.crawl(Spider, company_name='bmw-main')
+process.crawl(Spider, company_name='bmw-au', domain_limit='www.bmw.com/en-au')
 process.start()
