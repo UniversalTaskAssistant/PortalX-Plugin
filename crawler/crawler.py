@@ -213,6 +213,7 @@ class Spider(scrapy.Spider):
         data = {
             'company_name': self.company_name,
             'crawl_time': datetime.now().isoformat(),
+            'links_count': len(self.all_links),
             'links': list(self.all_links)
         }
         with open(f'{self.output_dir}/all_links.json', 'w', encoding='utf-8') as f:
@@ -229,5 +230,5 @@ process = CrawlerProcess({
     'DOWNLOAD_DELAY': 1
 })
 
-process.crawl(Spider)
+process.crawl(Spider, company_name='bmw-main')
 process.start()
