@@ -23,7 +23,7 @@ class Spider(scrapy.Spider):
         self.domain_urls = {}
         self.visited_urls = set()
         self.failed_urls = set()
-        self.all_links = set()
+        self.all_urls = set()
 
         self.timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
         self.output_dir = f'output/{self.company_name}'
@@ -64,7 +64,7 @@ class Spider(scrapy.Spider):
                     continue
                 absolute_url = response.urljoin(link)
                 links.append(absolute_url)
-                self.all_links.add(absolute_url)
+                self.all_urls.add(absolute_url)
                 # Scrape the next page if it's valid
                 if self.should_follow(absolute_url):
                     yield scrapy.Request(
@@ -234,8 +234,8 @@ class Spider(scrapy.Spider):
         all_links_data = {
             'company_name': self.company_name,
             'crawl_time': datetime.now().isoformat(),
-            'links_count': len(self.all_links),
-            'links': list(self.all_links)
+            'links_count': len(self.all_urls),
+            'links': list(self.all_urls)
         }
         visited_urls_data = {
             'company_name': self.company_name,
@@ -243,12 +243,12 @@ class Spider(scrapy.Spider):
             'visited_urls_count': len(self.visited_urls),
             'visited_urls': list(self.visited_urls)
         }
-        with open(f'{self.output_dir}/all_links.json', 'w', encoding='utf-8') as f:
+        with open(f'{self.output_dir}/all_urls.json', 'w', encoding='utf-8') as f:
             json.dump(all_links_data, f, indent=2)
-        print(f'Saved all links to {self.output_dir}/all_links.json')
+        print(f'Saved all links to {self.output_dir}/all_urls.json')
         with open(f'{self.output_dir}/visited_urls.json', 'w', encoding='utf-8') as f:
             json.dump(visited_urls_data, f, indent=2)
-        print(f'Saved visited URLs to {self.output_dir}/visited_links.json')
+        print(f'Saved visited URLs to {self.output_dir}/visited_urls.json')
 
     def save_failed_urls(self):
         data = {
