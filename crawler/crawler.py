@@ -68,6 +68,7 @@ class Spider(scrapy.Spider):
                 )
         # Save links
         self.save_links(response.url, links)
+        self.save_all_links()
 
     """
     *********************
@@ -207,6 +208,16 @@ class Spider(scrapy.Spider):
         with open(file_path, 'w', encoding='utf-8') as f:
             json.dump(data, f, indent=2)
         print(f'Saved links to {file_path}')
+
+    def save_all_links(self):
+        data = {
+            'company_name': self.company_name,
+            'crawl_time': datetime.now().isoformat(),
+            'links': list(self.all_links)
+        }
+        with open(f'{self.output_dir}/all_links.json', 'w', encoding='utf-8') as f:
+            json.dump(data, f, indent=2)
+        print(f'Saved all links to {self.output_dir}/all_links.json')
 
 
 # Configure and start the crawler
