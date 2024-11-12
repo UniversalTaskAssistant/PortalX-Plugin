@@ -16,8 +16,8 @@ class Spider(scrapy.Spider):
         self.start_urls = start_urls 
         self.company_name = company_name 
 
-        self.max_depth = 3
-        self.max_urls_per_domain = 100
+        self.max_depth = 5
+        self.max_urls_per_domain = 1000
 
         self.domain_urls = {}
         self.visited_urls = set()
@@ -36,6 +36,10 @@ class Spider(scrapy.Spider):
         # Check if max urls per domain reached
         if depth >= self.max_depth:
             return
+        # Skip if not a valid URL
+        if not self.is_valid_url(response.url):
+            return
+        # Check if max urls per domain reached
         domain = urlparse(response.url).netloc
         if domain not in self.domain_urls:
             self.domain_urls[domain] = 0
@@ -45,7 +49,7 @@ class Spider(scrapy.Spider):
         self.domain_urls[domain] += 1
         
         # Process and save current page
-        print(f'Processing {response.url}')
+        print(f'\n**Processing {response.url} **')
         soup = self.clean_html(response)
         self.save_page_content(response.url, soup)
         
@@ -53,7 +57,7 @@ class Spider(scrapy.Spider):
         links = []
         for link in response.css('a::attr(href)').getall():
             # Ignore page anchor
-            if link.startswith('#'):
+            if not self.is_valid_url(link):
                 continue
             absolute_url = response.urljoin(link)
             links.append(absolute_url)
@@ -143,6 +147,15 @@ class Spider(scrapy.Spider):
     *** URL filtering ***
     *********************
     """
+    def is_valid_url(self, url):
+        parsed = urlparse(url)
+        domain = parsed.netloc
+        if url.startswith('#'):
+            return False
+        if domain != 'www.bmw.com':
+            return False
+        return True
+
     def should_follow(self, url):
         parsed = urlparse(url)
         domain = parsed.netloc
@@ -210,24 +223,34 @@ class Spider(scrapy.Spider):
         print(f'Saved links to {file_path}')
 
     def save_all_links(self):
-        data = {
+        all_links_data = {
             'company_name': self.company_name,
             'crawl_time': datetime.now().isoformat(),
             'links_count': len(self.all_links),
             'links': list(self.all_links)
         }
+        visited_urls_data = {
+            'company_name': self.company_name,
+            'crawl_time': datetime.now().isoformat(),
+            'visited_urls_count': len(self.visited_urls),
+            'visited_urls': list(self.visited_urls)
+        }
         with open(f'{self.output_dir}/all_links.json', 'w', encoding='utf-8') as f:
-            json.dump(data, f, indent=2)
+            json.dump(all_links_data, f, indent=2)
         print(f'Saved all links to {self.output_dir}/all_links.json')
+        with open(f'{self.output_dir}/visited_urls.json', 'w', encoding='utf-8') as f:
+            json.dump(visited_urls_data, f, indent=2)
+        print(f'Saved visited URLs to {self.output_dir}/visited_links.json')
 
 
 # Configure and start the crawler
 process = CrawlerProcess({
-    'LOG_ENABLED': False,
-    'LOG_LEVEL': 'INFO',
+    'LOG_ENABLED': True,
+    'LOG_LEVEL': 'ERROR',
     'ROBOTSTXT_OBEY': True,
     'CONCURRENT_REQUESTS_PER_DOMAIN': 2,
-    'DOWNLOAD_DELAY': 1
+    'DOWNLOAD_DELAY': 1,
+    'DOWNLOAD_TIMEOUT': 10
 })
 
 process.crawl(Spider, company_name='bmw-main')
