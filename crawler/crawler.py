@@ -8,17 +8,23 @@ from datetime import datetime
 from urllib.parse import urlparse, quote
 
 class Spider(scrapy.Spider):
-    name = 'myspider'
-    start_urls = ['https://www.bmw.com/en-au/home.html']
+    name = 'UTASpider'
     
-    def __init__(self, *args, **kwargs):
+    def __init__(self, start_urls=['https://www.bmw.com/en-au/index.html'], company_name='bmw', *args, **kwargs):
         super(Spider, self).__init__(*args, **kwargs)
-        self.visited_urls = set()
+        self.name = company_name
+        self.start_urls = start_urls 
+        self.company_name = company_name 
+
         self.max_depth = 3
-        self.domain_urls = {}
         self.max_urls_per_domain = 100
+
+        self.domain_urls = {}
+        self.visited_urls = set()
+        self.all_links = set()
+
         self.timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-        self.output_dir = f'output/bmw'
+        self.output_dir = f'output/{self.company_name}'
         os.makedirs(self.output_dir, exist_ok=True)
 
     """
@@ -51,7 +57,7 @@ class Spider(scrapy.Spider):
                 continue
             absolute_url = response.urljoin(link)
             links.append(absolute_url)
-            
+            self.all_links.add(absolute_url)
             # Scrape the next page if it's valid
             if self.should_follow(absolute_url):
                 yield scrapy.Request(
@@ -60,6 +66,7 @@ class Spider(scrapy.Spider):
                     cb_kwargs={'depth': depth + 1},
                     errback=self.handle_error
                 )
+        # Save links
         self.save_links(response.url, links)
 
     """
