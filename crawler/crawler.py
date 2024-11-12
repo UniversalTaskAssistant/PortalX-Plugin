@@ -22,6 +22,7 @@ class Spider(scrapy.Spider):
 
         self.domain_urls = {}
         self.visited_urls = set()
+        self.failed_urls = set()
         self.all_links = set()
 
         self.timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
@@ -50,30 +51,35 @@ class Spider(scrapy.Spider):
         self.domain_urls[domain] += 1
         
         # Process and save current page
-        print(f'\n**Processing {response.url} **')
-        soup = self.clean_html(response)
-        self.save_page_content(response.url, soup)
-        
-        # Extract and follow links
-        links = []
-        for link in response.css('a::attr(href)').getall():
-            # Ignore page anchor
-            if not self.is_valid_url(link):
-                continue
-            absolute_url = response.urljoin(link)
-            links.append(absolute_url)
-            self.all_links.add(absolute_url)
-            # Scrape the next page if it's valid
-            if self.should_follow(absolute_url):
-                yield scrapy.Request(
-                    absolute_url,
-                    callback=self.parse,
-                    cb_kwargs={'depth': depth + 1},
-                    errback=self.handle_error
-                )
-        # Save links
-        self.save_links(response.url, links)
-        self.save_all_links()
+        try:
+            print(f'\n*** Processing {response.url} ***')
+            soup = self.clean_html(response)
+            self.save_page_content(response.url, soup)
+            
+            # Extract and follow links
+            links = []
+            for link in response.css('a::attr(href)').getall():
+                # Ignore page anchor
+                if not self.is_valid_url(link):
+                    continue
+                absolute_url = response.urljoin(link)
+                links.append(absolute_url)
+                self.all_links.add(absolute_url)
+                # Scrape the next page if it's valid
+                if self.should_follow(absolute_url):
+                    yield scrapy.Request(
+                        absolute_url,
+                        callback=self.parse,
+                        cb_kwargs={'depth': depth + 1},
+                        errback=self.handle_error
+                    )
+            # Save links
+            self.save_links(response.url, links)
+            self.save_all_links()
+        except Exception as e:
+            self.logger.error(f'!!!Error processing {response.url}: {e} !!!')
+            self.failed_urls.add((response.url, str(e)))
+            self.save_failed_urls()
 
     """
     *********************
@@ -243,6 +249,16 @@ class Spider(scrapy.Spider):
         with open(f'{self.output_dir}/visited_urls.json', 'w', encoding='utf-8') as f:
             json.dump(visited_urls_data, f, indent=2)
         print(f'Saved visited URLs to {self.output_dir}/visited_links.json')
+
+    def save_failed_urls(self):
+        data = {
+            'company_name': self.company_name,
+            'crawl_time': datetime.now().isoformat(),
+            'failed_urls': list(self.failed_urls)
+        }
+        with open(f'{self.output_dir}/failed_urls.json', 'w', encoding='utf-8') as f:
+            json.dump(data, f, indent=2)
+        print(f'Saved failed URLs to {self.output_dir}/failed_urls.json')
 
 
 # Configure and start the crawler
