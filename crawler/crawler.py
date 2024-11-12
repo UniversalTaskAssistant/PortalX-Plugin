@@ -52,7 +52,7 @@ class Spider(scrapy.Spider):
         
         # Process and save current page
         try:
-            print(f'\n*** Processing {response.url} ***')
+            print(f'\n*** Processing {response.url} ({len(self.visited_urls)}) ***')
             soup = self.clean_html(response)
             self.save_page_content(response.url, soup)
             
