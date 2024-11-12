@@ -6,6 +6,7 @@ import json
 import os
 from datetime import datetime
 from urllib.parse import urlparse, quote
+import base64
 
 class Spider(scrapy.Spider):
     name = 'UTASpider'
@@ -196,7 +197,8 @@ class Spider(scrapy.Spider):
             path = path.strip('/')
         # Add query string if it exists, with safe encoding
         if parsed_url.query:
-            path = f'{path}?{quote(parsed_url.query, safe="")}'
+            encoded_query = base64.urlsafe_b64encode(parsed_url.query.encode()).decode()
+            path = f'{path}_{encoded_query}'
             
         # Create full directory path and ensure it exists
         full_path = f'{domain_dir}/{path}'.replace('.html', '')
