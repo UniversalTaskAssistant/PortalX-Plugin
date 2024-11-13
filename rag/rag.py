@@ -6,6 +6,8 @@ from typing import Dict, Any
 
 class RAGSystem:
     def __init__(self):
+        self.openai_api_key = open('rag/openaikey.txt', 'r').read().strip()
+
         # Initialize embedding model
         self.embed_model = None
         # Load documents with progress bar
@@ -16,7 +18,6 @@ class RAGSystem:
         self.query_engine = None
 
     def initialize(self, directory_path: str,
-        openai_api_key: str,
         embed_model_name: str = "BAAI/bge-small-en-v1.5",
         chunk_size: int = 1024,
         chunk_overlap: int = 200):
@@ -26,8 +27,9 @@ class RAGSystem:
             model_name=embed_model_name,
             embed_batch_size=100
         )
+
         # Configure settings with the new API
-        os.environ["OPENAI_API_KEY"] = openai_api_key
+        os.environ["OPENAI_API_KEY"] = self.openai_api_key  
         Settings.llm = OpenAI(model="gpt-4o", temperature=0)
         Settings.embed_model = self.embed_model
         Settings.chunk_size = chunk_size
@@ -94,13 +96,9 @@ class RAGSystem:
 
 # Example usage
 if __name__ == "__main__":
-    # Initialize system
-    with open('rag/openaikey.txt', 'r') as file:
-        openai_api_key = file.read().strip()
     rag = RAGSystem()
     rag.initialize(
-        directory_path="./output/bmw-au",
-        openai_api_key=openai_api_key
+        directory_path="./output/bmw-au"
     )
     
     print("Welcome to the BMW AU!")
