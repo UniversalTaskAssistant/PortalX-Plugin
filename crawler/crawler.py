@@ -360,5 +360,5 @@ process = CrawlerProcess({
     'DOWNLOAD_TIMEOUT': 10
 })
 
-process.crawl(Spider, company_name='bmw-au', domain_limit='www.bmw.com/en-au')
+process.crawl(Spider, start_urls=['https://www.bmw.com/en-au/index.html'], company_name='bmw-au', domain_limit='www.bmw.com/en-au')
 process.start()
