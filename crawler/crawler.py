@@ -9,6 +9,13 @@ from urllib.parse import urlparse, quote
 import base64
 
 class Spider(scrapy.Spider):
+    """
+    Scrapy spider for crawling websites and saving cleaned HTML content.
+    Args:
+        start_urls (list): Initial URLs to start crawling from
+        company_name (str): Name of the company being crawled
+        domain_limit (str): Optional domain restriction for crawling
+    """
     name = 'UTASpider'
     
     def __init__(self, start_urls=['https://www.bmw.com/en-au/index.html'], company_name='bmw', domain_limit=None,
@@ -37,6 +44,14 @@ class Spider(scrapy.Spider):
     ********************
     """
     def parse(self, response, depth=0):
+        """
+        Main parsing function that processes each webpage and extracts links.
+        Args:
+            response (scrapy.Response): The response object containing the webpage
+            depth (int): Current depth level of crawling
+        Returns:
+            Generator of scrapy.Request objects for found URLs
+        """
         # Check if max urls per domain reached
         if depth >= self.max_depth:
             return
@@ -89,6 +104,13 @@ class Spider(scrapy.Spider):
     *********************
     """
     def clean_html(self, response):
+        """
+        Cleans and simplifies HTML content by removing unnecessary elements and attributes.
+        Args:
+            response (scrapy.Response): The response object containing the webpage
+        Returns:
+            BeautifulSoup: Cleaned HTML soup object
+        """
         soup = BeautifulSoup(response.text, 'html.parser')
         # Clean head section
         head = soup.find('head')
@@ -133,6 +155,13 @@ class Spider(scrapy.Spider):
         return soup
 
     def remove_redundant_divs(self, soup):
+        """
+        Removes unnecessary nested div elements from HTML.
+        Args:
+            soup (BeautifulSoup): The HTML soup object to clean
+        Returns:
+            None (modifies soup object in place)
+        """
         while True:
             redundant_found = False
             for div in soup.find_all('div'):
@@ -157,6 +186,13 @@ class Spider(scrapy.Spider):
     *********************
     """
     def is_valid_url(self, url):
+        """
+        Checks if a URL should be processed based on domain restrictions.
+        Args:
+            url (str): URL to validate
+        Returns:
+            bool: True if URL is valid, False otherwise
+        """
         parsed = urlparse(url)
         domain = parsed.netloc
         if url.startswith('#'):
@@ -166,6 +202,13 @@ class Spider(scrapy.Spider):
         return True
 
     def should_follow(self, url):
+        """
+        Determines if a URL should be crawled based on various criteria.
+        Args:
+            url (str): URL to evaluate
+        Returns:
+            bool: True if URL should be followed, False otherwise
+        """
         parsed = urlparse(url)
         domain = parsed.netloc
         # Skip if already visited
@@ -184,6 +227,13 @@ class Spider(scrapy.Spider):
         return True
 
     def handle_error(self, failure):
+        """
+        Handles failed requests during crawling.
+        Args:
+            failure (Failure): The failure object containing error details
+        Returns:
+            None
+        """
         self.logger.error(f'Request failed: {failure.request.url}')
 
     """
@@ -192,6 +242,13 @@ class Spider(scrapy.Spider):
     *******************
     """
     def filename_from_url(self, url):
+        """
+        Generates a filesystem-safe filename from a URL.
+        Args:
+            url (str): URL to convert to filename
+        Returns:
+            str: Path where the file should be saved
+        """
         # Parse URL and create domain directory
         parsed_url = urlparse(url)
         domain = parsed_url.netloc
@@ -214,6 +271,14 @@ class Spider(scrapy.Spider):
         return full_path
 
     def save_page_content(self, url, soup):
+        """
+        Saves cleaned HTML content to a file.
+        Args:
+            url (str): Source URL of the content
+            soup (BeautifulSoup): Cleaned HTML content
+        Returns:
+            None
+        """
         # Get the filename from the URL
         file_path = f'{self.filename_from_url(url)}.html'
         with open(file_path, 'w', encoding='utf-8') as f:
@@ -221,6 +286,14 @@ class Spider(scrapy.Spider):
         print(f'Saved cleaned HTML to {file_path}')
 
     def save_links(self, source_url, links):
+        """
+        Saves extracted links from a page to a JSON file.
+        Args:
+            source_url (str): URL where links were found
+            links (list): List of extracted URLs
+        Returns:
+            None
+        """
         data = {
             'source_url': source_url,
             'crawl_time': datetime.now().isoformat(),
@@ -233,6 +306,13 @@ class Spider(scrapy.Spider):
         print(f'Saved links to {file_path}')
 
     def save_all_links(self):
+        """
+        Saves all discovered and visited URLs to JSON files.
+        Args:
+            None
+        Returns:
+            None
+        """
         all_links_data = {
             'company_name': self.company_name,
             'crawl_time': datetime.now().isoformat(),
@@ -253,6 +333,13 @@ class Spider(scrapy.Spider):
         print(f'Saved visited URLs to {self.output_dir}/visited_urls.json')
 
     def save_failed_urls(self):
+        """
+        Saves list of failed URLs and their errors to a JSON file.
+        Args:
+            None
+        Returns:
+            None
+        """
         data = {
             'company_name': self.company_name,
             'crawl_time': datetime.now().isoformat(),
