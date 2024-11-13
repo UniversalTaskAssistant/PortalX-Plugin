@@ -1,10 +1,10 @@
 from rag.rag import RAGSystem
 
 class UTAWeb:
-    def __init__(self):
+    def __init__(self, directory_path: str):
         self.openai_api_key = open('rag/openaikey.txt', 'r').read().strip()
 
-        self.rag = RAGSystem(directory_path="./output/bmw-au",
+        self.rag = RAGSystem(directory_path=directory_path,
                              openai_api_key=self.openai_api_key)
 
     def query_web(self, web_url: str):
@@ -19,6 +19,6 @@ class UTAWeb:
 
 
 if __name__ == "__main__":
-    web = UTAWeb()
-    web.query_web("https://www.bmw.com/en-au")
+    web = UTAWeb(directory_path="./output/mankons")
+    web.query_web("https://www.mankons.com")
 
