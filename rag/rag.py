@@ -5,29 +5,34 @@ import os
 from typing import Dict, Any
 
 class RAGSystem:
-    def __init__(
-        self, 
-        directory_path: str,
-        openai_api_key: str,
-        embed_model: str = "BAAI/bge-small-en-v1.5",
-        chunk_size: int = 1024,
-        chunk_overlap: int = 200
-    ):
-        # Set OpenAI API key
-        os.environ["OPENAI_API_KEY"] = openai_api_key
-        
+    def __init__(self):
         # Initialize embedding model
-        embed_model = HuggingFaceEmbedding(
-            model_name=embed_model,
+        self.embed_model = None
+        # Load documents with progress bar
+        self.documents = None
+        # Create vector store index
+        self.index = None
+        # Create query engine with response synthesis
+        self.query_engine = None
+
+    def initialize(self, directory_path: str,
+        openai_api_key: str,
+        embed_model_name: str = "BAAI/bge-small-en-v1.5",
+        chunk_size: int = 1024,
+        chunk_overlap: int = 200):
+
+        # Initialize embedding model
+        self.embed_model = HuggingFaceEmbedding(
+            model_name=embed_model_name,
             embed_batch_size=100
         )
-        
         # Configure settings with the new API
+        os.environ["OPENAI_API_KEY"] = openai_api_key
         Settings.llm = OpenAI(model="gpt-4o", temperature=0)
-        Settings.embed_model = embed_model
+        Settings.embed_model = self.embed_model
         Settings.chunk_size = chunk_size
         Settings.chunk_overlap = chunk_overlap
-        
+
         # Load documents with progress bar
         self.documents = SimpleDirectoryReader(
             directory_path,
@@ -35,13 +40,13 @@ class RAGSystem:
             exclude_hidden=True,
             filename_as_id=True
         ).load_data()
-        
+
         # Create vector store index
         self.index = VectorStoreIndex.from_documents(
             self.documents,
             show_progress=True
         )
-        
+
         # Create query engine with response synthesis
         self.query_engine = self.index.as_query_engine(
             response_mode="tree_summarize",
@@ -60,7 +65,6 @@ class RAGSystem:
             Dictionary containing answer and source information
         """
         response = self.query_engine.query(question)
-        
         # Format source documents
         sources = []
         for node in response.source_nodes:
@@ -69,7 +73,6 @@ class RAGSystem:
                 'score': round(node.score, 3) if node.score else None,
                 'text_chunk': node.text[:200] + "..."  # Preview of the chunk
             })
-        
         return {
             "answer": str(response),
             "sources": sources
@@ -94,7 +97,8 @@ if __name__ == "__main__":
     # Initialize system
     with open('rag/openaikey.txt', 'r') as file:
         openai_api_key = file.read().strip()
-    rag = RAGSystem(
+    rag = RAGSystem()
+    rag.initialize(
         directory_path="./output/bmw-au",
         openai_api_key=openai_api_key
     )
