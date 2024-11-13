@@ -23,7 +23,7 @@ class RAGSystem:
         )
         
         # Configure settings with the new API
-        Settings.llm = OpenAI(model="gpt-4-turbo-preview", temperature=0)
+        Settings.llm = OpenAI(model="gpt-4o", temperature=0)
         Settings.embed_model = embed_model
         Settings.chunk_size = chunk_size
         Settings.chunk_overlap = chunk_overlap
