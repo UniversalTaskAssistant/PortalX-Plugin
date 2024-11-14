@@ -197,7 +197,7 @@ class Spider(scrapy.Spider):
         domain = parsed.netloc
         if url.startswith('#'):
             return False
-        if self.domain_limit and self.domain_limit not in url:
+        if domain and self.domain_limit and self.domain_limit not in url:
             return False
         return True
 
@@ -351,6 +351,10 @@ class Spider(scrapy.Spider):
 
 
 if __name__ == "__main__":
+    web_urls = 'https://www.vishay.com'
+    company_name = 'vishay'
+    domain_limit = 'https://www.vishay.com' # None or specific domain, such as 'www.bmw.com/en-au'
+
     # Configure and start the crawler
     process = CrawlerProcess({
         'LOG_ENABLED': True,
@@ -360,6 +364,5 @@ if __name__ == "__main__":
         'DOWNLOAD_DELAY': 1,
         'DOWNLOAD_TIMEOUT': 10
     })
-
-    process.crawl(Spider, start_urls=['https://www.bmw.com/en-au/index.html'], company_name='bmw-au', domain_limit='www.bmw.com/en-au')
+    process.crawl(Spider, start_urls=[web_urls], company_name=company_name, domain_limit=domain_limit)
     process.start()
