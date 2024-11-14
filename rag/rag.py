@@ -108,7 +108,7 @@ class RAGSystem:
                 # output += f"\n   Preview: {source['text_chunk']}\n"
         return output
 
-# Example usage
+
 if __name__ == "__main__":
     rag = RAGSystem()
     rag.initialize(
