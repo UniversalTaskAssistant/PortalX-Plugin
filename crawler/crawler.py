@@ -350,15 +350,16 @@ class Spider(scrapy.Spider):
         print(f'Saved failed URLs to {self.output_dir}/failed_urls.json')
 
 
-# Configure and start the crawler
-process = CrawlerProcess({
-    'LOG_ENABLED': True,
-    'LOG_LEVEL': 'ERROR',
-    'ROBOTSTXT_OBEY': True,
-    'CONCURRENT_REQUESTS_PER_DOMAIN': 2,
-    'DOWNLOAD_DELAY': 1,
-    'DOWNLOAD_TIMEOUT': 10
-})
+if __name__ == "__main__":
+    # Configure and start the crawler
+    process = CrawlerProcess({
+        'LOG_ENABLED': True,
+        'LOG_LEVEL': 'ERROR',
+        'ROBOTSTXT_OBEY': True,
+        'CONCURRENT_REQUESTS_PER_DOMAIN': 2,
+        'DOWNLOAD_DELAY': 1,
+        'DOWNLOAD_TIMEOUT': 10
+    })
 
-process.crawl(Spider, start_urls=['https://www.bmw.com/en-au/index.html'], company_name='bmw-au', domain_limit='www.bmw.com/en-au')
-process.start()
+    process.crawl(Spider, start_urls=['https://www.bmw.com/en-au/index.html'], company_name='bmw-au', domain_limit='www.bmw.com/en-au')
+    process.start()
