@@ -15,7 +15,7 @@ class UTAWeb:
         """
         if not self.crawler_process:
             print("Crawler Initializing...")
-            from crawler.crawler import Spider
+            from Crawler.crawler import Spider
             from scrapy.crawler import CrawlerProcess
             self.crawler_process = CrawlerProcess({
                 'LOG_ENABLED': True,
@@ -39,7 +39,7 @@ class UTAWeb:
         """
         if not self.rag_system:
             print("RAG System Initializing...")
-            from rag.rag import RAGSystem
+            from RAG.rag import RAGSystem
             self.rag_system = RAGSystem()
             self.rag_system.initialize(
                 directory_path=f"./output/{company_name}"

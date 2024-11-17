@@ -8,5 +8,5 @@
 /dataSources.local.xml
 output/*
 .idea/
-/rag/openaikey.txt
+/RAG/openaikey.txt
 */__pycache__/*
