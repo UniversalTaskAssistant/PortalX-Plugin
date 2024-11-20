@@ -1,15 +1,45 @@
+:root {
+    --primary-color: #ca6be5;
+    --primary-light: #f2e3f9;
+    --primary-dark: #a455bc;
+}
+
 body {
-    width: 100%;
-    margin: 0;
-    padding: 0;
-    overflow: hidden;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
 }
 
-#response {
-    max-height: none;  /* Let the flex container handle the height */
+/* Override Bootstrap's primary color */
+.text-primary {
+    color: var(--primary-color) !important;
 }
 
-/* Custom scrollbar for webkit browsers */
+.bg-primary {
+    background-color: var(--primary-color) !important;
+}
+
+/* Button styling */
+.btn-primary {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.btn-primary:hover, 
+.btn-primary:focus {
+    background-color: var(--primary-dark);
+    border-color: var(--primary-dark);
+}
+
+/* Smooth transitions */
+.btn {
+    transition: all 0.2s ease-in-out;
+}
+
+/* Button hover effects */
+.btn:hover {
+    transform: translateY(-1px);
+}
+
+/* Custom scrollbar */
 ::-webkit-scrollbar {
     width: 8px;
 }
@@ -27,25 +57,51 @@ body {
     background: #555;
 }
 
-/* Loading state for buttons */
-.btn:disabled {
-    cursor: not-allowed;
-    opacity: 0.6;
-}
-
-/* Message styling */
-.message {
-    margin-bottom: 1rem;
-    padding: 0.5rem;
-    border-radius: 0.5rem;
-}
-
-.user-message {
-    background-color: #e9ecef;
-    margin-left: 1rem;
-}
-
-.assistant-message {
+/* Textarea focus state */
+textarea:focus {
+    box-shadow: none !important;
     background-color: #f8f9fa;
-    margin-right: 1rem;
+}
+
+/* Message bubbles (for chat messages) */
+.message {
+    max-width: 85%;
+    margin-bottom: 1rem;
+    padding: 0.75rem 1rem;
+    border-radius: 1rem;
+}
+
+.message.user {
+    background-color: #e3f2fd;
+    margin-left: auto;
+    border-bottom-right-radius: 0.25rem;
+}
+
+.message.assistant {
+    background-color: #f5f5f5;
+    margin-right: auto;
+    border-bottom-left-radius: 0.25rem;
+}
+
+/* Loading animation */
+.typing-indicator {
+    display: flex;
+    gap: 0.5rem;
+    padding: 1rem;
+}
+
+.typing-indicator span {
+    width: 8px;
+    height: 8px;
+    background-color: #90a4ae;
+    border-radius: 50%;
+    animation: bounce 1.4s infinite ease-in-out;
+}
+
+.typing-indicator span:nth-child(1) { animation-delay: -0.32s; }
+.typing-indicator span:nth-child(2) { animation-delay: -0.16s; }
+
+@keyframes bounce {
+    0%, 80%, 100% { transform: scale(0); }
+    40% { transform: scale(1); }
 } 

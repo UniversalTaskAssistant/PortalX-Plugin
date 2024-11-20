@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "UTAWeb Assistant",
+  "name": "UTA - Website Tailored Assistant",
   "version": "1.0",
   "description": "Web assistant for querying website content using UTAWeb",
   "permissions": ["activeTab", "scripting", "sidePanel"],
