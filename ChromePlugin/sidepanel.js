@@ -10,12 +10,29 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('currentUrl').textContent = currentUrl;
     });
 
-    function addMessage(content, isUser = false) {
+    function addMessage(text, isUser = false) {
+        const messageContainer = document.createElement('div');
+        messageContainer.className = 'message-container';
+        
         const messageDiv = document.createElement('div');
-        messageDiv.className = `message ${isUser ? 'user-message' : 'assistant-message'}`;
-        messageDiv.innerHTML = content;
-        responseDiv.appendChild(messageDiv);
-        responseDiv.scrollTop = responseDiv.scrollHeight;
+        messageDiv.className = `message ${isUser ? 'user' : 'assistant'}`;
+        messageDiv.textContent = text;
+        
+        messageContainer.appendChild(messageDiv);
+        document.getElementById('response').appendChild(messageContainer);
+        messageDiv.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function showTypingIndicator() {
+        const indicator = document.createElement('div');
+        indicator.className = 'typing-indicator';
+        for (let i = 0; i < 3; i++) {
+            const dot = document.createElement('span');
+            indicator.appendChild(dot);
+        }
+        document.getElementById('response').appendChild(indicator);
+        indicator.scrollIntoView({ behavior: 'smooth' });
+        return indicator;
     }
 
     // Crawl button handler
