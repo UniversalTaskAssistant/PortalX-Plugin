@@ -3,11 +3,15 @@
   "name": "UTAWeb Assistant",
   "version": "1.0",
   "description": "Web assistant for querying website content using UTAWeb",
-  "permissions": ["activeTab", "scripting"],
-  "action": {
-    "default_popup": "popup.html"
+  "permissions": ["activeTab", "scripting", "sidePanel"],
+  "side_panel": {
+    "default_path": "sidepanel.html"
   },
   "background": {
     "service_worker": "background.js"
+  },
+  "icons": {
+    "48": "img/logo2.png",
+    "128": "img/logo2.png"
   }
 } 
