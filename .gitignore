@@ -10,3 +10,4 @@ output/*
 .idea/
 /RAG/openaikey.txt
 */__pycache__/*
+__pycache__/*
