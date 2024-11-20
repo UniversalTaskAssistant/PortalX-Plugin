@@ -3,7 +3,7 @@ $(document).ready(function() {
     const $queryButton = $('#queryButton');
     const $responseDiv = $('#response');
     const $queryInput = $('#queryInput');
-    const $welcomeMessage = $('#response > div.text-center');
+    const $welcomeMessage = $('.welcome-msg');
 
     // Get current tab URL
     chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
@@ -12,6 +12,10 @@ $(document).ready(function() {
     });
 
     function addMessage(text, isUser = false) {
+        if ($welcomeMessage.is(':visible')) {
+            $welcomeMessage.hide();
+        }
+
         const $messageContainer = $('<div>', {
             class: 'message-container'
         });
@@ -39,11 +43,6 @@ $(document).ready(function() {
         $indicator[0].scrollIntoView({ behavior: 'smooth' });
         return $indicator;
     }
-
-    // Hide welcome message on input focus
-    $queryInput.on('focus', function() {
-        $welcomeMessage.slideUp(300);
-    });
 
     // Crawl button handler
     $crawlButton.on('click', async function() {
