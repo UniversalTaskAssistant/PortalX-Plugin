@@ -23,7 +23,8 @@ class RAGSystem:
     def initialize(self, directory_path: str,
         embed_model_name: str = "BAAI/bge-small-en-v1.5",
         chunk_size: int = 1024,
-        chunk_overlap: int = 200):
+        chunk_overlap: int = 200,
+        load_from_disk: bool = True):
         """
         Initialize the RAG system components and load documents.
         Args:
@@ -31,6 +32,7 @@ class RAGSystem:
             embed_model_name (str): Name of HuggingFace embedding model to use
             chunk_size (int): Size of text chunks for processing
             chunk_overlap (int): Number of overlapping tokens between chunks
+            load_from_disk (bool): Whether to try loading saved index from disk
         """
         # Initialize embedding model
         self.embed_model = HuggingFaceEmbedding(
@@ -39,22 +41,34 @@ class RAGSystem:
         )
         # Configure settings with the new API
         os.environ["OPENAI_API_KEY"] = self.openai_api_key  
-        Settings.llm = OpenAI(model="gpt-4o", temperature=0)
+        Settings.llm = OpenAI(model="gpt-4", temperature=0)
         Settings.embed_model = self.embed_model
         Settings.chunk_size = chunk_size
         Settings.chunk_overlap = chunk_overlap
-        # Load documents with progress bar
-        self.documents = SimpleDirectoryReader(
-            directory_path,
-            recursive=True,
-            exclude_hidden=True,
-            filename_as_id=True
-        ).load_data()
-        # Create vector store index
-        self.index = VectorStoreIndex.from_documents(
-            self.documents,
-            show_progress=True
-        )
+
+        # Try to load saved index if it exists
+        if load_from_disk and os.path.exists(f"{directory_path}/embedding"):
+            print("Loading saved index from disk...")
+            from llama_index.core import StorageContext, load_index_from_storage
+            storage_context = StorageContext.from_defaults(persist_dir=f"{directory_path}/embedding")
+            self.index = load_index_from_storage(storage_context)
+        else:
+            # Load documents and create new index
+            print("Creating new index...")
+            self.documents = SimpleDirectoryReader(
+                directory_path,
+                recursive=True,
+                exclude_hidden=True,
+                filename_as_id=True
+            ).load_data()
+            self.index = VectorStoreIndex.from_documents(
+                self.documents,
+                show_progress=True
+            )
+            # Save the index to disk
+            self.index.storage_context.persist(persist_dir=f"{directory_path}/embedding")
+            print("Index saved to disk.")
+
         # Create query engine with response synthesis
         self.query_engine = self.index.as_query_engine(
             response_mode="tree_summarize",
