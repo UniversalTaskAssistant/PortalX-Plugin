@@ -57,9 +57,9 @@ class UTAWeb:
 if __name__ == "__main__":
     utaweb = UTAWeb()
 
-    web_urls = 'https://www.vishay.com'
-    company_name = 'vishay'
-    domain_limit = 'https://www.vishay.com' # None or specific domain, such as 'www.bmw.com/en-au'
+    web_urls = 'https://www.tum.de/en/'
+    company_name = 'tum'
+    domain_limit = 'https://www.tum.de/en/' # None or specific domain, such as 'www.bmw.com/en-au'
 
     # utaweb.crawl_web(web_urls=[web_urls], company_name=company_name, domain_limit=domain_limit)
     utaweb.query_web(web_url=web_urls, company_name=company_name)
