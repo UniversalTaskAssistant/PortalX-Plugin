@@ -1,3 +1,5 @@
+import tldextract
+
 class UTAWeb:
     def __init__(self, initializing=False):
         self.rag_system = None
@@ -24,7 +26,23 @@ class UTAWeb:
         from RAG.rag import RAGSystem
         self.rag_system = RAGSystem()
 
-    def crawl_web(self, web_urls: list[str], company_name: str, domain_limit: str):
+    @staticmethod
+    def get_company_name_from_url(web_url: str):
+        """
+        Extract company name from URL.
+        Args:
+            web_url (str): URL of the website
+        Returns:
+            str: Company name
+        """
+        extracted = tldextract.extract(web_url)
+        if extracted.subdomain not in ['www', '']:
+            company_name = f"{extracted.subdomain}.{extracted.domain}"
+        else:   
+            company_name = extracted.domain
+        return company_name
+
+    def crawl_web(self, web_url: str, company_name: str=None, domain_limit: str=None):
         """
         Initialize and run web crawler on specified URLs.
         Args:
@@ -34,6 +52,7 @@ class UTAWeb:
         Returns:
             None: Crawled content is saved to disk in ./output/{company_name}
         """
+        company_name = self.get_company_name_from_url(web_url) if company_name is None else company_name
         if not self.crawler_process:
             print("Crawler Initializing...")
             from Crawler.crawler import Spider
@@ -46,10 +65,10 @@ class UTAWeb:
                 'DOWNLOAD_DELAY': 1,
                 'DOWNLOAD_TIMEOUT': 10
             })
-        self.crawler_process.crawl(Spider, start_urls=web_urls, company_name=company_name, domain_limit=domain_limit)
+        self.crawler_process.crawl(Spider, start_urls=[web_url], company_name=company_name, domain_limit=domain_limit)
         self.crawler_process.start()
 
-    def query_web(self, web_url: str, company_name: str):
+    def query_web_test(self, web_url: str, company_name=None):
         """
         Initialize RAG system and start interactive query loop.
         Args:
@@ -58,6 +77,7 @@ class UTAWeb:
         Returns:
             None: Runs continuous query loop until 'quit' is entered
         """
+        company_name = self.get_company_name_from_url(web_url) if company_name is None else company_name
         if not self.rag_system:
             print("RAG System Initializing...")
             from RAG.rag import RAGSystem
@@ -78,10 +98,10 @@ class UTAWeb:
 if __name__ == "__main__":
     utaweb = UTAWeb()
 
-    web_urls = 'https://www.tum.de/en/'
+    web_url = 'https://www.tum.de/en/'
     company_name = 'tum'
     domain_limit = 'https://www.tum.de/en/' # None or specific domain, such as 'www.bmw.com/en-au'
 
-    # utaweb.crawl_web(web_urls=[web_urls], company_name=company_name, domain_limit=domain_limit)
-    utaweb.query_web(web_url=web_urls, company_name=company_name)
+    utaweb.crawl_web(web_url=web_url, company_name=None, domain_limit=None)
+    # utaweb.query_web(web_url=web_url, company_name=company_name)
 
