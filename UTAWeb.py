@@ -79,8 +79,22 @@ class UTAWeb:
         self.crawler_process.crawl(Spider, start_urls=[web_url], company_name=company_name, domain_limit=domain_limit)
         self.crawler_process.start()
 
-    def query_web(self, web_url: str, company_name=None):
-        pass
+    def query_web(self, query: str, web_url: str, company_name=None):
+        """
+        Query RAG system with a question and return formatted response.
+        Args:
+            query (str): Question to query RAG system with
+            web_url (str): URL of the website being queried (for display purposes)
+            company_name (str): Name of company to load documents from
+        Returns:
+            str: Formatted response from RAG system
+        """
+        company_name = self.get_company_name_from_url(web_url) if company_name is None else company_name
+        self.initialize_rag(directory_path=f"./output/{company_name}")
+        result = self.rag_system.query(query)
+        formatted_response = self.rag_system.format_response(result)
+        print(formatted_response)
+        return formatted_response
 
     def query_web_test(self, web_url: str, company_name=None):
         """
@@ -110,6 +124,7 @@ if __name__ == "__main__":
     company_name = 'tum'
     domain_limit = 'https://www.tum.de/en/' # None or specific domain, such as 'www.bmw.com/en-au'
 
-    utaweb.crawl_web(web_url=web_url, company_name=None, domain_limit=None)
-    # utaweb.query_web(web_url=web_url, company_name=company_name)
+    # utaweb.crawl_web(web_url=web_url, company_name=None, domain_limit=None)
+    utaweb.query_web(query="What is the name of the university?", web_url=web_url)
+    # utaweb.query_web_test(web_url=web_url, company_name=company_name)
 
