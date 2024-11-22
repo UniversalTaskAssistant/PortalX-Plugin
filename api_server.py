@@ -6,7 +6,7 @@ import urllib.parse
 app = Flask(__name__)
 CORS(app)
 
-utaweb = UTAWeb()
+utaweb = UTAWeb(initializing=True)
 
 @app.route('/crawl', methods=['POST'])
 def crawl():
@@ -24,16 +24,12 @@ def crawl():
 
 @app.route('/query', methods=['POST'])
 def query():
+    print(request)
+    print(request.json)
     data = request.json
-    query = data['query']
-    url = data['url']
-    domain = urllib.parse.urlparse(url).netloc
-    company_name = domain.split('.')[1]
-    
-    result = utaweb.rag_system.query(query)
-    formatted_response = utaweb.rag_system.format_response(result)
-    
-    return jsonify({"answer": formatted_response})
+    result = utaweb.query_web(query=data['query'], web_url=data['web_url'])
+    return jsonify({"answer": result})
 
 if __name__ == '__main__':
+    print("Starting server...")
     app.run(host='127.0.0.1', port=7777, debug=True) 
