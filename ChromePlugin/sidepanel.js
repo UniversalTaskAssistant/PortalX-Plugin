@@ -11,6 +11,7 @@ $(document).ready(function() {
         $('#currentUrl').text(currentUrl);
     });
 
+    // Add message to response area
     function addMessage(text, isUser = false) {
         if ($welcomeMessage.is(':visible')) {
             $welcomeMessage.hide();
@@ -28,20 +29,6 @@ $(document).ready(function() {
         $messageContainer.append($messageDiv);
         $responseDiv.append($messageContainer);
         $messageDiv[0].scrollIntoView({ behavior: 'smooth' });
-    }
-
-    function showTypingIndicator() {
-        const $indicator = $('<div>', {
-            class: 'typing-indicator'
-        });
-
-        for (let i = 0; i < 3; i++) {
-            $indicator.append($('<span>'));
-        }
-
-        $responseDiv.append($indicator);
-        $indicator[0].scrollIntoView({ behavior: 'smooth' });
-        return $indicator;
     }
 
     // Crawl button handler
@@ -90,7 +77,7 @@ $(document).ready(function() {
                 contentType: 'application/json',
                 data: JSON.stringify({
                     query: query,
-                    url: $('#currentUrl').text()
+                    web_url: 'https://www.tum.de/en/'
                 })
             });
             
