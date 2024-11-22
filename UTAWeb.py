@@ -8,24 +8,46 @@ class UTAWeb:
         if initializing:
             self.initialize()
 
+    """
+    **********************
+    *** Initialization ***
+    **********************
+    """
     def initialize(self):
         # Initialize Crawler
-        print("Crawler Initializing...")
-        from Crawler.crawler import Spider
-        from scrapy.crawler import CrawlerProcess
-        self.crawler_process = CrawlerProcess({
-            'LOG_ENABLED': True,
-            'LOG_LEVEL': 'ERROR',
-            'ROBOTSTXT_OBEY': True,
-            'CONCURRENT_REQUESTS_PER_DOMAIN': 2,
-            'DOWNLOAD_DELAY': 1,
-            'DOWNLOAD_TIMEOUT': 10
-        })
+        self.initialize_crawler()
         # Initialize RAG System
-        print("RAG System Initializing...")
-        from RAG.rag import RAGSystem
-        self.rag_system = RAGSystem()
+        self.initialize_rag(directory_path=None)
 
+    def initialize_crawler(self):
+        # Initialize Crawler    
+        if not self.crawler_process:
+            print("Crawler Initializing...")
+            from Crawler.crawler import Spider
+            from scrapy.crawler import CrawlerProcess
+            self.crawler_process = CrawlerProcess({
+                'LOG_ENABLED': True,
+                'LOG_LEVEL': 'ERROR',
+                'ROBOTSTXT_OBEY': True,
+                'CONCURRENT_REQUESTS_PER_DOMAIN': 2,
+                'DOWNLOAD_DELAY': 1,
+                'DOWNLOAD_TIMEOUT': 10
+            })
+
+    def initialize_rag(self, directory_path: str=None):
+        # Initialize RAG System
+        if not self.rag_system:
+            print("RAG System Initializing...")
+            from RAG.rag import RAGSystem
+            self.rag_system = RAGSystem()
+        if directory_path:
+            self.rag_system.initialize(directory_path=directory_path)
+
+    """
+    **********************
+    *** Main Functions ***
+    **********************
+    """
     @staticmethod
     def get_company_name_from_url(web_url: str):
         """
