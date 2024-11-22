@@ -1,4 +1,6 @@
 import tldextract
+from Crawler.crawler import Spider
+from scrapy.crawler import CrawlerProcess
 
 class UTAWeb:
     def __init__(self, initializing=False):
@@ -23,8 +25,6 @@ class UTAWeb:
         # Initialize Crawler    
         if not self.crawler_process:
             print("Crawler Initializing...")
-            from Crawler.crawler import Spider
-            from scrapy.crawler import CrawlerProcess
             self.crawler_process = CrawlerProcess({
                 'LOG_ENABLED': True,
                 'LOG_LEVEL': 'ERROR',
@@ -75,20 +75,12 @@ class UTAWeb:
             None: Crawled content is saved to disk in ./output/{company_name}
         """
         company_name = self.get_company_name_from_url(web_url) if company_name is None else company_name
-        if not self.crawler_process:
-            print("Crawler Initializing...")
-            from Crawler.crawler import Spider
-            from scrapy.crawler import CrawlerProcess
-            self.crawler_process = CrawlerProcess({
-                'LOG_ENABLED': True,
-                'LOG_LEVEL': 'ERROR',
-                'ROBOTSTXT_OBEY': True,
-                'CONCURRENT_REQUESTS_PER_DOMAIN': 2,
-                'DOWNLOAD_DELAY': 1,
-                'DOWNLOAD_TIMEOUT': 10
-            })
+        self.initialize_crawler()
         self.crawler_process.crawl(Spider, start_urls=[web_url], company_name=company_name, domain_limit=domain_limit)
         self.crawler_process.start()
+
+    def query_web(self, web_url: str, company_name=None):
+        pass
 
     def query_web_test(self, web_url: str, company_name=None):
         """
@@ -100,13 +92,7 @@ class UTAWeb:
             None: Runs continuous query loop until 'quit' is entered
         """
         company_name = self.get_company_name_from_url(web_url) if company_name is None else company_name
-        if not self.rag_system:
-            print("RAG System Initializing...")
-            from RAG.rag import RAGSystem
-            self.rag_system = RAGSystem()
-            self.rag_system.initialize(
-                directory_path=f"./output/{company_name}"
-            )
+        self.initialize_rag(directory_path=f"./output/{company_name}")
         print(f'Welcome to the {web_url}!')
         while True:
             print("\n\n*************************\n")
