@@ -1,7 +1,28 @@
 class UTAWeb:
-    def __init__(self):
+    def __init__(self, initializing=False):
         self.rag_system = None
         self.crawler_process = None
+
+        if initializing:
+            self.initialize()
+
+    def initialize(self):
+        # Initialize Crawler
+        print("Crawler Initializing...")
+        from Crawler.crawler import Spider
+        from scrapy.crawler import CrawlerProcess
+        self.crawler_process = CrawlerProcess({
+            'LOG_ENABLED': True,
+            'LOG_LEVEL': 'ERROR',
+            'ROBOTSTXT_OBEY': True,
+            'CONCURRENT_REQUESTS_PER_DOMAIN': 2,
+            'DOWNLOAD_DELAY': 1,
+            'DOWNLOAD_TIMEOUT': 10
+        })
+        # Initialize RAG System
+        print("RAG System Initializing...")
+        from RAG.rag import RAGSystem
+        self.rag_system = RAGSystem()
 
     def crawl_web(self, web_urls: list[str], company_name: str, domain_limit: str):
         """
