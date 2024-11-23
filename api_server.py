@@ -6,25 +6,27 @@ import urllib.parse
 app = Flask(__name__)
 CORS(app)
 
-utaweb = UTAWeb(initializing=True)
+utaweb = UTAWeb(initializing=False)
 
 @app.route('/crawl', methods=['POST'])
 def crawl():
+    print(request.json)
     data = request.json
-    url = data['url']
-    domain = urllib.parse.urlparse(url).netloc
-    company_name = domain.split('.')[1]  # Simple way to get company name from domain
-    
+    web_url = data['web_url']
+    if web_url == '':
+        return jsonify({"status": "error", "message": "Web URL is empty"})
+
+    company_name = data['company_name'] if data['company_name'] != '' else None
+    domain_limit = data['domain_limit'] if data['domain_limit'] != '' else None
     utaweb.crawl_web(
-        web_urls=[url],
+        web_url=web_url,
         company_name=company_name,
-        domain_limit=url
+        domain_limit=domain_limit
     )
     return jsonify({"status": "success"})
 
 @app.route('/query', methods=['POST'])
 def query():
-    print(request)
     print(request.json)
     data = request.json
     result = utaweb.query_web(query=data['query'], web_url=data['web_url'])

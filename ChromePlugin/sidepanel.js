@@ -4,11 +4,12 @@ $(document).ready(function() {
     const $responseDiv = $('#response');
     const $queryInput = $('#queryInput');
     const $welcomeMessage = $('.welcome-msg');
+    let currentUrl = '';
 
     // Get current tab URL
     chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-        const currentUrl = tabs[0].url;
-        $('#currentUrl').text(currentUrl);
+        currentUrl = tabs[0].url;
+        console.log(currentUrl);
     });
 
     // Add message to response area
@@ -34,18 +35,18 @@ $(document).ready(function() {
     // Crawl button handler
     $crawlButton.on('click', async function() {
         try {
-            $crawlButton.prop('disabled', true)
-                       .html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Crawling...');
-            
+            console.log(currentUrl);
+            $crawlButton.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Crawling...');
             const response = await $.ajax({
                 url: 'http://localhost:7777/crawl',
                 method: 'POST',
                 contentType: 'application/json',
                 data: JSON.stringify({
-                    url: $('#currentUrl').text()
+                    web_url: currentUrl,
+                    company_name: '',
+                    domain_limit: ''
                 })
             });
-            
             addMessage('Crawling completed successfully! You can now ask questions about this website.');
         } catch (error) {
             addMessage(`Error during crawling: ${error.message}`);

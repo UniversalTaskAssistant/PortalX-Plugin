@@ -3,7 +3,7 @@
   "name": "UTA - Website Tailored Assistant",
   "version": "1.0",
   "description": "Web assistant for querying website content using UTAWeb",
-  "permissions": ["activeTab", "scripting", "sidePanel"],
+  "permissions": ["activeTab", "scripting", "sidePanel", "tabs"],
   "side_panel": {
     "default_path": "sidepanel.html"
   },
