@@ -2,11 +2,21 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from UTAWeb import UTAWeb
 import urllib.parse
+from multiprocessing import Process
+import os
 
 app = Flask(__name__)
 CORS(app)
 
 utaweb = UTAWeb(initializing=False)
+
+def crawl_process(web_url, company_name, domain_limit):
+    utaweb_instance = UTAWeb(initializing=False)
+    utaweb_instance.crawl_web(
+        web_url=web_url,
+        company_name=company_name,
+        domain_limit=domain_limit
+    )
 
 @app.route('/crawl', methods=['POST'])
 def crawl():
@@ -18,12 +28,13 @@ def crawl():
 
     company_name = data['company_name'] if data['company_name'] != '' else None
     domain_limit = data['domain_limit'] if data['domain_limit'] != '' else None
-    utaweb.crawl_web(
-        web_url=web_url,
-        company_name=company_name,
-        domain_limit=domain_limit
+    
+    process = Process(
+        target=crawl_process,
+        args=(web_url, company_name, domain_limit)
     )
-    return jsonify({"status": "success"})
+    process.start()
+    return jsonify({"status": "success", "message": "Crawling started in background"})
 
 @app.route('/query', methods=['POST'])
 def query():
