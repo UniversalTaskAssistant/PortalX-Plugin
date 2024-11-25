@@ -206,22 +206,16 @@ textarea:focus {
 
 /* Input section styling */
 .input-section {
-    background-color: #fff;
-    border-radius: 1rem !important;
-    margin-bottom: 1rem; /* Add bottom margin to prevent overflow */
+    background-color: transparent;
 }
 
-.input-section .card-body {
-    padding: 1.25rem; /* Consistent padding */
+#response {
+    background-color: transparent;
 }
 
-/* Adjust spacing for sections */
-.analyze-section {
-    margin-bottom: 1rem;
-}
-
-.divider {
-    margin: 1rem 0;
+/* Adjust spacing */
+.input-section .p-3 {
+    padding: 1.25rem;
 }
 
 /* Button styling */
