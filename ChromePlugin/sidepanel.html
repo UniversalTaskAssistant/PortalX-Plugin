@@ -9,32 +9,54 @@
 </head>
 <body class="bg-light">
     <div class="d-flex flex-column vh-100">
-        <!-- Main Content -->
-        <div class="flex-grow-1 d-flex flex-column p-2">
-            <!-- Response Area -->
-            <div class="flex-grow-1 card mb-3 border-0 shadow-sm">
-                <div class="card-body overflow-auto" id="response">
-                    <div class="welcome-msg text-center py-5">
-                        <img src="img/logo2.png" alt="Logo" class="me-2" style="width: 24px; height: 24px;">
-                        <h5 class="text-muted">Ask me anything about this website</h5>
-                        <p class="text-secondary small">I'll analyze the content and help you find what you need</p>
+        <!-- Tab Navigation -->
+        <ul class="nav nav-tabs px-2 pt-2 w-100">
+            <li class="nav-item w-50">
+                <a class="nav-link active text-center" id="chat-tab" data-bs-toggle="tab" href="#chat-content">Current Chat</a>
+            </li>
+            <li class="nav-item w-50">
+                <a class="nav-link text-center" id="history-tab" data-bs-toggle="tab" href="#history-content">Websites</a>
+            </li>
+        </ul>
+
+        <!-- Tab Content -->
+        <div class="tab-content flex-grow-1 d-flex flex-column p-2">
+            <!-- Chat Tab -->
+            <div class="tab-pane fade show active flex-grow-1 d-flex flex-column" id="chat-content">
+                <!-- Response Area -->
+                <div class="flex-grow-1 card mb-3 border-0 shadow-sm">
+                    <div class="card-body overflow-auto" id="response">
+                        <div class="welcome-msg text-center py-5">
+                            <img src="img/logo2.png" alt="Logo" class="me-2" style="width: 24px; height: 24px;">
+                            <h5 class="text-muted">Ask me anything about this website</h5>
+                            <p class="text-secondary small">I'll analyze the content and help you find what you need</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Input Area -->
+                <div class="mt-auto">
+                    <button id="crawlButton" class="btn btn-primary w-100 mb-3 shadow-sm">
+                        <i class="bi bi-columns-gap me-2"></i>Analyze This Website
+                    </button>
+                    
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body p-2">
+                            <textarea id="queryInput" class="form-control border-0 mb-2" 
+                                    rows="3" placeholder="Type your question here..."></textarea>
+                            <button id="queryButton" class="btn btn-primary w-100">
+                                <i class="bi bi-send-fill me-2"></i>Send Question
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Input Area -->
-            <div class="mt-auto">
-                <button id="crawlButton" class="btn btn-primary w-100 mb-3 shadow-sm">
-                    <i class="bi bi-columns-gap me-2"></i>Analyze This Website
-                </button>
-                
-                <div class="card border-0 shadow-sm">
-                    <div class="card-body p-2">
-                        <textarea id="queryInput" class="form-control border-0 mb-2" 
-                                rows="3" placeholder="Type your question here..."></textarea>
-                        <button id="queryButton" class="btn btn-primary w-100">
-                            <i class="bi bi-send-fill me-2"></i>Send Question
-                        </button>
+            <!-- History Tab -->
+            <div class="tab-pane fade flex-grow-1" id="history-content">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body overflow-auto" id="history-list">
+                        <!-- History items will be populated by JavaScript -->
                     </div>
                 </div>
             </div>
