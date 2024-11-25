@@ -325,19 +325,52 @@ textarea:focus {
 /* Website entry styling */
 .website-entry {
     background-color: white;
-    border-radius: 12px;
-    padding: 1rem;
-    margin-bottom: 1rem;
-    transition: all 0.2s ease;
+    border-radius: 16px;
+    padding: 1.25rem;
+    margin-bottom: 1.25rem;
+    transition: all 0.3s ease;
     cursor: pointer;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    border: 1px solid rgba(0,0,0,0.08);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    border: 1px solid rgba(0,0,0,0.06);
 }
 
 .website-entry:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(202, 107, 229, 0.15);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(202, 107, 229, 0.15);
     border-color: var(--primary-color);
+}
+
+.website-entry h6 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #2d3436;
+    margin-bottom: 0.5rem;
+}
+
+.website-entry .url-text {
+    color: #636e72;
+    font-size: 0.85rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+    display: block;
+}
+
+.website-entry .badge {
+    font-size: 0.75rem;
+    padding: 0.4em 0.8em;
+    font-weight: 500;
+    border-radius: 6px;
+}
+
+.website-entry .badge.bg-success {
+    background-color: #00b894 !important;
+}
+
+.website-entry .stats-text {
+    color: #636e72;
+    font-size: 0.85rem;
 }
 
 /* Remove the old border-bottom style */
