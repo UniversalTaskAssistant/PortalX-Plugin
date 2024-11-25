@@ -36,15 +36,31 @@
 
                 <!-- Input Area -->
                 <div class="mt-auto">
-                    <button id="crawlButton" class="btn btn-primary w-100 mb-3 shadow-sm">
-                        <i class="bi bi-columns-gap me-2"></i>Analyze This Website
-                    </button>
-                    
-                    <div class="card border-0 shadow-sm">
-                        <div class="card-body p-2">
+                    <div class="input-section card border-0 shadow-sm">
+                        <div class="card-body p-3">
+                            <!-- Analysis Section -->
+                            <div class="analyze-section mb-3">
+                                <div class="d-flex align-items-center mb-2">
+                                    <div class="flex-grow-1 border-bottom"></div>
+                                    <div class="px-3 text-muted small text-uppercase">Website Analysis</div>
+                                    <div class="flex-grow-1 border-bottom"></div>
+                                </div>
+                                <button id="crawlButton" class="btn btn-outline-primary w-100 rounded-3">
+                                    <i class="bi bi-radar me-2"></i>Analyze This Website
+                                </button>
+                            </div>
+
+                            <!-- Divider -->
+                            <div class="d-flex align-items-center my-3">
+                                <div class="flex-grow-1 border-bottom"></div>
+                                <div class="px-3 text-muted small text-uppercase">Ask Questions</div>
+                                <div class="flex-grow-1 border-bottom"></div>
+                            </div>
+
+                            <!-- Query Section -->
                             <textarea id="queryInput" class="form-control border-0 mb-2" 
                                     rows="3" placeholder="Type your question here..."></textarea>
-                            <button id="queryButton" class="btn btn-primary w-100">
+                            <button id="queryButton" class="btn btn-primary w-100 rounded-3">
                                 <i class="bi bi-send-fill me-2"></i>Send Question
                             </button>
                         </div>

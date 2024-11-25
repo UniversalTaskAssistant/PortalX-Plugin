@@ -115,11 +115,11 @@ textarea:focus {
     margin: 0 2px;
 } 
 
-/* Response area scrolling */
+/* Response area scrolling - adjust height to leave more space for input */
 #response, #history-list {
     overflow-y: auto;
     overflow-x: hidden;
-    height: calc(100vh - 280px);
+    height: calc(100vh - 375px); /* Increased space for input area */
     padding-right: 0.5rem;
     scrollbar-width: thin;
     scroll-behavior: smooth;
@@ -202,5 +202,83 @@ textarea:focus {
 /* Tab panes */
 .tab-pane {
     height: 100%;
+}
+
+/* Input section styling */
+.input-section {
+    background-color: #fff;
+    border-radius: 1rem !important;
+    margin-bottom: 1rem; /* Add bottom margin to prevent overflow */
+}
+
+.input-section .card-body {
+    padding: 1.25rem; /* Consistent padding */
+}
+
+/* Adjust spacing for sections */
+.analyze-section {
+    margin-bottom: 1rem;
+}
+
+.divider {
+    margin: 1rem 0;
+}
+
+/* Button styling */
+#crawlButton {
+    padding: 0.8rem;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+    transition: all 0.3s ease;
+    border: 1.5px solid var(--primary-color);
+    color: var(--primary-color);
+    height: 45px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#crawlButton:hover {
+    background-color: var(--primary-light);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(202, 107, 229, 0.15);
+}
+
+#queryButton {
+    padding: 0.8rem;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+    transition: all 0.3s ease;
+    height: 45px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#queryButton:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(202, 107, 229, 0.2);
+}
+
+/* Textarea styling */
+#queryInput {
+    background-color: #f8f9fa;
+    border-radius: 0.8rem;
+    padding: 0.8rem;
+    resize: none;
+    transition: all 0.3s ease;
+    height: 80px; /* Fixed height instead of rows */
+}
+
+#queryInput:focus {
+    background-color: #fff;
+    box-shadow: 0 0 0 2px var(--primary-light) !important;
+}
+
+/* Section headers */
+.text-uppercase {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #6c757d !important;
 }
   
