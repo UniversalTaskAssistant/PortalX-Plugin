@@ -196,15 +196,36 @@ textarea:focus {
 /* Tab content container */
 .tab-content {
     height: calc(100vh - 56px);
-    display: flex;
+    overflow: hidden;
+}
+
+/* Tab panes */
+.tab-pane {
+    height: 100%;
+    display: none;  /* Hide by default */
+}
+
+.tab-pane.active {
+    display: flex;  /* Show when active */
     flex-direction: column;
 }
 
 /* Chat content */
 #chat-content {
-    display: flex;
-    flex-direction: column;
     height: 100%;
+}
+
+/* History content */
+#history-content {
+    height: 100%;
+}
+
+/* History list */
+#history-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem;
+    background-color: #f8f9fa;
 }
 
 /* Response area */
@@ -213,15 +234,6 @@ textarea:focus {
     overflow-y: auto;
     overflow-x: hidden;
     padding-right: 0.5rem;
-    scrollbar-width: thin;
-    scroll-behavior: smooth;
-}
-
-/* History list */
-#history-list {
-    height: 100%;
-    overflow-y: auto;
-    padding: 1rem;
 }
 
 /* Input section */
@@ -300,18 +312,25 @@ textarea:focus {
 
 /* Website entry styling */
 .website-entry {
-    transition: background-color 0.2s ease;
+    background-color: white;
+    border-radius: 12px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    transition: all 0.2s ease;
     cursor: pointer;
-    padding: 0.75rem 1rem;
-    border-bottom: 1px solid rgba(0,0,0,0.1);
-}
-
-.website-entry:last-child {
-    border-bottom: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    border: 1px solid rgba(0,0,0,0.08);
 }
 
 .website-entry:hover {
-    background-color: var(--primary-light);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(202, 107, 229, 0.15);
+    border-color: var(--primary-color);
+}
+
+/* Remove the old border-bottom style */
+.website-entry:last-child {
+    margin-bottom: 0;
 }
 
 .website-entry .badge {
