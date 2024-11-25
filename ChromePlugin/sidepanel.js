@@ -65,9 +65,11 @@ $(document).ready(function() {
         }
         
         try {
-            $queryButton.prop('disabled', true);
+            // Update loading state
+            $queryButton.prop('disabled', true)
+                       .addClass('loading')
+                       .html('<span class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></span>');
             $queryInput.prop('disabled', true);
-            $queryButton.html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Processing...');
             
             // Add user question to chat
             addMessage(query, true);
@@ -87,9 +89,11 @@ $(document).ready(function() {
         } catch (error) {
             addMessage(`Error getting response: ${error.message}`);
         } finally {
-            $queryButton.prop('disabled', false);
+            // Reset button state
+            $queryButton.prop('disabled', false)
+                       .removeClass('loading')
+                       .html('<i class="bi bi-send-fill"></i>');
             $queryInput.prop('disabled', false);
-            $queryButton.html('<i class="bi bi-send-fill me-2"></i>Send Question');
         }
     });
 

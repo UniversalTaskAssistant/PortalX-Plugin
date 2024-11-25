@@ -250,6 +250,7 @@ textarea:focus {
 
 /* Input section */
 .input-section {
+    position: relative;
     background-color: transparent;
     padding: 0.5rem 1rem;
 }
@@ -282,19 +283,29 @@ textarea:focus {
 }
 
 #queryButton {
-    padding: 0.8rem;
-    font-weight: 500;
-    letter-spacing: 0.3px;
-    transition: all 0.3s ease;
-    height: 45px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    position: absolute;
+    right: 20px;
+    bottom: 35px;
+    width: auto !important;
+    padding: 8px !important;
+    height: auto !important;
+    background: transparent !important;
+    border: none !important;
+    color: var(--primary-color) !important;
+    box-shadow: none !important;
 }
 
 #queryButton:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(202, 107, 229, 0.2);
+    transform: translateY(0) !important;
+    color: var(--primary-dark) !important;
+}
+
+#queryButton i {
+    margin: 0 !important;
+}
+
+#queryButton span {
+    display: none;
 }
 
 /* Textarea styling */
@@ -307,6 +318,7 @@ textarea:focus {
     transition: all 0.3s ease;
     height: 80px;
     margin-bottom: 20px;
+    padding-right: 60px !important;
 }
 
 #queryInput:focus {
@@ -440,5 +452,27 @@ textarea:focus {
     color: var(--primary-color) !important;
     font-weight: 500;
     letter-spacing: 0.5px;
+}
+
+/* Add these styles for the loading state */
+#queryButton .spinner-border {
+    width: 1.2rem;
+    height: 1.2rem;
+    border-width: 2px;
+    display: none;  /* Hidden by default */
+}
+
+#queryButton.loading .bi-send-fill {
+    display: none;  /* Hide the send icon when loading */
+}
+
+#queryButton.loading .spinner-border {
+    display: inline-block;  /* Show spinner when loading */
+}
+
+/* Adjust the disabled state */
+#queryButton:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
 }
   
