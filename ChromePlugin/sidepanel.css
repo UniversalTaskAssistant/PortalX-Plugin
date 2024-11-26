@@ -221,6 +221,7 @@ textarea:focus {
     box-shadow: 0 2px 10px rgba(0,0,0,0.05);
     margin: 0 0.5rem 0.5rem 0.5rem;
     padding: 0.5rem;
+    padding-bottom: 0;
 }
 
 /* History content */
@@ -262,6 +263,11 @@ textarea:focus {
     padding: 0;
 }
 
+/* Query section */
+.query-section {
+    position: relative;
+}
+
 /* Button styling */
 #crawlButton {
     padding: 0.8rem;
@@ -284,8 +290,8 @@ textarea:focus {
 
 #queryButton {
     position: absolute;
-    right: 20px;
-    bottom: 35px;
+    right: 10px;
+    bottom: 5px;
     width: auto !important;
     padding: 8px !important;
     height: auto !important;
@@ -316,8 +322,7 @@ textarea:focus {
     padding: 0.8rem;
     resize: none;
     transition: all 0.3s ease;
-    height: 80px;
-    margin-bottom: 20px;
+    height: 100px;
     padding-right: 60px !important;
 }
 
