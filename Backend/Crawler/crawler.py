@@ -4,6 +4,7 @@ from bs4 import BeautifulSoup
 from urllib.parse import urlparse
 import json
 import os
+from os.path import join as pjoin
 from datetime import datetime
 from urllib.parse import urlparse, quote
 import base64
@@ -18,7 +19,7 @@ class Spider(scrapy.Spider):
     """
     name = 'UTASpider'
     
-    def __init__(self, start_urls=['https://www.bmw.com/en-au/index.html'], company_name='bmw', domain_limit=None,
+    def __init__(self, output_dir, start_urls=['https://www.bmw.com/en-au/index.html'], company_name='bmw', domain_limit=None,
                   *args, **kwargs):
         super(Spider, self).__init__(*args, **kwargs)
         self.name = company_name
@@ -35,7 +36,7 @@ class Spider(scrapy.Spider):
         self.all_urls = set()
 
         self.timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-        self.output_dir = f'output/{self.company_name}'
+        self.output_dir = pjoin(output_dir, self.company_name)
         os.makedirs(self.output_dir, exist_ok=True)
 
     """

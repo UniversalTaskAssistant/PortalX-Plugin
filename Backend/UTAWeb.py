@@ -1,12 +1,14 @@
 import tldextract
+from os.path import join as pjoin
 from Crawler.crawler import Spider
 from scrapy.crawler import CrawlerProcess
 
 class UTAWeb:
-    def __init__(self, initializing=False):
+    def __init__(self, initializing=False, data_dir=None):
         self.rag_system = None
         self.crawler_process = None
 
+        self.data_dir = data_dir if data_dir is not None else "./Output/websites"
         if initializing:
             self.initialize()
 
@@ -72,11 +74,11 @@ class UTAWeb:
             company_name (str): Name of company for organizing output
             domain_limit (str): Domain restriction for crawler (None for unrestricted)
         Returns:
-            None: Crawled content is saved to disk in ./output/{company_name}
+            None: Crawled content is saved to disk in ./Output/websites/{company_name}
         """
         company_name = self.get_company_name_from_url(web_url) if company_name is None else company_name
         self.initialize_crawler()
-        self.crawler_process.crawl(Spider, start_urls=[web_url], company_name=company_name, domain_limit=domain_limit)
+        self.crawler_process.crawl(Spider, output_dir=self.data_dir, start_urls=[web_url], company_name=company_name, domain_limit=domain_limit)
         self.crawler_process.start()
 
     def query_web(self, query: str, web_url: str, company_name=None):
@@ -90,7 +92,7 @@ class UTAWeb:
             str: Formatted response from RAG system
         """
         company_name = self.get_company_name_from_url(web_url) if company_name is None else company_name
-        self.initialize_rag(directory_path=f"./output/{company_name}")
+        self.initialize_rag(directory_path=pjoin(self.data_dir, company_name))
         result = self.rag_system.query(query)
         formatted_response = self.rag_system.format_response(result)
         print(formatted_response)
@@ -106,7 +108,7 @@ class UTAWeb:
             None: Runs continuous query loop until 'quit' is entered
         """
         company_name = self.get_company_name_from_url(web_url) if company_name is None else company_name
-        self.initialize_rag(directory_path=f"./output/{company_name}")
+        self.initialize_rag(directory_path=pjoin(self.data_dir, company_name))
         print(f'Welcome to the {web_url}!')
         while True:
             print("\n\n*************************\n")
@@ -124,7 +126,7 @@ if __name__ == "__main__":
     company_name = 'tum'
     domain_limit = 'https://www.tum.de/en/' # None or specific domain, such as 'www.bmw.com/en-au'
 
-    # utaweb.crawl_web(web_url=web_url, company_name=None, domain_limit=None)
+    utaweb.crawl_web(web_url=web_url, company_name=None, domain_limit=None)
     # utaweb.query_web(query="What is the name of the university?", web_url=web_url)
-    utaweb.query_web_test(web_url=web_url, company_name=company_name)
+    # utaweb.query_web_test(web_url=web_url, company_name=company_name)
 
