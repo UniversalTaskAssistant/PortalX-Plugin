@@ -79,6 +79,7 @@ $(document).ready(function() {
                 method: 'POST',
                 contentType: 'application/json',
                 data: JSON.stringify({
+                    conversation_id: 'test1',
                     query: query,
                     web_url: 'https://www.tum.de/en/'
                 })
