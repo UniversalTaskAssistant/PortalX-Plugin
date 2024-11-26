@@ -6,16 +6,25 @@ from multiprocessing import Process
 # Add Backend directory directly
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'Backend'))
 
-from Backend.UTAWeb import UTAWeb  #
+from Backend.UTAWeb import UTAWeb
 from System.conversation import Conversation
+from System.user import User
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, resources={
+    r"/*": {
+        "origins": ["chrome-extension://ocjcneogfgoccopmmjdjhleafgpjfelp"],
+        "methods": ["GET", "POST"],
+        "allow_headers": ["Content-Type"]
+    }
+})
 
-utaweb = UTAWeb(initializing=True)
+# Create singleton UTAWeb instance for rag system
+utaweb = UTAWeb(initializing=True, data_dir="./Output/websites")
 
 def crawl_process(web_url, company_name, domain_limit):
-    utaweb_instance = UTAWeb(initializing=False)
+    # Create temporary UTAWeb instance for crawler process
+    utaweb_instance = UTAWeb(data_dir="./Output/websites")
     utaweb_instance.crawl_web(
         web_url=web_url,
         company_name=company_name,
@@ -30,8 +39,12 @@ def crawl():
     if web_url == '':
         return jsonify({"status": "error", "message": "Web URL is empty"})
 
+    # Init user with proper directory structure
+    user = User(user_id=data['user_id'])
+    # Get info
     company_name = data['company_name'] if data['company_name'] != '' else None
     domain_limit = data['domain_limit'] if data['domain_limit'] != '' else None
+    # Start crawl process
     process = Process(
         target=crawl_process,
         args=(web_url, company_name, domain_limit)
@@ -44,8 +57,10 @@ def query():
     print(request.json)
     data = request.json
     result = utaweb.query_web(query=data['query'], web_url=data['web_url'])
+    # Init user
+    user = User(user_id=data['user_id'])
     # Save conversation
-    conv = Conversation(conversation_id=data['conversation_id'], data_dir="./Output/chat")
+    conv = Conversation(conversation_id=data['conversation_id'], data_dir=user.chat_dir)
     conv.append_conversation(role="user", content=data['query'])
     conv.append_conversation(role="assistant", content=result)
     conv.save_conversation()
