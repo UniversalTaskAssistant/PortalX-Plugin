@@ -8,7 +8,7 @@
 /dataSources.local.xml
 output/*
 .idea/
-/RAG/openaikey.txt
 */__pycache__/*
 __pycache__/*
 .ipynb_checkpoints/*
+/Backend/RAG/openaikey.txt

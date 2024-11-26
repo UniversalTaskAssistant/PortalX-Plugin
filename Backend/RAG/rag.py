@@ -2,6 +2,7 @@ from llama_index.core import VectorStoreIndex, SimpleDirectoryReader, Settings
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 from llama_index.llms.openai import OpenAI
 import os
+import sys
 from typing import Dict, Any
 
 class RAGSystem:
@@ -9,7 +10,10 @@ class RAGSystem:
         """
         Initialize RAG system with empty components.
         """
-        self.openai_api_key = open('rag/openaikey.txt', 'r').read().strip()
+        if 'Backend' in sys.path[-1]:
+            self.openai_api_key = open(os.path.join(sys.path[-1], 'RAG/openaikey.txt'), 'r').read().strip()
+        else:
+            self.openai_api_key = open('RAG/openaikey.txt', 'r').read().strip()
 
         # Initialize embedding model
         self.embed_model = None

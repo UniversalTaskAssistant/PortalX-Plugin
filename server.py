@@ -1,14 +1,17 @@
+import os
+import sys
+# Add Backend directory directly
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'Backend'))
+
+from Backend.UTAWeb import UTAWeb  #
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from B import UTAWeb
-import urllib.parse
 from multiprocessing import Process
-import os
 
 app = Flask(__name__)
 CORS(app)
 
-utaweb = UTAWeb(initializing=False)
+utaweb = UTAWeb(initializing=True)
 
 def crawl_process(web_url, company_name, domain_limit):
     utaweb_instance = UTAWeb(initializing=False)
