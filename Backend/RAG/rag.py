@@ -13,7 +13,7 @@ class RAGSystem:
         if 'Backend' in sys.path[-1]:
             self.openai_api_key = open(os.path.join(sys.path[-1], 'RAG/openaikey.txt'), 'r').read().strip()
         else:
-            self.openai_api_key = open('RAG/openaikey.txt', 'r').read().strip()
+            self.openai_api_key = open('Backend/RAG/openaikey.txt', 'r').read().strip()
 
         self.current_directory_path = None  # Path to the currently loaded directory
 
@@ -134,10 +134,10 @@ class RAGSystem:
 if __name__ == "__main__":
     rag = RAGSystem()
     rag.initialize(
-        directory_path="./output/bmw-au"
+        directory_path="./Output/websites/tum"
     )
     
-    print("Welcome to the BMW AU!")
+    print("Welcome!")
     # Example query
     while True:
         question = input("Enter your question:\n")
