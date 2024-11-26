@@ -127,7 +127,7 @@ if __name__ == "__main__":
     company_name = 'tum'
     domain_limit = 'https://www.tum.de/en/' # None or specific domain, such as 'www.bmw.com/en-au'
 
-    utaweb.crawl_web(web_url=web_url, company_name=None, domain_limit=None)
+    # utaweb.crawl_web(web_url=web_url, company_name=company_name, domain_limit=domain_limit)
     # utaweb.query_web(query="What is the name of the university?", web_url=web_url)
-    # utaweb.query_web_test(web_url=web_url, company_name=company_name)
+    utaweb.query_web_test(web_url=web_url, company_name=company_name)
 
