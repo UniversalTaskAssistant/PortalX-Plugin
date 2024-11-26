@@ -42,7 +42,8 @@ class UTAWeb:
             print("RAG System Initializing...")
             from RAG.rag import RAGSystem
             self.rag_system = RAGSystem()
-        if directory_path:
+        # Initialize RAG System if directory path is specified and different from the current directory path
+        if directory_path and self.rag_system.current_directory_path != directory_path:
             self.rag_system.initialize(directory_path=directory_path)
 
     """

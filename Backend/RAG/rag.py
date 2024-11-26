@@ -15,6 +15,8 @@ class RAGSystem:
         else:
             self.openai_api_key = open('RAG/openaikey.txt', 'r').read().strip()
 
+        self.current_directory_path = None  # Path to the currently loaded directory
+
         # Initialize embedding model
         self.embed_model = None
         # Load documents with progress bar
@@ -38,6 +40,8 @@ class RAGSystem:
             chunk_overlap (int): Number of overlapping tokens between chunks
             load_from_disk (bool): Whether to try loading saved index from disk
         """
+        self.current_directory_path = directory_path
+
         # Initialize embedding model
         self.embed_model = HuggingFaceEmbedding(
             model_name=embed_model_name,
