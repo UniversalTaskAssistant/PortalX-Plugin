@@ -480,4 +480,43 @@ textarea:focus {
     opacity: 0.6;
     cursor: not-allowed;
 }
+
+/* Search section styling */
+.search-section {
+    background-color: white;
+}
+
+.search-wrapper {
+    position: relative;
+    margin-bottom: 1rem;
+}
+
+.search-wrapper .search-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #6c757d;
+    font-size: 0.9rem;
+}
+
+#websiteSearch {
+    padding-left: 35px;
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+}
+
+#websiteSearch:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px var(--primary-light);
+}
+
+/* Adjust the history list to account for search bar */
+#history-list {
+    padding: 1rem;
+    height: calc(100% - 70px);  /* Adjust for search bar height */
+    overflow-y: auto;
+}
   
