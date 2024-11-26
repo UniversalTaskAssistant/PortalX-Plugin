@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from UTAWeb import UTAWeb
+from B import UTAWeb
 import urllib.parse
 from multiprocessing import Process
 import os
