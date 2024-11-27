@@ -8,6 +8,7 @@ $(document).ready(function() {
     const $historyConversationsBtn = $('#historyConversationsBtn');
     let currentUrl = '';
     let chatHistory = [];
+    let conversationId = `conv-${Math.random().toString(36).substring(2, 10)}`;
 
     // Get current tab URL
     chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
@@ -20,16 +21,13 @@ $(document).ready(function() {
         if ($welcomeMessage.is(':visible')) {
             $welcomeMessage.hide();
         }
-
         const $messageContainer = $('<div>', {
             class: 'message-container'
         });
-        
         const $messageDiv = $('<div>', {
             class: `message ${isUser ? 'user' : 'assistant'}`,
             text: text
         });
-        
         $messageContainer.append($messageDiv);
         $responseDiv.append($messageContainer);
         $messageDiv[0].scrollIntoView({ behavior: 'smooth' });
@@ -66,7 +64,6 @@ $(document).ready(function() {
             addMessage('Please enter a question', true);
             return;
         }
-        
         try {
             // Update loading state
             $queryButton.prop('disabled', true)
@@ -83,12 +80,11 @@ $(document).ready(function() {
                 contentType: 'application/json',
                 data: JSON.stringify({
                     user_id: 'test1',
-                    conversation_id: 'conv1',
+                    conversation_id: conversationId,
                     query: query,
                     web_url: 'https://www.tum.de/en/'
                 })
             });
-            
             addMessage(response.answer);
             $queryInput.val(''); // Clear input after successful response
         } catch (error) {
@@ -112,6 +108,8 @@ $(document).ready(function() {
 
     // New conversation handler
     $newConversationBtn.on('click', function() {
+        // Generate new conversation ID
+        conversationId = `conv-${Math.random().toString(36).substring(2, 10)}`;
         // Remove only the message containers
         $('.message-container').remove();
         $('.welcome-msg').fadeIn(300);
@@ -131,12 +129,10 @@ $(document).ready(function() {
                     user_id: 'test1'
                 })
             });
-            
             chatHistory = await response.json();
             // Clear and populate the chat history list
             const $chatHistoryList = $('#chatHistoryList');
             $chatHistoryList.empty();
-
             chatHistory.forEach(chat => {
                 // Get the first user message as preview
                 const firstMessage = chat.conversation.find(msg => msg.rule === 'user')?.content || 'Empty conversation';
@@ -150,7 +146,6 @@ $(document).ready(function() {
                 `;
                 $chatHistoryList.append(chatEntry);
             });
-
             // Show the modal
             const chatHistoryModal = new bootstrap.Modal('#chatHistoryModal');
             chatHistoryModal.show();
@@ -166,6 +161,8 @@ $(document).ready(function() {
         // Find the chat in our loaded history
         const selectedChat = chatHistory.find(chat => chat.conversation_id === chatId);
         if (selectedChat) {
+            // Update current conversation ID
+            conversationId = chatId;
             // Clear current messages
             $('.message-container').remove();
             $('.welcome-msg').hide();
