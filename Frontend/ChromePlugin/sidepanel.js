@@ -118,35 +118,47 @@ $(document).ready(function() {
     });
 
     // History conversations handler
-    $historyConversationsBtn.on('click', function() {
-        // Sample data - replace with actual chat history data
-        const chatHistory = [
-            {
-                conversation_id: 1,
-                first_message: 'What are the admission requirements?',
-                timestamp: '2024-11-27 14:00'
-            }
-        ];
+    $historyConversationsBtn.on('click', async function() {
+        try {
+            // Fetch chat history from server
+            const response = await fetch('http://127.0.0.1:7777/get_chat_history', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    user_id: 'test1'
+                })
+            });
+            
+            const chatHistory = await response.json();
+            
+            // Clear and populate the chat history list
+            const $chatHistoryList = $('#chatHistoryList');
+            $chatHistoryList.empty();
 
-        // Clear and populate the chat history list
-        const $chatHistoryList = $('#chatHistoryList');
-        $chatHistoryList.empty();
-
-        chatHistory.forEach(chat => {
-            const chatEntry = `
-                <div class="chat-history-entry p-3" data-chat-id="${chat.id}">
-                    <div class="d-flex justify-content-between align-items-start mb-2">
-                        <span class="preview-text">${chat.first_message}</span>
+            chatHistory.forEach(chat => {
+                // Get the first user message as preview
+                const firstMessage = chat.conversation.find(msg => msg.rule === 'user')?.content || 'Empty conversation';
+                
+                const chatEntry = `
+                    <div class="chat-history-entry p-3" data-chat-id="${chat.conversation_id}">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <span class="preview-text">${firstMessage}</span>
+                        </div>
+                        <small class="text-muted">${chat.timestamp}</small>
                     </div>
-                    <small class="text-muted">${chat.timestamp}</small>
-                </div>
-            `;
-            $chatHistoryList.append(chatEntry);
-        });
+                `;
+                $chatHistoryList.append(chatEntry);
+            });
 
-        // Show the modal
-        const chatHistoryModal = new bootstrap.Modal('#chatHistoryModal');
-        chatHistoryModal.show();
+            // Show the modal
+            const chatHistoryModal = new bootstrap.Modal('#chatHistoryModal');
+            chatHistoryModal.show();
+        } catch (error) {
+            console.error('Error fetching chat history:', error);
+            // Handle error appropriately
+        }
     });
 
     // Handle chat history entry click

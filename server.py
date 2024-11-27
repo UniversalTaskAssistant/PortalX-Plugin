@@ -3,6 +3,8 @@ import sys
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from multiprocessing import Process
+import glob
+import json
 # Add Backend directory directly
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'Backend'))
 
@@ -18,6 +20,28 @@ CORS(app, resources={
         "allow_headers": ["Content-Type"]
     }
 })
+
+@app.route('/get_chat_history', methods=['POST'])
+def get_chat_history():
+    """
+    Get chat history for a user
+    Return:
+        chat_history: List of chat history sorted by timestamp, newest first
+    """
+    data = request.json
+    # Load all conversation files
+    chat_files = glob.glob(f'Output/users/{data["user_id"]}/chats/*.json')
+    chat_history = []
+    for file_path in chat_files:
+        try:
+            with open(file_path, 'r') as f:
+                chat_data = json.load(f)
+                chat_history.append(chat_data)
+        except Exception as e:
+            print(f"Error reading chat file {file_path}: {e}")
+    # Sort by timestamp, newest first
+    chat_history.sort(key=lambda x: x['timestamp'], reverse=True)
+    return jsonify(chat_history)
 
 # Create singleton UTAWeb instance for rag system
 utaweb = UTAWeb(initializing=True, data_dir="./Output/websites")

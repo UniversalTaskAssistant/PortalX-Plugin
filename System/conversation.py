@@ -21,7 +21,7 @@ class Conversation:
 
     def append_conversation(self, role: str, content: str):
         self.conversation.append({"rule": role, "content": content})
-        self.timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        self.timestamp = datetime.now().strftime("%Y-%m-%d %H:%M")
 
     def save_conversation(self):
         data = {"conversation_id": self.conv_id, "timestamp": self.timestamp, "conversation": self.conversation}
