@@ -122,16 +122,9 @@ $(document).ready(function() {
         // Sample data - replace with actual chat history data
         const chatHistory = [
             {
-                id: 1,
-                date: '2024-03-20',
-                preview: 'What are the admission requirements?',
-                time: '2:30 PM'
-            },
-            {
-                id: 2,
-                date: '2024-03-19',
-                preview: 'Tell me about the computer science program',
-                time: '11:45 AM'
+                conversation_id: 1,
+                first_message: 'What are the admission requirements?',
+                timestamp: '2024-11-27 14:00'
             }
         ];
 
@@ -143,10 +136,9 @@ $(document).ready(function() {
             const chatEntry = `
                 <div class="chat-history-entry p-3" data-chat-id="${chat.id}">
                     <div class="d-flex justify-content-between align-items-start mb-2">
-                        <span class="preview-text">${chat.preview}</span>
-                        <small class="text-muted">${chat.time}</small>
+                        <span class="preview-text">${chat.first_message}</span>
                     </div>
-                    <small class="text-muted">${chat.date}</small>
+                    <small class="text-muted">${chat.timestamp}</small>
                 </div>
             `;
             $chatHistoryList.append(chatEntry);
