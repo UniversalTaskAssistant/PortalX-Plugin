@@ -88,6 +88,26 @@ def query():
     conv.save_conversation()
     return jsonify({"answer": result})
 
+@app.route('/get_websites', methods=['GET'])
+def get_websites():
+    """
+    Get list of all crawled websites
+    Return:
+        websites: List of website info sorted by crawl time, newest first
+    """
+    website_files = glob.glob('Output/websites/*/website_info.json')
+    websites = []
+    for file_path in website_files:
+        try:
+            with open(file_path, 'r') as f:
+                website_data = json.load(f)
+                websites.append(website_data)
+        except Exception as e:
+            print(f"Error reading website file {file_path}: {e}")
+    # Sort by crawl time, newest first
+    websites.sort(key=lambda x: x['crawl_time'], reverse=True)
+    return jsonify(websites)
+
 if __name__ == '__main__':
     print("Starting server...")
     app.run(host='127.0.0.1', port=7777, debug=True) 

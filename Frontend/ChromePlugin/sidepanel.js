@@ -174,4 +174,64 @@ $(document).ready(function() {
             $('#chatHistoryModal').modal('hide');
         }
     });
+
+    // Add this function to format the crawl time
+    function formatTimestamp(timestamp) {
+        const date = new Date(timestamp);
+        const now = new Date();
+        const diffInMinutes = Math.floor((now - date) / (1000 * 60));
+        
+        if (diffInMinutes < 1) return 'just now';
+        if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
+        if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes/60)}h ago`;
+        return `${Math.floor(diffInMinutes/1440)}d ago`;
+    }
+
+    // Add this function to update the history list
+    function updateHistoryList() {
+        $.ajax({
+            url: 'http://localhost:7777/get_websites',
+            method: 'GET',
+            success: function(websites) {
+                const $historyList = $('#history-list');
+                // $historyList.empty();
+                
+                websites.forEach(site => {
+                    const websiteEntry = `
+                        <div class="website-entry">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h6 class="mb-0">${site.company_name}</h6>
+                                <small class="text-muted">${formatTimestamp(site.crawl_time)}</small>
+                            </div>
+                            <span class="url-text mb-3">${site.start_urls[0]}</span>
+                            <div class="d-flex align-items-center">
+                                <span class="badge ${site.crawl_finished ? 'bg-success' : 'bg-warning'} me-2">
+                                    ${site.crawl_finished ? 'Analyzed' : 'In Progress'}
+                                </span>
+                                <span class="stats-text">${site.visited_urls.length} pages crawled</span>
+                            </div>
+                        </div>
+                    `;
+                    $historyList.append(websiteEntry);
+                });
+            },
+            error: function(xhr, status, error) {
+                console.error('Error fetching website history:', error);
+            }
+        });
+    }
+
+    // Update history when history tab is shown
+    $('#history-tab').on('shown.bs.tab', function() {
+        updateHistoryList();
+    });
+    
+    // Add search functionality
+    $('#websiteSearch').on('input', function() {
+        const searchTerm = $(this).val().toLowerCase();
+        $('.website-entry').each(function() {
+            const text = $(this).text().toLowerCase();
+            $(this).toggle(text.includes(searchTerm));
+        });
+    });
 }); 
