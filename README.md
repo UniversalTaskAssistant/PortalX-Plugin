@@ -2,7 +2,7 @@
 
 ```
 Output/
-├── websites/              # Website data (shared across users)
+├── websites/             # Website data (shared across users)
 │   ├── company1/
 │   │   ├── raw/          # Raw crawled HTML
 │   │   ├── processed/    # Processed text documents
