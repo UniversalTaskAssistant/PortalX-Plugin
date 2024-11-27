@@ -119,8 +119,48 @@ $(document).ready(function() {
 
     // History conversations handler
     $historyConversationsBtn.on('click', function() {
-        // TODO: Implement conversation history functionality
-        // This would typically open a modal or dropdown with previous conversations
-        alert('Previous conversations feature coming soon!');
+        // Sample data - replace with actual chat history data
+        const chatHistory = [
+            {
+                id: 1,
+                date: '2024-03-20',
+                preview: 'What are the admission requirements?',
+                time: '2:30 PM'
+            },
+            {
+                id: 2,
+                date: '2024-03-19',
+                preview: 'Tell me about the computer science program',
+                time: '11:45 AM'
+            }
+        ];
+
+        // Clear and populate the chat history list
+        const $chatHistoryList = $('#chatHistoryList');
+        $chatHistoryList.empty();
+
+        chatHistory.forEach(chat => {
+            const chatEntry = `
+                <div class="chat-history-entry p-3" data-chat-id="${chat.id}">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <span class="preview-text">${chat.preview}</span>
+                        <small class="text-muted">${chat.time}</small>
+                    </div>
+                    <small class="text-muted">${chat.date}</small>
+                </div>
+            `;
+            $chatHistoryList.append(chatEntry);
+        });
+
+        // Show the modal
+        const chatHistoryModal = new bootstrap.Modal('#chatHistoryModal');
+        chatHistoryModal.show();
+    });
+
+    // Handle chat history entry click
+    $(document).on('click', '.chat-history-entry', function() {
+        const chatId = $(this).data('chat-id');
+        // TODO: Load the selected conversation
+        $('#chatHistoryModal').modal('hide');
     });
 }); 
