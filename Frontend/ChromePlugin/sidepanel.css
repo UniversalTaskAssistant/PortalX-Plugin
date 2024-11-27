@@ -450,7 +450,7 @@ textarea:focus {
 
 /* Divider styling */
 .input-section .d-flex.align-items-center {
-    margin: 1.5rem 0;
+    margin: 0.5rem 0;
 }
 
 .input-section .text-uppercase {
@@ -518,5 +518,31 @@ textarea:focus {
     padding: 1rem;
     height: calc(100% - 70px);  /* Adjust for search bar height */
     overflow-y: auto;
+}
+
+/* Chat action buttons styling */
+.chat-actions .btn-icon {
+    background: transparent;
+    border: none;
+    color: var(--primary-color);
+    padding: 0.5rem;
+    font-size: 1.2rem;
+    line-height: 1;
+    transition: all 0.2s ease;
+}
+
+.chat-actions .btn-icon:hover {
+    color: var(--primary-dark);
+    transform: translateY(-1px);
+}
+
+.chat-actions .btn-icon:active {
+    transform: translateY(0);
+}
+
+/* Remove the old button styling */
+#newConversationBtn {
+    border: none;
+    margin: 0;
 }
   

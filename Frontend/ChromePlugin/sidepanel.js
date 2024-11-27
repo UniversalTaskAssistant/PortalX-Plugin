@@ -4,6 +4,8 @@ $(document).ready(function() {
     const $responseDiv = $('#response');
     const $queryInput = $('#queryInput');
     const $welcomeMessage = $('.welcome-msg');
+    const $newConversationBtn = $('#newConversationBtn');
+    const $historyConversationsBtn = $('#historyConversationsBtn');
     let currentUrl = '';
 
     // Get current tab URL
@@ -105,5 +107,20 @@ $(document).ready(function() {
             e.preventDefault();
             $queryButton.click();
         }
+    });
+
+    // New conversation handler
+    $newConversationBtn.on('click', function() {
+        // Remove only the message containers
+        $('.message-container').remove();
+        $('.welcome-msg').fadeIn(300);
+        $queryInput.val('');
+    });
+
+    // History conversations handler
+    $historyConversationsBtn.on('click', function() {
+        // TODO: Implement conversation history functionality
+        // This would typically open a modal or dropdown with previous conversations
+        alert('Previous conversations feature coming soon!');
     });
 }); 
