@@ -21,6 +21,9 @@ CORS(app, resources={
     }
 })
 
+# Create singleton UTAWeb instance for rag system
+utaweb = UTAWeb(initializing=False, data_dir="./Output/websites")
+
 @app.route('/get_chat_history', methods=['POST'])
 def get_chat_history():
     """
@@ -42,9 +45,6 @@ def get_chat_history():
     # Sort by timestamp, newest first
     chat_history.sort(key=lambda x: x['timestamp'], reverse=True)
     return jsonify(chat_history)
-
-# Create singleton UTAWeb instance for rag system
-utaweb = UTAWeb(initializing=True, data_dir="./Output/websites")
 
 def crawl_process(web_url, company_name, domain_limit):
     # Create temporary UTAWeb instance for crawler process

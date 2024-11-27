@@ -7,6 +7,7 @@ $(document).ready(function() {
     const $newConversationBtn = $('#newConversationBtn');
     const $historyConversationsBtn = $('#historyConversationsBtn');
     let currentUrl = '';
+    let chatHistory = [];
 
     // Get current tab URL
     chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
@@ -131,8 +132,7 @@ $(document).ready(function() {
                 })
             });
             
-            const chatHistory = await response.json();
-            
+            chatHistory = await response.json();
             // Clear and populate the chat history list
             const $chatHistoryList = $('#chatHistoryList');
             $chatHistoryList.empty();
@@ -140,7 +140,6 @@ $(document).ready(function() {
             chatHistory.forEach(chat => {
                 // Get the first user message as preview
                 const firstMessage = chat.conversation.find(msg => msg.rule === 'user')?.content || 'Empty conversation';
-                
                 const chatEntry = `
                     <div class="chat-history-entry p-3" data-chat-id="${chat.conversation_id}">
                         <div class="d-flex justify-content-between align-items-start mb-2">
@@ -164,7 +163,18 @@ $(document).ready(function() {
     // Handle chat history entry click
     $(document).on('click', '.chat-history-entry', function() {
         const chatId = $(this).data('chat-id');
-        // TODO: Load the selected conversation
-        $('#chatHistoryModal').modal('hide');
+        // Find the chat in our loaded history
+        const selectedChat = chatHistory.find(chat => chat.conversation_id === chatId);
+        if (selectedChat) {
+            // Clear current messages
+            $('.message-container').remove();
+            $('.welcome-msg').hide();
+            // Display all messages from the conversation
+            selectedChat.conversation.forEach(msg => {
+                addMessage(msg.content, msg.rule === 'user');
+            });
+            // Close the modal
+            $('#chatHistoryModal').modal('hide');
+        }
     });
 }); 
