@@ -75,13 +75,11 @@ class Spider(scrapy.Spider):
             self.save_page_content(response.url, soup)
             
             # Extract and follow links
-            links = []
             for link in response.css('a::attr(href)').getall():
                 # Ignore page anchor
                 if not self.is_valid_url(link):
                     continue
                 absolute_url = response.urljoin(link)
-                links.append(absolute_url)
                 self.all_urls.add(absolute_url)
                 # Scrape the next page if it's valid
                 if self.should_follow(absolute_url):
@@ -91,8 +89,7 @@ class Spider(scrapy.Spider):
                         cb_kwargs={'depth': depth + 1},
                         errback=self.handle_error
                     )
-            # Save links
-            self.save_links(response.url, links)
+            # Save all links (moved to spider_closed)
             self.save_all_links()
         except Exception as e:
             self.logger.error(f'!!!Error processing {response.url}: {e} !!!')
@@ -285,26 +282,6 @@ class Spider(scrapy.Spider):
         with open(file_path, 'w', encoding='utf-8') as f:
             f.write(str(soup))
         print(f'Saved cleaned HTML to {file_path}')
-
-    def save_links(self, source_url, links):
-        """
-        Saves extracted links from a page to a JSON file.
-        Args:
-            source_url (str): URL where links were found
-            links (list): List of extracted URLs
-        Returns:
-            None
-        """
-        data = {
-            'source_url': source_url,
-            'crawl_time': datetime.now().isoformat(),
-            'links': links
-        }
-        # Get the filename from the URL
-        file_path = f'{self.filename_from_url(source_url)}.json'
-        with open(file_path, 'w', encoding='utf-8') as f:
-            json.dump(data, f, indent=2)
-        print(f'Saved links to {file_path}')
 
     def save_all_links(self):
         """
