@@ -1,5 +1,6 @@
 import scrapy
 from scrapy.crawler import CrawlerProcess
+from scrapy import signals
 from bs4 import BeautifulSoup
 from urllib.parse import urlparse
 import json
@@ -18,27 +19,40 @@ class Spider(scrapy.Spider):
         domain_limit (str): Optional domain restriction for crawling
     """
     name = 'UTASpider'
-    
+
     def __init__(self, output_dir, start_urls=['https://www.bmw.com/en-au/index.html'], company_name='bmw', domain_limit=None,
                   *args, **kwargs):
         super(Spider, self).__init__(*args, **kwargs)
+        # Website info
         self.name = company_name
         self.start_urls = start_urls 
         self.company_name = company_name 
         self.domain_limit = domain_limit
 
+        # Crawling parameters
         self.max_depth = 5
         self.max_urls_per_domain = 1000
 
+        # Crawling state
+        self.crawl_finished = False
         self.domain_urls = {}
         self.visited_urls = set()
         self.failed_urls = set()
         self.all_urls = set()
 
+        # Output
         self.timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
         self.output_dir = pjoin(output_dir, self.company_name)
         os.makedirs(self.output_dir, exist_ok=True)
 
+    @classmethod
+    def from_crawler(cls, crawler, *args, **kwargs):
+        """
+        Connects the spider_closed signal to the spider_closed method
+        """
+        spider = super().from_crawler(crawler, *args, **kwargs)
+        crawler.signals.connect(spider.spider_closed, signal=signals.spider_closed)
+        return spider
     """
     ********************
     *** Main parsing ***
@@ -90,11 +104,20 @@ class Spider(scrapy.Spider):
                         errback=self.handle_error
                     )
             # Save all links (moved to spider_closed)
-            self.save_all_links()
+            self.save_website_info()
         except Exception as e:
             self.logger.error(f'!!!Error processing {response.url}: {e} !!!')
             self.failed_urls.add((response.url, str(e)))
-            self.save_failed_urls()
+
+    def spider_closed(self, spider):
+        """
+        Handler for spider_closed signal to perform cleanup tasks.
+        Args:
+            spider (Spider): The spider instance that was closed
+        """
+        self.crawl_finished = True
+        self.save_website_info()  # Save final state
+        print(f'\n!!! Crawling finished for {self.company_name} !!!\n')
 
     """
     *********************
@@ -229,10 +252,11 @@ class Spider(scrapy.Spider):
         Handles failed requests during crawling.
         Args:
             failure (Failure): The failure object containing error details
-        Returns:
-            None
         """
-        self.logger.error(f'Request failed: {failure.request.url}')
+        failed_url = failure.request.url
+        error_message = str(failure.value)
+        self.failed_urls.add((failed_url, error_message))
+        self.logger.error(f'Request failed: {failed_url}')
 
     """
     *******************
@@ -274,8 +298,6 @@ class Spider(scrapy.Spider):
         Args:
             url (str): Source URL of the content
             soup (BeautifulSoup): Cleaned HTML content
-        Returns:
-            None
         """
         # Get the filename from the URL
         file_path = f'{self.filename_from_url(url)}.html'
@@ -283,49 +305,23 @@ class Spider(scrapy.Spider):
             f.write(str(soup))
         print(f'Saved cleaned HTML to {file_path}')
 
-    def save_all_links(self):
+    def save_website_info(self):
         """
-        Saves all discovered and visited URLs to JSON files.
-        Args:
-            None
-        Returns:
-            None
-        """
-        all_links_data = {
-            'company_name': self.company_name,
-            'crawl_time': datetime.now().isoformat(),
-            'links_count': len(self.all_urls),
-            'links': list(self.all_urls)
-        }
-        visited_urls_data = {
-            'company_name': self.company_name,
-            'crawl_time': datetime.now().isoformat(),
-            'visited_urls_count': len(self.visited_urls),
-            'visited_urls': list(self.visited_urls)
-        }
-        with open(f'{self.output_dir}/all_urls.json', 'w', encoding='utf-8') as f:
-            json.dump(all_links_data, f, indent=2)
-        print(f'Saved all links to {self.output_dir}/all_urls.json')
-        with open(f'{self.output_dir}/visited_urls.json', 'w', encoding='utf-8') as f:
-            json.dump(visited_urls_data, f, indent=2)
-        print(f'Saved visited URLs to {self.output_dir}/visited_urls.json')
-
-    def save_failed_urls(self):
-        """
-        Saves list of failed URLs and their errors to a JSON file.
-        Args:
-            None
-        Returns:
-            None
+        Saves website information to a JSON file.
         """
         data = {
             'company_name': self.company_name,
-            'crawl_time': datetime.now().isoformat(),
+            'start_urls': self.start_urls,
+            'domain_limit': self.domain_limit,
+            'domain_urls': self.domain_urls,
+            'crawl_time': datetime.now().strftime("%Y-%m-%d %H:%M"),
+            'crawl_finished': self.crawl_finished,
+            'visited_urls': list(self.visited_urls),
             'failed_urls': list(self.failed_urls)
         }
-        with open(f'{self.output_dir}/failed_urls.json', 'w', encoding='utf-8') as f:
+        with open(f'{self.output_dir}/website_info.json', 'w', encoding='utf-8') as f:
             json.dump(data, f, indent=2)
-        print(f'Saved failed URLs to {self.output_dir}/failed_urls.json')
+        print(f'Saved website info to {self.output_dir}/website_info.json')
 
 
 if __name__ == "__main__":
