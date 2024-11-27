@@ -1,4 +1,5 @@
 import tldextract
+import os
 from os.path import join as pjoin
 from Crawler.crawler import Spider
 from scrapy.crawler import CrawlerProcess
@@ -70,12 +71,20 @@ class UTAWeb:
             company_name (str): Name of company for organizing output
             domain_limit (str): Domain restriction for crawler (None for unrestricted)
         Returns:
-            None: Crawled content is saved to disk in ./Output/websites/{company_name}
+            str: 'Exist' if company directory exists and contains files, 'Success' if crawling is successful
         """
         company_name = self.get_company_name_from_url(web_url) if company_name is None else company_name
+        company_dir = pjoin(self.data_dir, company_name)
+        
+        # Check if company directory exists and contains files
+        if os.path.exists(company_dir) and os.listdir(company_dir):
+            print(f"\n!!! Website data for {web_url} already exists in {company_dir} !!!\n")
+            return 'Exist'
+        # Initialize crawler and start crawling
         self.initialize_crawler()
         self.crawler_process.crawl(Spider, output_dir=self.data_dir, start_urls=[web_url], company_name=company_name, domain_limit=domain_limit)
         self.crawler_process.start()
+        return 'Success'
 
     def query_web(self, query: str, web_url: str, company_name=None):
         """
