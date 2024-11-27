@@ -39,10 +39,8 @@ def crawl():
     if web_url == '':
         return jsonify({"status": "error", "message": "Web URL is empty"})
 
-    # Init user with proper directory structure
-    user = User(user_id=data['user_id'])
     # Get info
-    company_name = data['company_name'] if data['company_name'] != '' else None
+    company_name = data['company_name'] if data['company_name'] != '' else utaweb.get_company_name_from_url(web_url)
     domain_limit = data['domain_limit'] if data['domain_limit'] != '' else None
     # Start crawl process
     process = Process(
@@ -57,7 +55,7 @@ def query():
     print(request.json)
     data = request.json
     result = utaweb.query_web(query=data['query'], web_url=data['web_url'])
-    # Init user
+    # Init user for saving conversations
     user = User(user_id=data['user_id'])
     # Save conversation
     conv = Conversation(conversation_id=data['conversation_id'], data_dir=user.chat_dir)
