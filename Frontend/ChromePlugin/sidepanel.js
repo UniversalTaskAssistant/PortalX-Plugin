@@ -373,20 +373,15 @@ $(document).ready(function() {
     // Add this new function to update the analysis section
     function updateAnalysisSection() {
         const faviconUrl = getFaviconUrl(currentWebsiteInfo.url);
-        const $analyzeSection = $('.analyze-section');
-        
+        const $currentWebsite = $('.current-website');
         // Remove existing current-website if it exists
-        $analyzeSection.find('.current-website').remove();
-        
+        $currentWebsite.empty();
         // Add website info before the button
-        $analyzeSection.prepend(`
-            <div class="current-website mb-3">
-                <div class="d-flex align-items-center">
-                    <img src="${faviconUrl}" alt="" class="website-favicon me-2">
-                    <div class="website-info-text">
-                        <div class="website-title text-truncate">${currentWebsiteInfo.title}</div>
-                        <div class="website-url text-truncate text-muted small">${currentWebsiteInfo.url}</div>
-                    </div>
+        $currentWebsite.append(`
+            <div class="d-flex align-items-center">
+                <img src="${faviconUrl}" alt="" class="website-favicon me-2">
+                <div class="website-info-text">
+                    <div class="website-title text-truncate">${currentWebsiteInfo.title}</div>
                 </div>
             </div>
         `);

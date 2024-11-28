@@ -271,15 +271,18 @@ textarea:focus {
 /* Button styling */
 #crawlButton {
     padding: 0.8rem;
-    font-weight: 500;
-    letter-spacing: 0.3px;
+    margin: 0 3px 0 0;
     transition: all 0.3s ease;
     border: 1.5px solid var(--primary-color);
     color: var(--primary-color);
-    height: 45px;
+    height: 20px;
     display: flex;
     align-items: center;
     justify-content: center;
+    background: ghostwhite;
+    border-radius:40px;
+    font-weight: 500;
+    font-size: 14px;
 }
 
 #crawlButton:hover {
@@ -449,10 +452,6 @@ textarea:focus {
 }
 
 /* Divider styling */
-.input-section .d-flex.align-items-center {
-    margin: 0.5rem 0;
-}
-
 .input-section .text-uppercase {
     color: var(--primary-color) !important;
     font-weight: 500;
@@ -823,7 +822,6 @@ textarea:focus {
 
 /* Current Website in Analysis Section */
 .current-website {
-    background-color: #f8f9fa;
     border-radius: 8px;
     padding: 0.75rem;
 }
@@ -849,6 +847,12 @@ textarea:focus {
 }
 
 /* Update analyze section spacing */
+.analyze-section {
+    background-color: #e2e2e277;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+}
+
 .analyze-section .btn {
     margin-top: 0.5rem;
 }
