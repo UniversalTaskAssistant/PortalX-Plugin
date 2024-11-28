@@ -770,4 +770,26 @@ textarea:focus {
     font-size: 1.1em;
     vertical-align: -2px;
 }
+
+/* Failed URLs Show More Button */
+.show-more-btn {
+    color: #6c757d;
+    padding: 0.5rem 0;
+    margin-top: 0.5rem;
+    font-size: 0.875rem;
+    transition: color 0.2s;
+}
+
+.show-more-btn:hover {
+    color: #495057;
+}
+
+.show-more-btn i {
+    font-size: 1em;
+    vertical-align: -2px;
+}
+
+.remaining-urls {
+    margin-top: 0.5rem;
+}
    

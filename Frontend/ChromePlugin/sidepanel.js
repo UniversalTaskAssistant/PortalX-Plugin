@@ -259,10 +259,14 @@ $(document).ready(function() {
             `);
         });
         
-        // Update failed URLs list
+        // Update failed URLs list with show more functionality
         const $failedList = $modal.find('.failed-urls-list').empty();
         if (websiteData.failed_urls && websiteData.failed_urls.length > 0) {
-            websiteData.failed_urls.forEach(([url, reason]) => {
+            const initialDisplay = 3;
+            const totalUrls = websiteData.failed_urls.length;
+            
+            // Add first 3 URLs
+            websiteData.failed_urls.slice(0, initialDisplay).forEach(([url, reason]) => {
                 $failedList.append(`
                     <div class="failed-url-item mb-1">
                         <div class="text-truncate">${url}</div>
@@ -270,31 +274,47 @@ $(document).ready(function() {
                     </div>
                 `);
             });
+            
+            // Add show more button if there are more than 3 URLs
+            if (totalUrls > initialDisplay) {
+                const remainingUrls = websiteData.failed_urls.slice(initialDisplay);
+                const $remainingUrlsDiv = $('<div>').addClass('remaining-urls d-none');
+                
+                remainingUrls.forEach(([url, reason]) => {
+                    $remainingUrlsDiv.append(`
+                        <div class="failed-url-item mb-1">
+                            <div class="text-truncate">${url}</div>
+                            <small class="text-danger">${reason}</small>
+                        </div>
+                    `);
+                });
+                
+                const $showMoreBtn = $(`
+                    <button class="btn btn-link btn-sm text-decoration-none show-more-btn">
+                        <i class="bi bi-plus-circle me-1"></i>
+                        Show ${remainingUrls.length} more
+                    </button>
+                `);
+                
+                $showMoreBtn.on('click', function() {
+                    const $btn = $(this);
+                    const $remaining = $failedList.find('.remaining-urls');
+                    
+                    if ($remaining.hasClass('d-none')) {
+                        $remaining.removeClass('d-none');
+                        $btn.html('<i class="bi bi-dash-circle me-1"></i>Show less');
+                    } else {
+                        $remaining.addClass('d-none');
+                        $btn.html(`<i class="bi bi-plus-circle me-1"></i>Show ${remainingUrls.length} more`);
+                    }
+                });
+                
+                $failedList.append($remainingUrlsDiv);
+                $failedList.append($showMoreBtn);
+            }
         } else {
             $failedList.append('<p class="text-muted mb-0">No failed URLs</p>');
         }
-        
-        // Add click handler for start chat button
-        $modal.find('.start-chat-btn').off('click').on('click', function() {
-            // Switch to chat tab
-            $('#chat-tab').tab('show');
-            
-            // Clear existing chat
-            $('.message-container').remove();
-            $('.welcome-msg').hide();
-            
-            // Generate new conversation ID
-            conversationId = `conv-${Math.random().toString(36).substring(2, 10)}`;
-            
-            // Update current URL for the chat
-            currentUrl = websiteData.start_urls[0];
-            
-            // Add initial message
-            addMessage(`I'm ready to help you with questions about ${websiteData.company_name}. What would you like to know?`);
-            
-            // Close the modal
-            $modal.modal('hide');
-        });
         
         // Show modal
         const modal = new bootstrap.Modal($modal);
