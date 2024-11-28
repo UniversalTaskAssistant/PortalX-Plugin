@@ -9,11 +9,41 @@ $(document).ready(function() {
     let currentUrl = '';
     let chatHistory = [];
     let conversationId = `conv-${Math.random().toString(36).substring(2, 10)}`;
+    let currentWebsiteInfo = {
+        url: '',
+        title: ''
+    };
 
-    // Get current tab URL
-    chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-        currentUrl = tabs[0].url;
-        console.log(currentUrl);
+    // Function to update current tab info
+    function updateCurrentTab() {
+        chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+            if (tabs[0]) {
+                currentUrl = tabs[0].url;
+                currentWebsiteInfo = {
+                    url: currentUrl,
+                    title: tabs[0].title || new URL(currentUrl).hostname
+                };
+                updateAnalysisSection();
+                console.log('Current URL updated:', currentUrl);
+            }
+        });
+    }
+
+    // Initial update
+    updateCurrentTab();
+
+    // Listen for tab changes
+    chrome.tabs.onActivated.addListener(function(activeInfo) {
+        updateCurrentTab();
+    });
+
+    // Listen for tab updates (URL changes, title changes, etc.)
+    chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
+        chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+            if (tabs[0] && tabs[0].id === tabId) {
+                updateCurrentTab();
+            }
+        });
     });
 
     // Add message to response area
@@ -339,4 +369,26 @@ $(document).ready(function() {
         const modal = new bootstrap.Modal($modal);
         modal.show();
     });
+
+    // Add this new function to update the analysis section
+    function updateAnalysisSection() {
+        const faviconUrl = getFaviconUrl(currentWebsiteInfo.url);
+        const $analyzeSection = $('.analyze-section');
+        
+        // Remove existing current-website if it exists
+        $analyzeSection.find('.current-website').remove();
+        
+        // Add website info before the button
+        $analyzeSection.prepend(`
+            <div class="current-website mb-3">
+                <div class="d-flex align-items-center">
+                    <img src="${faviconUrl}" alt="" class="website-favicon me-2">
+                    <div class="website-info-text">
+                        <div class="website-title text-truncate">${currentWebsiteInfo.title}</div>
+                        <div class="website-url text-truncate text-muted small">${currentWebsiteInfo.url}</div>
+                    </div>
+                </div>
+            </div>
+        `);
+    }
 }); 

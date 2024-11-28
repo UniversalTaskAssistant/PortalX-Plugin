@@ -820,4 +820,36 @@ textarea:focus {
     object-fit: contain;
     border-radius: 4px;
 }
+
+/* Current Website in Analysis Section */
+.current-website {
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    padding: 0.75rem;
+}
+
+.current-website .website-favicon {
+    width: 20px;
+    height: 20px;
+}
+
+.current-website .website-info-text {
+    min-width: 0; /* Enable text truncation */
+    flex: 1;
+}
+
+.current-website .website-title {
+    font-weight: 500;
+    color: #2c3e50;
+    font-size: 0.9rem;
+}
+
+.current-website .website-url {
+    font-size: 0.8rem;
+}
+
+/* Update analyze section spacing */
+.analyze-section .btn {
+    margin-top: 0.5rem;
+}
    
