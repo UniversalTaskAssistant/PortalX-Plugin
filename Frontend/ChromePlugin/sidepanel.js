@@ -194,11 +194,11 @@ $(document).ready(function() {
             method: 'GET',
             success: function(websites) {
                 const $historyList = $('#history-list');
-                // $historyList.empty();
+                $historyList.empty();
                 
                 websites.forEach(site => {
                     const websiteEntry = `
-                        <div class="website-entry">
+                        <div class="website-entry" data-website='${JSON.stringify(site)}'>
                             <div class="d-flex justify-content-between align-items-start mb-2">
                                 <h6 class="mb-0">${site.company_name}</h6>
                                 <small class="text-muted">${formatTimestamp(site.crawl_time)}</small>
@@ -233,5 +233,49 @@ $(document).ready(function() {
             const text = $(this).text().toLowerCase();
             $(this).toggle(text.includes(searchTerm));
         });
+    });
+
+    // Add website entry click handler
+    $(document).on('click', '.website-entry', function() {
+        const websiteData = $(this).data('website');
+        const $modal = $('#websiteDetailsModal');
+        
+        // Update modal content
+        $modal.find('.company-name').text(websiteData.company_name);
+        $modal.find('.start-url')
+            .text(websiteData.start_urls[0])
+            .attr('href', websiteData.start_urls[0]);
+        $modal.find('.pages-count').text(websiteData.visited_urls.length);
+        $modal.find('.domains-count').text(Object.keys(websiteData.domain_urls).length);
+        
+        // Update domains list
+        const $domainsList = $modal.find('.domains-list').empty();
+        Object.entries(websiteData.domain_urls).forEach(([domain, count]) => {
+            $domainsList.append(`
+                <div class="domain-item d-flex justify-content-between align-items-center mb-1">
+                    <span class="domain-name">${domain}</span>
+                    <span class="domain-count badge bg-secondary">${count} pages</span>
+                </div>
+            `);
+        });
+        
+        // Update failed URLs list
+        const $failedList = $modal.find('.failed-urls-list').empty();
+        if (websiteData.failed_urls && websiteData.failed_urls.length > 0) {
+            websiteData.failed_urls.forEach(([url, reason]) => {
+                $failedList.append(`
+                    <div class="failed-url-item mb-1">
+                        <div class="text-truncate">${url}</div>
+                        <small class="text-danger">${reason}</small>
+                    </div>
+                `);
+            });
+        } else {
+            $failedList.append('<p class="text-muted mb-0">No failed URLs</p>');
+        }
+        
+        // Show modal
+        const modal = new bootstrap.Modal($modal);
+        modal.show();
     });
 }); 
