@@ -44,7 +44,10 @@
                                     </div>
                                 </div>
                                 <div class="col-3 d-flex align-items-center justify-content-center" style="margin: 0;">
-                                    <button id="crawlButton" class="btn btn-outline-primary" title="Analyze this website">
+                                    <button id="crawlButton" class="btn btn-outline-primary" 
+                                        data-bs-toggle="tooltip" 
+                                        data-bs-placement="top"
+                                        title="Analyze this website">
                                         Analyze
                                     </button>
                                 </div>
@@ -56,15 +59,24 @@
                             <textarea id="queryInput" class="form-control text-start" rows="3" placeholder="Type your question here..."></textarea>
                             <div class="chat-actions position-absolute bottom-0 w-100 ms-2 mb-2 z-1 d-flex justify-content-between">
                                 <div>
-                                    <button id="historyConversationsBtn" class="btn btn-icon" title="Previous Conversations">
-                                        <i class="bi bi-clock-fill"></i>
+                                    <button id="historyConversationsBtn" class="btn btn-icon">
+                                        <i class="bi bi-clock-fill" 
+                                        data-bs-toggle="tooltip" 
+                                        data-bs-placement="right"
+                                        title="Previous Chats"></i>
                                     </button>
-                                    <button id="newConversationBtn" class="btn btn-icon" title="New Conversation">
-                                        <i class="bi bi-plus-circle-fill"></i>
+                                    <button id="newConversationBtn" class="btn btn-icon">
+                                        <i class="bi bi-plus-circle-fill"
+                                        data-bs-toggle="tooltip" 
+                                        data-bs-placement="right"
+                                        title="New Chat"></i>
                                     </button>
                                 </div>
-                                <button id="queryButton" class="btn btn-icon me-2" title="Send">
-                                    <i class="bi bi-send-fill"></i>
+                                <button id="queryButton" class="btn btn-icon me-2">
+                                    <i class="bi bi-send-fill" 
+                                    data-bs-toggle="tooltip" 
+                                    data-bs-placement="top"
+                                    title="Send"></i>
                                 </button>
                             </div>
                         </div>
@@ -99,7 +111,47 @@
         </div>
     </div>
 
-    <!-- Add Modal for Chat History -->
+    <!-- Modal for Crawl Parameters -->
+    <div class="modal fade" id="crawlParametersModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Analyse Ehole Website</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="crawlParametersForm">
+                        <div class="mb-3">
+                            <label class="form-label">Website Domain</label>
+                            <input type="text" class="form-control" id="websiteDomain" readonly>
+                            <small class="text-muted ml-2">e.g., www.example.com</small>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Host Name</label>
+                            <input type="text" class="form-control" id="hostName" required>
+                            <small class="text-muted">e.g., example</small>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Subdomain Limit
+                                <i class="bi bi-info-circle-fill text-muted" 
+                                   data-bs-toggle="tooltip" 
+                                   data-bs-placement="right"
+                                   title="Will only analyze pages with this subdomain"></i>
+                            </label>
+                            <input type="text" class="form-control" id="subdomainLimit" 
+                                   placeholder="e.g., cs.uta.edu">
+                            <small class="text-muted">e.g., www.example.com/en/</small>
+                        </div>
+                    </form>
+                    <div class="text-center mt-5">
+                        <button type="button" class="btn btn-primary" id="startCrawlBtn">Start Analysis The Website</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Chat History -->
     <div class="modal fade" id="chatHistoryModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-scrollable">
             <div class="modal-content">

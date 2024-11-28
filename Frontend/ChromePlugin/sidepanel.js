@@ -11,18 +11,43 @@ $(document).ready(function() {
     let conversationId = `conv-${Math.random().toString(36).substring(2, 10)}`;
     let currentWebsiteInfo = {
         url: '',
-        title: ''
+        title: '',
+        domainName: '',
+        hostName: '',
+        subdomain: ''
     };
+
+    // Initialize tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    });
 
     // Function to update current tab info
     function updateCurrentTab() {
         chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
             if (tabs[0]) {
                 currentUrl = tabs[0].url;
+                const urlObj = new URL(currentUrl);
+                console.log(urlObj);
+
+                // Extract domain, host, and subdomain
+                const domainName = urlObj.hostname;
+                // Split domain by dots and get the main domain name
+                // For 'www.tum.de' or 'tum.de', get 'tum'
+                const hostName = domainName.replace('www.', '').split('.')[0];
+                const subdomain = urlObj.pathname.split('/')[1] ? 
+                    `${domainName}/${urlObj.pathname.split('/')[1]}/` : 
+                    domainName + '/';
+
                 currentWebsiteInfo = {
                     url: currentUrl,
-                    title: tabs[0].title || new URL(currentUrl).hostname
+                    title: tabs[0].title || urlObj.hostname,
+                    domainName: domainName,
+                    hostName: hostName,
+                    subdomain: subdomain
                 };
+                
                 updateAnalysisSection();
                 console.log('Current URL updated:', currentUrl);
             }
@@ -63,19 +88,41 @@ $(document).ready(function() {
         $messageDiv[0].scrollIntoView({ behavior: 'smooth' });
     }
 
-    // Crawl button handler
-    $crawlButton.on('click', async function() {
+    // Modify the crawl button click handler
+    $crawlButton.on('click', function() {
+        // Pre-fill the domain field
+        $('#websiteDomain').val(currentWebsiteInfo['domainName']);
+        $('#hostName').val(currentWebsiteInfo['hostName']);
+        $('#subdomainLimit').val(currentWebsiteInfo['subdomain']);
+        // Show the modal
+        const modal = new bootstrap.Modal('#crawlParametersModal');
+        modal.show();
+    });
+
+    // Add handler for the start crawl button
+    $('#startCrawlBtn').on('click', async function() {
+        const modal = bootstrap.Modal.getInstance('#crawlParametersModal');
+        const companyName = $('#companyName').val().trim();
+        const domainLimit = $('#subdomainLimit').val().trim();
+        
+        if (!companyName) {
+            alert('Please enter a company name');
+            return;
+        }
+        
         try {
-            console.log(currentUrl);
-            $crawlButton.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Crawling...');
+            modal.hide();
+            $crawlButton.prop('disabled', true)
+                .html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Crawling...');
+                
             const response = await $.ajax({
                 url: 'http://localhost:7777/crawl',
                 method: 'POST',
                 contentType: 'application/json',
                 data: JSON.stringify({
                     web_url: currentUrl,
-                    company_name: '',
-                    domain_limit: ''
+                    company_name: companyName,
+                    domain_limit: domainLimit
                 })
             });
             addMessage('Crawling completed successfully! You can now ask questions about this website.');

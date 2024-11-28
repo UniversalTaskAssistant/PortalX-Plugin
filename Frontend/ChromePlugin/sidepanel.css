@@ -877,4 +877,30 @@ textarea:focus {
 .btn-icon:hover {
     color: #0a58ca;
 }
-   
+
+/* Crawl Parameters Modal */
+#crawlParametersModal .form-label {
+    font-weight: 500;
+    color: #2c3e50;
+}
+
+#crawlParametersModal .form-control {
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+    padding: 0.75rem;
+}
+
+#crawlParametersModal .form-control:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px var(--primary-light);
+}
+
+#crawlParametersModal small.text-muted {
+    font-size: 0.8rem;
+    margin-top: 0.25rem;
+    display: block;
+}
+
+#crawlParametersForm .text-muted {
+    margin-left: 0.3rem;
+}
