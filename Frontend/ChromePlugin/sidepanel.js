@@ -274,6 +274,28 @@ $(document).ready(function() {
             $failedList.append('<p class="text-muted mb-0">No failed URLs</p>');
         }
         
+        // Add click handler for start chat button
+        $modal.find('.start-chat-btn').off('click').on('click', function() {
+            // Switch to chat tab
+            $('#chat-tab').tab('show');
+            
+            // Clear existing chat
+            $('.message-container').remove();
+            $('.welcome-msg').hide();
+            
+            // Generate new conversation ID
+            conversationId = `conv-${Math.random().toString(36).substring(2, 10)}`;
+            
+            // Update current URL for the chat
+            currentUrl = websiteData.start_urls[0];
+            
+            // Add initial message
+            addMessage(`I'm ready to help you with questions about ${websiteData.company_name}. What would you like to know?`);
+            
+            // Close the modal
+            $modal.modal('hide');
+        });
+        
         // Show modal
         const modal = new bootstrap.Modal($modal);
         modal.show();
