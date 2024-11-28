@@ -83,7 +83,7 @@ $(document).ready(function() {
             addMessage(`Error during crawling: ${error.message}`);
         } finally {
             $crawlButton.prop('disabled', false)
-                       .html('<i class="bi bi-spider me-2"></i>Analyze This Website');
+                       .html('<i class="bi bi-spider me-2"></i>Analyze');
         }
     });
 

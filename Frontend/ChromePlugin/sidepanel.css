@@ -294,7 +294,6 @@ textarea:focus {
 #queryButton {
     position: absolute;
     right: 10px;
-    bottom: 5px;
     width: auto !important;
     padding: 8px !important;
     height: auto !important;
@@ -325,8 +324,10 @@ textarea:focus {
     padding: 0.8rem;
     resize: none;
     transition: all 0.3s ease;
-    height: 100px;
+    height: 130px;
     padding-right: 60px !important;
+    text-align: left;
+    padding-bottom: 40px;
 }
 
 #queryInput:focus {
@@ -855,5 +856,25 @@ textarea:focus {
 
 .analyze-section .btn {
     margin-top: 0.5rem;
+}
+
+.query-section {
+    position: relative;
+}
+
+.chat-actions {
+    z-index: 1000;
+    margin-top: -40px;
+}
+
+.btn-icon {
+    background: none;
+    border: none;
+    color: #0d6efd;
+    padding: 4px 8px;
+}
+
+.btn-icon:hover {
+    color: #0a58ca;
 }
    
