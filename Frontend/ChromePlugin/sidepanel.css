@@ -547,6 +547,10 @@ textarea:focus {
 }
 
 /* Chat History Modal Styling */
+#chatHistoryList {
+    padding: 0;
+}
+
 .chat-history-entry {
     cursor: pointer;
     transition: background-color 0.2s ease;
@@ -791,5 +795,29 @@ textarea:focus {
 
 .remaining-urls {
     margin-top: 0.5rem;
+}
+
+.website-favicon {
+    width: 16px;
+    height: 16px;
+    object-fit: contain;
+    border-radius: 3px;
+}
+
+/* Also update the modal to show favicon */
+.website-info .company-name {
+    font-size: 1.25rem;
+    color: #2c3e50;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+}
+
+.website-info .company-name img {
+    width: 24px;
+    height: 24px;
+    margin-right: 0.75rem;
+    object-fit: contain;
+    border-radius: 4px;
 }
    

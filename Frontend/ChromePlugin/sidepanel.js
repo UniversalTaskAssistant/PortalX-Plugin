@@ -187,7 +187,17 @@ $(document).ready(function() {
         return `${Math.floor(diffInMinutes/1440)}d ago`;
     }
 
-    // Add this function to update the history list
+    // Function to get favicon URL
+    function getFaviconUrl(url) {
+        try {
+            const domain = new URL(url).hostname;
+            return `https://www.google.com/s2/favicons?domain=${domain}&sz=32`;
+        } catch (e) {
+            return null;
+        }
+    }
+
+    // Update the website entry HTML in updateHistoryList
     function updateHistoryList() {
         $.ajax({
             url: 'http://localhost:7777/get_websites',
@@ -197,10 +207,14 @@ $(document).ready(function() {
                 $historyList.empty();
                 
                 websites.forEach(site => {
+                    const faviconUrl = getFaviconUrl(site.start_urls[0]);
                     const websiteEntry = `
                         <div class="website-entry" data-website='${JSON.stringify(site)}'>
                             <div class="d-flex justify-content-between align-items-start mb-2">
-                                <h6 class="mb-0">${site.company_name}</h6>
+                                <div class="d-flex align-items-center">
+                                    <img src="${faviconUrl}" alt="" class="website-favicon me-2">
+                                    <h6 class="mb-0">${site.company_name}</h6>
+                                </div>
                                 <small class="text-muted">${formatTimestamp(site.crawl_time)}</small>
                             </div>
                             <span class="url-text mb-3">${site.start_urls[0]}</span>
@@ -241,7 +255,12 @@ $(document).ready(function() {
         const $modal = $('#websiteDetailsModal');
         
         // Update modal content
-        $modal.find('.company-name').text(websiteData.company_name);
+        const faviconUrl = getFaviconUrl(websiteData.start_urls[0]);
+        $modal.find('.company-name').html(`
+            <img src="${faviconUrl}" alt="">
+            <span>${websiteData.company_name}</span>
+        `);
+        
         $modal.find('.start-url')
             .text(websiteData.start_urls[0])
             .attr('href', websiteData.start_urls[0]);
@@ -254,7 +273,7 @@ $(document).ready(function() {
             $domainsList.append(`
                 <div class="domain-item d-flex justify-content-between align-items-center mb-1">
                     <span class="domain-name">${domain}</span>
-                    <span class="domain-count badge bg-secondary">${count} pages</span>
+                    <span class="domain-count badge">${count} pages</span>
                 </div>
             `);
         });
