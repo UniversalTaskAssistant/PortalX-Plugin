@@ -29,6 +29,9 @@ export class WebsiteManager {
                 }
             });
         });
+
+        // Add history tab listener
+        $('#history-tab').on('shown.bs.tab', () => this.updateWebsitesHistoryList());
     }
     
     // Initialize the website search
@@ -160,32 +163,37 @@ export class WebsiteManager {
         `);
     }
 
-    // Update the websites history list
-    updateWebsitesHistoryList(websites) {
-        let historyList = $('#history-list');
-        historyList.empty();
-        websites.forEach(site => {
-            const faviconUrl = this.getFaviconUrl(site.start_urls[0]);
-            const websiteEntry = `
-                <div class="website-entry" data-url="${site.start_urls[0]}">
-                    <div class="d-flex justify-content-between align-items-start mb-2">
-                        <div class="d-flex align-items-center">
-                            <img src="${faviconUrl}" alt="" class="website-favicon me-2">
-                            <h6 class="mb-0">${site.company_name}</h6>
+    // Update the history list
+    async updateWebsitesHistoryList() {
+        try {
+            const websites = await this.loadAllWebsitesHistory();
+            let historyList = $('#history-list');
+            historyList.empty();
+            websites.forEach(site => {
+                const faviconUrl = this.getFaviconUrl(site.start_urls[0]);
+                const websiteEntry = `
+                    <div class="website-entry" data-url="${site.start_urls[0]}">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div class="d-flex align-items-center">
+                                <img src="${faviconUrl}" alt="" class="website-favicon me-2">
+                                <h6 class="mb-0">${site.company_name}</h6>
+                            </div>
+                            <small class="text-muted">${this.formatTimestamp(site.crawl_time)}</small>
                         </div>
-                        <small class="text-muted">${this.formatTimestamp(site.crawl_time)}</small>
+                        <span class="url-text mb-3">${site.start_urls[0]}</span>
+                        <div class="d-flex align-items-center">
+                            <span class="badge ${site.crawl_finished ? 'bg-success' : 'bg-warning'} me-2">
+                                ${site.crawl_finished ? 'Analyzed' : 'In Progress'}
+                            </span>
+                            <span class="stats-text">${site.visited_urls.length} pages crawled</span>
+                        </div>
                     </div>
-                    <span class="url-text mb-3">${site.start_urls[0]}</span>
-                    <div class="d-flex align-items-center">
-                        <span class="badge ${site.crawl_finished ? 'bg-success' : 'bg-warning'} me-2">
-                            ${site.crawl_finished ? 'Analyzed' : 'In Progress'}
-                        </span>
-                        <span class="stats-text">${site.visited_urls.length} pages crawled</span>
-                    </div>
-                </div>
-            `;
-            historyList.append(websiteEntry);
-        });
+                `;
+                historyList.append(websiteEntry);
+            });
+        } catch (error) {
+            console.error('Error updating history list:', error);
+        }
     }
 
     // Format the timestamp

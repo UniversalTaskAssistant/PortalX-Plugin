@@ -57,21 +57,6 @@ $(document).ready(function() {
         }
     });
 
-    // Update history list
-    async function updateHistoryList() {
-        try {
-            const websites = await websiteManager.loadAllWebsitesHistory();
-            websiteManager.updateWebsitesHistoryList(websites);
-        } catch (error) {
-            console.error('Error updating history list:', error);
-        }
-    }
-
-    // Update history when history tab is shown
-    $('#history-tab').on('shown.bs.tab', function() {
-        updateHistoryList();
-    });
-
     // Update website entry click handler
     $(document).on('click', '.website-entry', function() {
         const url = $(this).data('url');
