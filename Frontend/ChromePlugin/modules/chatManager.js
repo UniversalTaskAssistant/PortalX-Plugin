@@ -20,9 +20,6 @@ export class ChatManager {
     // ****** INITIALIZATION ******
     // Initialize event listeners
     initializeEventListeners() {
-        // Query button click handler
-        this.$queryButton.on('click', () => this.handleQuery());
-
         // Query input keypress handler
         this.$queryInput.on('keypress', (e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
@@ -80,44 +77,6 @@ export class ChatManager {
         $messageContainer.append($messageDiv);
         this.$responseDiv.append($messageContainer);
         $messageDiv[0].scrollIntoView({ behavior: 'smooth' });
-    }
-
-    // Handle the user query and send it to the server
-    async handleQuery() {
-        const query = this.$queryInput.val().trim();
-        if (!query) {
-            this.addMessage('Please enter a question', true);
-            return;
-        }
-        try {
-            this.$queryButton.prop('disabled', true)
-                .addClass('loading')
-                .html('<span class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></span>');
-            this.$queryInput.prop('disabled', true);
-            
-            this.addMessage(query, true);
-            
-            const response = await $.ajax({
-                url: 'http://localhost:7777/query',
-                method: 'POST',
-                contentType: 'application/json',
-                data: JSON.stringify({
-                    user_id: 'test1',
-                    conversation_id: this.conversationId,
-                    query: query,
-                    web_url: 'https://www.tum.de/en/'
-                })
-            });
-            this.addMessage(response.answer);
-            this.$queryInput.val('');
-        } catch (error) {
-            this.addMessage(`Error getting response: ${error.message}`);
-        } finally {
-            this.$queryButton.prop('disabled', false)
-                .removeClass('loading')
-                .html('<i class="bi bi-send-fill"></i>');
-            this.$queryInput.prop('disabled', false);
-        }
     }
 
     // ***************************
@@ -197,5 +156,28 @@ export class ChatManager {
             `;
             this.$chatHistoryList.append(chatEntry);
         });
+    }
+
+    // Add these as public methods to be called from sidepanel.js
+    setQueryButtonLoading(isLoading) {
+        if (isLoading) {
+            this.$queryButton.prop('disabled', true)
+                .addClass('loading')
+                .html('<span class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></span>');
+            this.$queryInput.prop('disabled', true);
+        } else {
+            this.$queryButton.prop('disabled', false)
+                .removeClass('loading')
+                .html('<i class="bi bi-send-fill"></i>');
+            this.$queryInput.prop('disabled', false);
+        }
+    }
+
+    getQueryInput() {
+        return this.$queryInput.val().trim();
+    }
+
+    clearQueryInput() {
+        this.$queryInput.val('');
     }
 }

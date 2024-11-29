@@ -38,4 +38,35 @@ $(document).ready(function() {
                        .html('<i class="bi bi-spider me-2"></i>Analyze');
         }
     });
+
+    // Add the query button click handler
+    $('#queryButton').on('click', async function() {
+        const query = chatManager.getQueryInput();
+        if (!query) {
+            chatManager.addMessage('Please enter a question', true);
+            return;
+        }
+        
+        try {
+            chatManager.setQueryButtonLoading(true);
+            chatManager.addMessage(query, true);
+            const response = await $.ajax({
+                url: 'http://localhost:7777/query',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    user_id: 'test1',
+                    conversation_id: chatManager.conversationId,
+                    query: query,
+                    web_url: websiteManager.currentWebsiteInfo.domainName
+                })
+            });
+            chatManager.addMessage(response.answer);
+            chatManager.clearQueryInput();
+        } catch (error) {
+            chatManager.addMessage(`Error getting response: ${error.message}`);
+        } finally {
+            chatManager.setQueryButtonLoading(false);
+        }
+    });
 }); 
