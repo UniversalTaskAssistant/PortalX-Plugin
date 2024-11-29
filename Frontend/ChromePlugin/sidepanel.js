@@ -52,8 +52,8 @@ $(document).ready(function() {
     // Update history conversations handler
     uiManager.$historyConversationsBtn.on('click', async function() {
         try {
-            const chatHistory = await chatManager.loadChatHistory('test1');
-            uiManager.updateChatHistoryList(chatHistory);
+            const chatHistory = await chatManager.loadAllChatHistory('test1');
+            chatManager.updateChatHistoryList(chatHistory);
             uiManager.showModal('#chatHistoryModal');
         } catch (error) {
             console.error('Error fetching chat history:', error);
@@ -63,7 +63,7 @@ $(document).ready(function() {
     // Update chat history entry click handler
     $(document).on('click', '.chat-history-entry', function() {
         const chatId = $(this).data('chat-id');
-        if (chatManager.loadConversation(chatId)) {
+        if (chatManager.loadChat(chatId)) {
             uiManager.hideModal('#chatHistoryModal');
         }
     });
@@ -71,7 +71,7 @@ $(document).ready(function() {
     // Update history list
     async function updateHistoryList() {
         try {
-            const websites = await websiteManager.getWebsites();
+            const websites = await websiteManager.loadAllWebsitesHistory();
             websiteManager.updateWebsitesHistoryList(websites);
         } catch (error) {
             console.error('Error updating history list:', error);

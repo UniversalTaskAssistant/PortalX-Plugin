@@ -67,26 +67,6 @@ export class WebsiteManager {
         }
     }
 
-    // Get all websites data from the server
-    async getWebsites() {
-        try {
-            const websites = await $.ajax({
-                url: 'http://localhost:7777/get_websites',
-                method: 'GET'
-            });
-            // Clear and update the websites data
-            this.websitesData.clear();
-            websites.forEach(site => {
-                this.websitesData.set(site.start_urls[0], site);
-            });
-            
-            return websites;
-        } catch (error) {
-            console.error('Error fetching website history:', error);
-            throw error;
-        }
-    }
-    
     // *************************
     // ****** START CRAWL ******
     // Start crawling the current website
@@ -105,6 +85,26 @@ export class WebsiteManager {
             return { success: true, message: 'Crawling completed successfully!' };
         } catch (error) {
             return { success: false, message: `Error during crawling: ${error.message}` };
+        }
+    }
+
+    // Load all crawled websites data from the server
+    async loadAllWebsitesHistory() {
+        try {
+            const websites = await $.ajax({
+                url: 'http://localhost:7777/get_websites',
+                method: 'GET'
+            });
+            // Clear and update the websites data
+            this.websitesData.clear();
+            websites.forEach(site => {
+                this.websitesData.set(site.start_urls[0], site);
+            });
+
+            return websites;
+        } catch (error) {
+            console.error('Error fetching website history:', error);
+            throw error;
         }
     }
 
