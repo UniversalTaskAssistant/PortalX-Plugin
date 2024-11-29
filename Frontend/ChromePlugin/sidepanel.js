@@ -16,6 +16,7 @@ $(document).ready(function() {
         hostName: '',
         subdomain: ''
     };
+    let websitesData = new Map(); // Store website data with URL as key
 
     // Initialize tooltips
     var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
@@ -283,10 +284,16 @@ $(document).ready(function() {
                 const $historyList = $('#history-list');
                 $historyList.empty();
                 
+                // Clear and update the websites data
+                websitesData.clear();
+                
                 websites.forEach(site => {
+                    // Store the full site data in our Map
+                    websitesData.set(site.start_urls[0], site);
+                    
                     const faviconUrl = getFaviconUrl(site.start_urls[0]);
                     const websiteEntry = `
-                        <div class="website-entry" data-website='${JSON.stringify(site)}'>
+                        <div class="website-entry" data-url="${site.start_urls[0]}">
                             <div class="d-flex justify-content-between align-items-start mb-2">
                                 <div class="d-flex align-items-center">
                                     <img src="${faviconUrl}" alt="" class="website-favicon me-2">
@@ -328,7 +335,10 @@ $(document).ready(function() {
 
     // Add website entry click handler
     $(document).on('click', '.website-entry', function() {
-        const websiteData = $(this).data('website');
+        const url = $(this).data('url');
+        const websiteData = websitesData.get(url);
+        if (!websiteData) return;
+        
         const $modal = $('#websiteDetailsModal');
         
         // Update modal content
@@ -433,4 +443,37 @@ $(document).ready(function() {
             </div>
         `);
     }
+
+    // Add event listener for modal hidden event
+    $('#websiteDetailsModal').on('hidden.bs.modal', function () {
+        // Ensure the button loses focus after modal is hidden
+        $('.start-chat-btn').blur();
+    });
+
+    // Add separate click handler for start chat button
+    $('.start-chat-btn').on('click', function() {
+        // Small delay to ensure modal is fully closed before starting chat
+        setTimeout(startNewChat, 100);
+    });
+
+    function startNewChat() {
+        conversationId = `conv-${Math.random().toString(36).substring(2, 10)}`;
+        // Clear current messages
+        $('.message-container').remove();
+        // Get company name from the same modal as the start chat button
+        const companyInfo = $('.start-chat-btn').closest('.modal-content').find('.company-name');
+        console.log(companyInfo);
+        const companyName = companyInfo.find('span').text();
+        const companyLogo = companyInfo.find('img').attr('src');
+        // Add initial message with company logo and name
+        $welcomeMessage.html(`
+            <div class="align-items-center mb-2">
+                <h5>Hello! Ask me anything about</h5>
+                <h5 class="text-muted"><img src="${companyLogo}" alt="Logo" class="me-2" style="width: 20px; height: 20px;">${companyName}</h5>
+            </div>
+        `).show();
+        // Switch to chat-content tab
+        $('#chat-tab').tab('show');
+    }
+
 }); 
