@@ -1,3 +1,5 @@
+import { ChatManager } from './modules/chatManager.js';
+
 $(document).ready(function() {
     const $crawlButton = $('#crawlButton');
     const $queryButton = $('#queryButton');
@@ -72,22 +74,48 @@ $(document).ready(function() {
         });
     });
 
-    // Add message to response area
-    function addMessage(text, isUser = false) {
-        if ($welcomeMessage.is(':visible')) {
-            $welcomeMessage.hide();
+    // Initialize ChatManager
+    const chatManager = new ChatManager();
+    
+    // Update the new conversation handler
+    $newConversationBtn.on('click', function() {
+        chatManager.startNewChat('', '');
+    });
+
+    // Update history conversations handler
+    $historyConversationsBtn.on('click', async function() {
+        try {
+            const chatHistory = await chatManager.loadChatHistory('test1');
+            const $chatHistoryList = $('#chatHistoryList');
+            $chatHistoryList.empty();
+            
+            chatHistory.forEach(chat => {
+                const firstMessage = chat.conversation.find(msg => msg.rule === 'user')?.content || 'Empty conversation';
+                const chatEntry = `
+                    <div class="chat-history-entry p-3" data-chat-id="${chat.conversation_id}">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <span class="preview-text">${firstMessage}</span>
+                        </div>
+                        <small class="text-muted">${chat.timestamp}</small>
+                    </div>
+                `;
+                $chatHistoryList.append(chatEntry);
+            });
+            
+            const chatHistoryModal = new bootstrap.Modal('#chatHistoryModal');
+            chatHistoryModal.show();
+        } catch (error) {
+            console.error('Error fetching chat history:', error);
         }
-        const $messageContainer = $('<div>', {
-            class: 'message-container'
-        });
-        const $messageDiv = $('<div>', {
-            class: `message ${isUser ? 'user' : 'assistant'}`,
-            text: text
-        });
-        $messageContainer.append($messageDiv);
-        $responseDiv.append($messageContainer);
-        $messageDiv[0].scrollIntoView({ behavior: 'smooth' });
-    }
+    });
+
+    // Update chat history entry click handler
+    $(document).on('click', '.chat-history-entry', function() {
+        const chatId = $(this).data('chat-id');
+        if (chatManager.loadConversation(chatId)) {
+            $('#chatHistoryModal').modal('hide');
+        }
+    });
 
     // Modify the crawl button click handler
     $crawlButton.on('click', function() {
@@ -126,130 +154,12 @@ $(document).ready(function() {
                     domain_limit: domainLimit
                 })
             });
-            addMessage('Crawling completed successfully! You can now ask questions about this website.');
+            chatManager.addMessage('Crawling completed successfully! You can now ask questions about this website.');
         } catch (error) {
-            addMessage(`Error during crawling: ${error.message}`);
+            chatManager.addMessage(`Error during crawling: ${error.message}`);
         } finally {
             $crawlButton.prop('disabled', false)
                        .html('<i class="bi bi-spider me-2"></i>Analyze');
-        }
-    });
-
-    // Query button handler
-    $queryButton.on('click', async function() {
-        const query = $queryInput.val().trim();
-        if (!query) {
-            addMessage('Please enter a question', true);
-            return;
-        }
-        try {
-            // Update loading state
-            $queryButton.prop('disabled', true)
-                       .addClass('loading')
-                       .html('<span class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></span>');
-            $queryInput.prop('disabled', true);
-            
-            // Add user question to chat
-            addMessage(query, true);
-            
-            const response = await $.ajax({
-                url: 'http://localhost:7777/query',
-                method: 'POST',
-                contentType: 'application/json',
-                data: JSON.stringify({
-                    user_id: 'test1',
-                    conversation_id: conversationId,
-                    query: query,
-                    web_url: 'https://www.tum.de/en/'
-                })
-            });
-            addMessage(response.answer);
-            $queryInput.val(''); // Clear input after successful response
-        } catch (error) {
-            addMessage(`Error getting response: ${error.message}`);
-        } finally {
-            // Reset button state
-            $queryButton.prop('disabled', false)
-                       .removeClass('loading')
-                       .html('<i class="bi bi-send-fill"></i>');
-            $queryInput.prop('disabled', false);
-        }
-    });
-
-    // Handle enter key in textarea
-    $queryInput.on('keypress', function(e) {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            $queryButton.click();
-        }
-    });
-
-    // New conversation handler
-    $newConversationBtn.on('click', function() {
-        // Generate new conversation ID
-        conversationId = `conv-${Math.random().toString(36).substring(2, 10)}`;
-        // Remove only the message containers
-        $('.message-container').remove();
-        $('.welcome-msg').fadeIn(300);
-        $queryInput.val('');
-    });
-
-    // History conversations handler
-    $historyConversationsBtn.on('click', async function() {
-        try {
-            // Fetch chat history from server
-            const response = await fetch('http://127.0.0.1:7777/get_chat_history', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    user_id: 'test1'
-                })
-            });
-            chatHistory = await response.json();
-            // Clear and populate the chat history list
-            const $chatHistoryList = $('#chatHistoryList');
-            $chatHistoryList.empty();
-            chatHistory.forEach(chat => {
-                // Get the first user message as preview
-                const firstMessage = chat.conversation.find(msg => msg.rule === 'user')?.content || 'Empty conversation';
-                const chatEntry = `
-                    <div class="chat-history-entry p-3" data-chat-id="${chat.conversation_id}">
-                        <div class="d-flex justify-content-between align-items-start mb-2">
-                            <span class="preview-text">${firstMessage}</span>
-                        </div>
-                        <small class="text-muted">${chat.timestamp}</small>
-                    </div>
-                `;
-                $chatHistoryList.append(chatEntry);
-            });
-            // Show the modal
-            const chatHistoryModal = new bootstrap.Modal('#chatHistoryModal');
-            chatHistoryModal.show();
-        } catch (error) {
-            console.error('Error fetching chat history:', error);
-            // Handle error appropriately
-        }
-    });
-
-    // Handle chat history entry click
-    $(document).on('click', '.chat-history-entry', function() {
-        const chatId = $(this).data('chat-id');
-        // Find the chat in our loaded history
-        const selectedChat = chatHistory.find(chat => chat.conversation_id === chatId);
-        if (selectedChat) {
-            // Update current conversation ID
-            conversationId = chatId;
-            // Clear current messages
-            $('.message-container').remove();
-            $('.welcome-msg').hide();
-            // Display all messages from the conversation
-            selectedChat.conversation.forEach(msg => {
-                addMessage(msg.content, msg.rule === 'user');
-            });
-            // Close the modal
-            $('#chatHistoryModal').modal('hide');
         }
     });
 
@@ -456,23 +366,12 @@ $(document).ready(function() {
         setTimeout(startNewChat, 100);
     });
 
+    // StartNewChat function
     function startNewChat() {
-        conversationId = `conv-${Math.random().toString(36).substring(2, 10)}`;
-        // Clear current messages
-        $('.message-container').remove();
-        // Get company name from the same modal as the start chat button
         const companyInfo = $('.start-chat-btn').closest('.modal-content').find('.company-name');
-        console.log(companyInfo);
         const companyName = companyInfo.find('span').text();
         const companyLogo = companyInfo.find('img').attr('src');
-        // Add initial message with company logo and name
-        $welcomeMessage.html(`
-            <div class="align-items-center mb-2">
-                <h5>Hello! Ask me anything about</h5>
-                <h5 class="text-muted"><img src="${companyLogo}" alt="Logo" class="me-2" style="width: 20px; height: 20px;">${companyName}</h5>
-            </div>
-        `).show();
-        // Switch to chat-content tab
+        chatManager.startNewChat(companyName, companyLogo);
         $('#chat-tab').tab('show');
     }
 
