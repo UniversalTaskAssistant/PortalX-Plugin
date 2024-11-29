@@ -5,15 +5,6 @@ export class UIManager {
         this.$historyConversationsBtn = $('#historyConversationsBtn');
         this.$websiteDetailsModal = $('#websiteDetailsModal');
         this.$startChatBtn = $('.start-chat-btn');
-
-        this.initializeTooltips();
-    }
-
-    initializeTooltips() {
-        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-        tooltipTriggerList.map(function (tooltipTriggerEl) {
-            return new bootstrap.Tooltip(tooltipTriggerEl);
-        });
     }
 
     showModal(modalId) {

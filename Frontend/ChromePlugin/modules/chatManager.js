@@ -5,6 +5,10 @@ export class ChatManager {
         this.$queryInput = $('#queryInput');
         this.$welcomeMessage = $('.welcome-msg');
         this.$chatHistoryList = $('#chatHistoryList');
+        this.$newConversationBtn = $('#newConversationBtn');
+        this.$historyConversationsBtn = $('#historyConversationsBtn');
+        this.$chatHistoryModal = $('#chatHistoryModal');
+        this.$startChatBtn = $('.start-chat-btn');
 
         this.conversationId = this.generateConversationId();
         this.chatHistory = [];
@@ -16,11 +20,45 @@ export class ChatManager {
     // ****** INITIALIZATION ******
     // Initialize event listeners
     initializeEventListeners() {
+        // Query button click handler
         this.$queryButton.on('click', () => this.handleQuery());
+
+        // Query input keypress handler
         this.$queryInput.on('keypress', (e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
                 this.$queryButton.click();
+            }
+        });
+
+        // New conversation button click handler
+        this.$newConversationBtn.on('click', () => {
+            this.startNewChat('', '');
+        });
+
+        // History conversations handler
+        this.$historyConversationsBtn.on('click', async () => {
+            try {
+                const chatHistory = await this.loadAllChatHistory('test1');
+                this.updateChatHistoryList(chatHistory);
+                const modal = new bootstrap.Modal(this.$chatHistoryModal);
+                modal.show();
+            } catch (error) {
+                console.error('Error fetching chat history:', error);
+            }
+        });
+
+        // Start chat button click handler
+        this.$startChatBtn.on('click', () => {
+            setTimeout(() => this.startNewChatWithCompanyInfo(), 100);
+        });
+
+        // Chat history entry click handler
+        $(document).on('click', '.chat-history-entry', (e) => {
+            const chatId = $(e.currentTarget).data('chat-id');
+            if (this.loadChat(chatId)) {
+                const modal = bootstrap.Modal.getInstance('#chatHistoryModal');
+                modal.hide();
             }
         });
     }
@@ -100,6 +138,15 @@ export class ChatManager {
             </div>
         `).show();
         this.$queryInput.val('');
+    }
+
+    // Start a new chat with company info
+    startNewChatWithCompanyInfo() {
+        const companyInfo = this.$startChatBtn.closest('.modal-content').find('.company-name');
+        const companyName = companyInfo.find('span').text();
+        const companyLogo = companyInfo.find('img').attr('src');
+        this.startNewChat(companyName, companyLogo);
+        $('#chat-tab').tab('show');
     }
 
     // Load a chat by id (conversation id)

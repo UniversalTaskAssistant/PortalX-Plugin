@@ -9,6 +9,15 @@ $(document).ready(function() {
     const websiteManager = new WebsiteManager();
     // Initialize ChatManager
     const chatManager = new ChatManager();
+    // Initialize tooltips
+    function initializeTooltips() {
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    }
+    initializeTooltips();
+
 
     // Add handler for the start crawl button
     $('#startCrawlBtn').on('click', async function() {
@@ -30,30 +39,6 @@ $(document).ready(function() {
         } finally {
             uiManager.$crawlButton.prop('disabled', false)
                        .html('<i class="bi bi-spider me-2"></i>Analyze');
-        }
-    });
-
-    // Update the new conversation handler
-    uiManager.$newConversationBtn.on('click', function() {
-        chatManager.startNewChat('', '');
-    });
-
-    // Update history conversations handler
-    uiManager.$historyConversationsBtn.on('click', async function() {
-        try {
-            const chatHistory = await chatManager.loadAllChatHistory('test1');
-            chatManager.updateChatHistoryList(chatHistory);
-            uiManager.showModal('#chatHistoryModal');
-        } catch (error) {
-            console.error('Error fetching chat history:', error);
-        }
-    });
-
-    // Update chat history entry click handler
-    $(document).on('click', '.chat-history-entry', function() {
-        const chatId = $(this).data('chat-id');
-        if (chatManager.loadChat(chatId)) {
-            uiManager.hideModal('#chatHistoryModal');
         }
     });
 
@@ -155,19 +140,4 @@ $(document).ready(function() {
         // Ensure the button loses focus after modal is hidden
         uiManager.$startChatBtn.blur();
     });
-
-    // Add separate click handler for start chat button
-    uiManager.$startChatBtn.on('click', function() {
-        // Small delay to ensure modal is fully closed before starting chat
-        setTimeout(startNewChat, 100);
-    });
-
-    // StartNewChat function
-    function startNewChat() {
-        const companyInfo = uiManager.$startChatBtn.closest('.modal-content').find('.company-name');
-        const companyName = companyInfo.find('span').text();
-        const companyLogo = companyInfo.find('img').attr('src');
-        chatManager.startNewChat(companyName, companyLogo);
-        $('#chat-tab').tab('show');
-    }
 }); 
