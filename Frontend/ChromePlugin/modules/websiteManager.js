@@ -9,11 +9,17 @@ export class WebsiteManager {
         };
         this.websitesData = new Map();
         
+        this.$websiteSearch = $('#websiteSearch');
+        this.$historyList = $('#history-list');
+        
         this.initializeEventListeners();
+        this.initializeWebsiteSearch();
         this.updateCurrentWebsiteAnalysis();
     }
 
-    // Initialization
+    // ****************************
+    // ****** INITIALIZATION ******
+    // Initialize event listeners
     initializeEventListeners() {
         // Listen for tab changes
         chrome.tabs.onActivated.addListener(() => this.updateCurrentWebsiteAnalysis());
@@ -28,6 +34,19 @@ export class WebsiteManager {
         });
     }
     
+    // Initialize the website search
+    initializeWebsiteSearch() {
+        this.$websiteSearch.on('input', function() {
+            const searchTerm = $(this).val().toLowerCase();
+            $('.website-entry').each(function() {
+                const text = $(this).text().toLowerCase();
+                $(this).toggle(text.includes(searchTerm));
+            });
+        });
+    }
+    
+    // **********************
+    // ****** GET DATA ******
     // Get the website data
     getWebsiteData(url) {
         return this.websitesData.get(url);
@@ -68,6 +87,8 @@ export class WebsiteManager {
         }
     }
     
+    // *************************
+    // ****** START CRAWL ******
     // Start crawling the current website
     async startCrawl(companyName, domainLimit) {
         try {
@@ -87,6 +108,8 @@ export class WebsiteManager {
         }
     }
 
+    // *******************************
+    // ******* UPDATE SECTIONS *******
     // Update the tab for current website
     updateCurrentWebsiteAnalysis() {
         chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
@@ -130,6 +153,33 @@ export class WebsiteManager {
         `);
     }
 
+    // Update the websites history list
+    updateWebsitesHistoryList(websites) {
+        this.$historyList.empty();
+        websites.forEach(site => {
+            const faviconUrl = this.getFaviconUrl(site.start_urls[0]);
+            const websiteEntry = `
+                <div class="website-entry" data-url="${site.start_urls[0]}">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div class="d-flex align-items-center">
+                            <img src="${faviconUrl}" alt="" class="website-favicon me-2">
+                            <h6 class="mb-0">${site.company_name}</h6>
+                        </div>
+                        <small class="text-muted">${this.formatTimestamp(site.crawl_time)}</small>
+                    </div>
+                    <span class="url-text mb-3">${site.start_urls[0]}</span>
+                    <div class="d-flex align-items-center">
+                        <span class="badge ${site.crawl_finished ? 'bg-success' : 'bg-warning'} me-2">
+                            ${site.crawl_finished ? 'Analyzed' : 'In Progress'}
+                        </span>
+                        <span class="stats-text">${site.visited_urls.length} pages crawled</span>
+                    </div>
+                </div>
+            `;
+            this.$historyList.append(websiteEntry);
+        });
+    }
+
     // Format the timestamp
     formatTimestamp(timestamp) {
         const date = new Date(timestamp);
@@ -141,4 +191,5 @@ export class WebsiteManager {
         if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes/60)}h ago`;
         return `${Math.floor(diffInMinutes/1440)}d ago`;
     }
+    
 }

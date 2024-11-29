@@ -72,7 +72,7 @@ $(document).ready(function() {
     async function updateHistoryList() {
         try {
             const websites = await websiteManager.getWebsites();
-            uiManager.updateHistoryList(websites, websiteManager);
+            websiteManager.updateWebsitesHistoryList(websites);
         } catch (error) {
             console.error('Error updating history list:', error);
         }
