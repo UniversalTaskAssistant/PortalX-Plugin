@@ -13,6 +13,7 @@ export class WebsiteManager {
         this.updateCurrentTab();
     }
 
+    // Initialization
     initializeEventListeners() {
         // Listen for tab changes
         chrome.tabs.onActivated.addListener(() => this.updateCurrentTab());
@@ -25,6 +26,65 @@ export class WebsiteManager {
                 }
             });
         });
+    }
+    
+    // Get the website data
+    getWebsiteData(url) {
+        return this.websitesData.get(url);
+    }
+
+    // Get the current website info
+    getCurrentWebsiteInfo() {
+        return this.currentWebsiteInfo;
+    }
+
+    // Get the favicon URL
+    getFaviconUrl(url) {
+        try {
+            const domain = new URL(url).hostname;
+            return `https://www.google.com/s2/favicons?domain=${domain}&sz=32`;
+        } catch (e) {
+            return null;
+        }
+    }
+
+    // Get all websites data from the server
+    async getWebsites() {
+        try {
+            const websites = await $.ajax({
+                url: 'http://localhost:7777/get_websites',
+                method: 'GET'
+            });
+            // Clear and update the websites data
+            this.websitesData.clear();
+            websites.forEach(site => {
+                this.websitesData.set(site.start_urls[0], site);
+            });
+            
+            return websites;
+        } catch (error) {
+            console.error('Error fetching website history:', error);
+            throw error;
+        }
+    }
+    
+    // Start crawling the current website
+    async startCrawl(companyName, domainLimit) {
+        try {
+            const response = await $.ajax({
+                url: 'http://localhost:7777/crawl',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    web_url: this.currentWebsiteInfo.url,
+                    company_name: companyName,
+                    domain_limit: domainLimit
+                })
+            });
+            return { success: true, message: 'Crawling completed successfully!' };
+        } catch (error) {
+            return { success: false, message: `Error during crawling: ${error.message}` };
+        }
     }
 
     // Update the tab for current website
@@ -55,25 +115,6 @@ export class WebsiteManager {
         });
     }
 
-    // Start crawling the current website
-    async startCrawl(companyName, domainLimit) {
-        try {
-            const response = await $.ajax({
-                url: 'http://localhost:7777/crawl',
-                method: 'POST',
-                contentType: 'application/json',
-                data: JSON.stringify({
-                    web_url: this.currentWebsiteInfo.url,
-                    company_name: companyName,
-                    domain_limit: domainLimit
-                })
-            });
-            return { success: true, message: 'Crawling completed successfully!' };
-        } catch (error) {
-            return { success: false, message: `Error during crawling: ${error.message}` };
-        }
-    }
-
     // Format the timestamp
     formatTimestamp(timestamp) {
         const date = new Date(timestamp);
@@ -84,42 +125,6 @@ export class WebsiteManager {
         if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
         if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes/60)}h ago`;
         return `${Math.floor(diffInMinutes/1440)}d ago`;
-    }
-
-    // Get the favicon URL
-    getFaviconUrl(url) {
-        try {
-            const domain = new URL(url).hostname;
-            return `https://www.google.com/s2/favicons?domain=${domain}&sz=32`;
-        } catch (e) {
-            return null;
-        }
-    }
-
-    // Get the websites data
-    async getWebsites() {
-        try {
-            const websites = await $.ajax({
-                url: 'http://localhost:7777/get_websites',
-                method: 'GET'
-            });
-            
-            // Clear and update the websites data
-            this.websitesData.clear();
-            websites.forEach(site => {
-                this.websitesData.set(site.start_urls[0], site);
-            });
-            
-            return websites;
-        } catch (error) {
-            console.error('Error fetching website history:', error);
-            throw error;
-        }
-    }
-
-    // Get the website data
-    getWebsiteData(url) {
-        return this.websitesData.get(url);
     }
 
     // Update the analysis section
@@ -137,8 +142,4 @@ export class WebsiteManager {
         `);
     }
 
-    // Get the current website info
-    getCurrentWebsiteInfo() {
-        return this.currentWebsiteInfo;
-    }
 }
