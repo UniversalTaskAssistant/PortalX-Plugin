@@ -9,12 +9,10 @@ export class WebsiteManager {
         };
         this.websitesData = new Map();
         
-        this.$websiteSearch = $('#websiteSearch');
-        this.$historyList = $('#history-list');
-        
+        this.updateCurrentWebsiteInfo();
         this.initializeEventListeners();
         this.initializeWebsiteSearch();
-        this.updateCurrentWebsiteAnalysis();
+        this.initializeCrawlButton();
     }
 
     // ****************************
@@ -22,13 +20,12 @@ export class WebsiteManager {
     // Initialize event listeners
     initializeEventListeners() {
         // Listen for tab changes
-        chrome.tabs.onActivated.addListener(() => this.updateCurrentWebsiteAnalysis());
-
+        chrome.tabs.onActivated.addListener(() => this.updateCurrentWebsiteInfo());
         // Listen for tab updates
         chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
             chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
                 if (tabs[0] && tabs[0].id === tabId) {
-                    this.updateCurrentWebsiteAnalysis();
+                    this.updateCurrentWebsiteInfo();
                 }
             });
         });
@@ -36,12 +33,50 @@ export class WebsiteManager {
     
     // Initialize the website search
     initializeWebsiteSearch() {
-        this.$websiteSearch.on('input', function() {
+        $('#websiteSearch').on('input', function() {
             const searchTerm = $(this).val().toLowerCase();
             $('.website-entry').each(function() {
                 const text = $(this).text().toLowerCase();
                 $(this).toggle(text.includes(searchTerm));
             });
+        });
+    }
+
+    // Initialize the crawl settings button
+    initializeCrawlButton() {
+        const self = this;  // Store reference to class instance
+        $('#crawlButton').on('click', function() {
+            const currentInfo = self.getCurrentWebsiteInfo();
+            $('#websiteDomain').val(currentInfo.domainName);
+            $('#hostName').val(currentInfo.hostName);
+            $('#subdomainLimit').val(currentInfo.subdomain);
+            new bootstrap.Modal('#crawlParametersModal').show();
+        });
+    }
+
+    // Update the current website info
+    updateCurrentWebsiteInfo() {
+        chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
+            if (tabs[0]) {
+                const currentUrl = tabs[0].url;
+                const urlObj = new URL(currentUrl);
+                // Extract domain, host, and subdomain
+                const domainName = urlObj.hostname;
+                const hostName = domainName.replace('www.', '').split('.')[0];
+                const subdomain = urlObj.pathname.split('/')[1] ?
+                    `${domainName}/${urlObj.pathname.split('/')[1]}/` :
+                    domainName + '/';
+                this.currentWebsiteInfo = {
+                    url: currentUrl,
+                    title: tabs[0].title || urlObj.hostname,
+                    domainName: domainName,
+                    hostName: hostName,
+                    subdomain: subdomain
+                };
+                // Update the html analysis section
+                this.updateAnalysisSection();
+                console.log('Current URL updated:', currentUrl);
+            }
         });
     }
     
@@ -110,34 +145,6 @@ export class WebsiteManager {
 
     // *******************************
     // ******* UPDATE SECTIONS *******
-    // Update the tab for current website
-    updateCurrentWebsiteAnalysis() {
-        chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
-            if (tabs[0]) {
-                const currentUrl = tabs[0].url;
-                const urlObj = new URL(currentUrl);
-
-                // Extract domain, host, and subdomain
-                const domainName = urlObj.hostname;
-                const hostName = domainName.replace('www.', '').split('.')[0];
-                const subdomain = urlObj.pathname.split('/')[1] ? 
-                    `${domainName}/${urlObj.pathname.split('/')[1]}/` : 
-                    domainName + '/';
-
-                this.currentWebsiteInfo = {
-                    url: currentUrl,
-                    title: tabs[0].title || urlObj.hostname,
-                    domainName: domainName,
-                    hostName: hostName,
-                    subdomain: subdomain
-                };
-                
-                this.updateAnalysisSection();
-                console.log('Current URL updated:', currentUrl);
-            }
-        });
-    }
-
     // Update the analysis section
     updateAnalysisSection() {
         const faviconUrl = this.getFaviconUrl(this.currentWebsiteInfo.url);
@@ -155,7 +162,8 @@ export class WebsiteManager {
 
     // Update the websites history list
     updateWebsitesHistoryList(websites) {
-        this.$historyList.empty();
+        let historyList = $('#history-list');
+        historyList.empty();
         websites.forEach(site => {
             const faviconUrl = this.getFaviconUrl(site.start_urls[0]);
             const websiteEntry = `
@@ -176,7 +184,7 @@ export class WebsiteManager {
                     </div>
                 </div>
             `;
-            this.$historyList.append(websiteEntry);
+            historyList.append(websiteEntry);
         });
     }
 

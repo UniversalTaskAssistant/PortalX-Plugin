@@ -10,16 +10,6 @@ $(document).ready(function() {
     // Initialize ChatManager
     const chatManager = new ChatManager();
 
-    // Modify the crawl button click handler
-    uiManager.$crawlButton.on('click', function() {
-        const currentInfo = websiteManager.getCurrentWebsiteInfo();
-        // Pre-fill the domain field
-        $('#websiteDomain').val(currentInfo.domainName);
-        $('#hostName').val(currentInfo.hostName);
-        $('#subdomainLimit').val(currentInfo.subdomain);
-        uiManager.showModal('#crawlParametersModal');
-    });
-
     // Add handler for the start crawl button
     $('#startCrawlBtn').on('click', async function() {
         const companyName = $('#companyName').val()?.trim() || '';
@@ -28,7 +18,6 @@ $(document).ready(function() {
             alert('Please enter a company name');
             return;
         }
-        
         try {
             uiManager.hideModal('#crawlParametersModal');
             uiManager.$crawlButton.prop('disabled', true)
