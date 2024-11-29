@@ -10,19 +10,19 @@ export class WebsiteManager {
         this.websitesData = new Map();
         
         this.initializeEventListeners();
-        this.updateCurrentTab();
+        this.updateCurrentWebsiteAnalysis();
     }
 
     // Initialization
     initializeEventListeners() {
         // Listen for tab changes
-        chrome.tabs.onActivated.addListener(() => this.updateCurrentTab());
+        chrome.tabs.onActivated.addListener(() => this.updateCurrentWebsiteAnalysis());
 
         // Listen for tab updates
         chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
             chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
                 if (tabs[0] && tabs[0].id === tabId) {
-                    this.updateCurrentTab();
+                    this.updateCurrentWebsiteAnalysis();
                 }
             });
         });
@@ -88,7 +88,7 @@ export class WebsiteManager {
     }
 
     // Update the tab for current website
-    updateCurrentTab() {
+    updateCurrentWebsiteAnalysis() {
         chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
             if (tabs[0]) {
                 const currentUrl = tabs[0].url;
@@ -115,18 +115,6 @@ export class WebsiteManager {
         });
     }
 
-    // Format the timestamp
-    formatTimestamp(timestamp) {
-        const date = new Date(timestamp);
-        const now = new Date();
-        const diffInMinutes = Math.floor((now - date) / (1000 * 60));
-        
-        if (diffInMinutes < 1) return 'just now';
-        if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
-        if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes/60)}h ago`;
-        return `${Math.floor(diffInMinutes/1440)}d ago`;
-    }
-
     // Update the analysis section
     updateAnalysisSection() {
         const faviconUrl = this.getFaviconUrl(this.currentWebsiteInfo.url);
@@ -142,4 +130,15 @@ export class WebsiteManager {
         `);
     }
 
+    // Format the timestamp
+    formatTimestamp(timestamp) {
+        const date = new Date(timestamp);
+        const now = new Date();
+        const diffInMinutes = Math.floor((now - date) / (1000 * 60));
+        
+        if (diffInMinutes < 1) return 'just now';
+        if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
+        if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes/60)}h ago`;
+        return `${Math.floor(diffInMinutes/1440)}d ago`;
+    }
 }
