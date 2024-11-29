@@ -1,4 +1,5 @@
 import { ChatManager } from './modules/chatManager.js';
+import { WebsiteManager } from './modules/websiteManager.js';
 
 $(document).ready(function() {
     const $crawlButton = $('#crawlButton');
@@ -26,52 +27,40 @@ $(document).ready(function() {
         return new bootstrap.Tooltip(tooltipTriggerEl)
     });
 
-    // Function to update current tab info
-    function updateCurrentTab() {
-        chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-            if (tabs[0]) {
-                currentUrl = tabs[0].url;
-                const urlObj = new URL(currentUrl);
-                console.log(urlObj);
+    // Initialize WebsiteManager
+    const websiteManager = new WebsiteManager();
 
-                // Extract domain, host, and subdomain
-                const domainName = urlObj.hostname;
-                // Split domain by dots and get the main domain name
-                // For 'www.tum.de' or 'tum.de', get 'tum'
-                const hostName = domainName.replace('www.', '').split('.')[0];
-                const subdomain = urlObj.pathname.split('/')[1] ? 
-                    `${domainName}/${urlObj.pathname.split('/')[1]}/` : 
-                    domainName + '/';
-
-                currentWebsiteInfo = {
-                    url: currentUrl,
-                    title: tabs[0].title || urlObj.hostname,
-                    domainName: domainName,
-                    hostName: hostName,
-                    subdomain: subdomain
-                };
-                
-                updateAnalysisSection();
-                console.log('Current URL updated:', currentUrl);
-            }
-        });
-    }
-
-    // Initial update
-    updateCurrentTab();
-
-    // Listen for tab changes
-    chrome.tabs.onActivated.addListener(function(activeInfo) {
-        updateCurrentTab();
+    // Modify the crawl button click handler
+    $crawlButton.on('click', function() {
+        const currentInfo = websiteManager.getCurrentWebsiteInfo();
+        // Pre-fill the domain field
+        $('#websiteDomain').val(currentInfo.domainName);
+        $('#hostName').val(currentInfo.hostName);
+        $('#subdomainLimit').val(currentInfo.subdomain);
+        // Show the modal
+        const modal = new bootstrap.Modal('#crawlParametersModal');
+        modal.show();
     });
 
-    // Listen for tab updates (URL changes, title changes, etc.)
-    chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
-        chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-            if (tabs[0] && tabs[0].id === tabId) {
-                updateCurrentTab();
-            }
-        });
+    // Add handler for the start crawl button
+    $('#startCrawlBtn').on('click', async function() {
+        const modal = bootstrap.Modal.getInstance('#crawlParametersModal');
+        const companyName = $('#hostName').val().trim();
+        const domainLimit = $('#subdomainLimit').val().trim();
+        
+        try {
+            modal.hide();
+            $crawlButton.prop('disabled', true)
+                .html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Crawling...');
+                
+            const result = await websiteManager.startCrawl(companyName, domainLimit);
+            chatManager.addMessage(result.message);
+        } catch (error) {
+            chatManager.addMessage(`Error during crawling: ${error.message}`);
+        } finally {
+            $crawlButton.prop('disabled', false)
+                       .html('<i class="bi bi-spider me-2"></i>Analyze');
+        }
     });
 
     // Initialize ChatManager
@@ -117,116 +106,38 @@ $(document).ready(function() {
         }
     });
 
-    // Modify the crawl button click handler
-    $crawlButton.on('click', function() {
-        // Pre-fill the domain field
-        $('#websiteDomain').val(currentWebsiteInfo['domainName']);
-        $('#hostName').val(currentWebsiteInfo['hostName']);
-        $('#subdomainLimit').val(currentWebsiteInfo['subdomain']);
-        // Show the modal
-        const modal = new bootstrap.Modal('#crawlParametersModal');
-        modal.show();
-    });
-
-    // Add handler for the start crawl button
-    $('#startCrawlBtn').on('click', async function() {
-        const modal = bootstrap.Modal.getInstance('#crawlParametersModal');
-        const companyName = $('#companyName').val().trim();
-        const domainLimit = $('#subdomainLimit').val().trim();
-        
-        if (!companyName) {
-            alert('Please enter a company name');
-            return;
-        }
-        
+    // Update history list
+    async function updateHistoryList() {
         try {
-            modal.hide();
-            $crawlButton.prop('disabled', true)
-                .html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Crawling...');
-                
-            const response = await $.ajax({
-                url: 'http://localhost:7777/crawl',
-                method: 'POST',
-                contentType: 'application/json',
-                data: JSON.stringify({
-                    web_url: currentUrl,
-                    company_name: companyName,
-                    domain_limit: domainLimit
-                })
-            });
-            chatManager.addMessage('Crawling completed successfully! You can now ask questions about this website.');
-        } catch (error) {
-            chatManager.addMessage(`Error during crawling: ${error.message}`);
-        } finally {
-            $crawlButton.prop('disabled', false)
-                       .html('<i class="bi bi-spider me-2"></i>Analyze');
-        }
-    });
-
-    // Add this function to format the crawl time
-    function formatTimestamp(timestamp) {
-        const date = new Date(timestamp);
-        const now = new Date();
-        const diffInMinutes = Math.floor((now - date) / (1000 * 60));
-        
-        if (diffInMinutes < 1) return 'just now';
-        if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
-        if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes/60)}h ago`;
-        return `${Math.floor(diffInMinutes/1440)}d ago`;
-    }
-
-    // Function to get favicon URL
-    function getFaviconUrl(url) {
-        try {
-            const domain = new URL(url).hostname;
-            return `https://www.google.com/s2/favicons?domain=${domain}&sz=32`;
-        } catch (e) {
-            return null;
-        }
-    }
-
-    // Update the website entry HTML in updateHistoryList
-    function updateHistoryList() {
-        $.ajax({
-            url: 'http://localhost:7777/get_websites',
-            method: 'GET',
-            success: function(websites) {
-                const $historyList = $('#history-list');
-                $historyList.empty();
-                
-                // Clear and update the websites data
-                websitesData.clear();
-                
-                websites.forEach(site => {
-                    // Store the full site data in our Map
-                    websitesData.set(site.start_urls[0], site);
-                    
-                    const faviconUrl = getFaviconUrl(site.start_urls[0]);
-                    const websiteEntry = `
-                        <div class="website-entry" data-url="${site.start_urls[0]}">
-                            <div class="d-flex justify-content-between align-items-start mb-2">
-                                <div class="d-flex align-items-center">
-                                    <img src="${faviconUrl}" alt="" class="website-favicon me-2">
-                                    <h6 class="mb-0">${site.company_name}</h6>
-                                </div>
-                                <small class="text-muted">${formatTimestamp(site.crawl_time)}</small>
-                            </div>
-                            <span class="url-text mb-3">${site.start_urls[0]}</span>
+            const websites = await websiteManager.getWebsites();
+            const $historyList = $('#history-list');
+            $historyList.empty();
+            
+            websites.forEach(site => {
+                const faviconUrl = websiteManager.getFaviconUrl(site.start_urls[0]);
+                const websiteEntry = `
+                    <div class="website-entry" data-url="${site.start_urls[0]}">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
                             <div class="d-flex align-items-center">
-                                <span class="badge ${site.crawl_finished ? 'bg-success' : 'bg-warning'} me-2">
-                                    ${site.crawl_finished ? 'Analyzed' : 'In Progress'}
-                                </span>
-                                <span class="stats-text">${site.visited_urls.length} pages crawled</span>
+                                <img src="${faviconUrl}" alt="" class="website-favicon me-2">
+                                <h6 class="mb-0">${site.company_name}</h6>
                             </div>
+                            <small class="text-muted">${websiteManager.formatTimestamp(site.crawl_time)}</small>
                         </div>
-                    `;
-                    $historyList.append(websiteEntry);
-                });
-            },
-            error: function(xhr, status, error) {
-                console.error('Error fetching website history:', error);
-            }
-        });
+                        <span class="url-text mb-3">${site.start_urls[0]}</span>
+                        <div class="d-flex align-items-center">
+                            <span class="badge ${site.crawl_finished ? 'bg-success' : 'bg-warning'} me-2">
+                                ${site.crawl_finished ? 'Analyzed' : 'In Progress'}
+                            </span>
+                            <span class="stats-text">${site.visited_urls.length} pages crawled</span>
+                        </div>
+                    </div>
+                `;
+                $historyList.append(websiteEntry);
+            });
+        } catch (error) {
+            console.error('Error updating history list:', error);
+        }
     }
 
     // Update history when history tab is shown
@@ -243,16 +154,16 @@ $(document).ready(function() {
         });
     });
 
-    // Add website entry click handler
+    // Update website entry click handler
     $(document).on('click', '.website-entry', function() {
         const url = $(this).data('url');
-        const websiteData = websitesData.get(url);
+        const websiteData = websiteManager.getWebsiteData(url);
         if (!websiteData) return;
         
         const $modal = $('#websiteDetailsModal');
         
         // Update modal content
-        const faviconUrl = getFaviconUrl(websiteData.start_urls[0]);
+        const faviconUrl = websiteManager.getFaviconUrl(websiteData.start_urls[0]);
         $modal.find('.company-name').html(`
             <img src="${faviconUrl}" alt="">
             <span>${websiteData.company_name}</span>
@@ -336,23 +247,6 @@ $(document).ready(function() {
         const modal = new bootstrap.Modal($modal);
         modal.show();
     });
-
-    // Add this new function to update the analysis section
-    function updateAnalysisSection() {
-        const faviconUrl = getFaviconUrl(currentWebsiteInfo.url);
-        const $currentWebsite = $('.current-website');
-        // Remove existing current-website if it exists
-        $currentWebsite.empty();
-        // Add website info before the button
-        $currentWebsite.append(`
-            <div class="d-flex align-items-center">
-                <img src="${faviconUrl}" alt="" class="website-favicon me-2">
-                <div class="website-info-text">
-                    <div class="website-title text-truncate">${currentWebsiteInfo.title}</div>
-                </div>
-            </div>
-        `);
-    }
 
     // Add event listener for modal hidden event
     $('#websiteDetailsModal').on('hidden.bs.modal', function () {
