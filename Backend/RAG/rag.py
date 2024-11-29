@@ -1,33 +1,51 @@
 from llama_index.core import VectorStoreIndex, SimpleDirectoryReader, Settings
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 from llama_index.llms.openai import OpenAI
-import os
-import sys
+from transformers import AutoModel
 from typing import Dict, Any
+
+import os
 
 class RAGSystem:
     def __init__(self):
         """
         Initialize RAG system with empty components.
         """
-        if 'Backend' in sys.path[-1]:
-            self.openai_api_key = open(os.path.join(sys.path[-1], 'RAG/openaikey.txt'), 'r').read().strip()
+        # Determine the path to the 'openaikey.txt' file
+        key_file_path = os.path.join(os.path.dirname(__file__), 'openaikey.txt')
+
+        # Load the OpenAI API key
+        if os.path.exists(key_file_path):
+            with open(key_file_path, 'r') as key_file:
+                self.openai_api_key = key_file.read().strip()
         else:
-            self.openai_api_key = open('Backend/RAG/openaikey.txt', 'r').read().strip()
+            raise FileNotFoundError(f"OpenAI API key file not found at {key_file_path}. Please ensure it exists.")
 
+        # Initialize other attributes
         self.current_directory_path = None  # Path to the currently loaded directory
+        self.embed_model = None            # Initialize embedding model
+        self.documents = None              # Placeholder for documents
+        self.index = None                  # Vector store index
+        self.query_engine = None           # Query engine with response synthesis
+        self.custom_prompt = self.load_custom_prompt()
 
-        # Initialize embedding model
-        self.embed_model = None
-        # Load documents with progress bar
-        self.documents = None
-        # Create vector store index
-        self.index = None
-        # Create query engine with response synthesis
-        self.query_engine = None
+    def load_custom_prompt(self) -> str:
+        """
+        Load the custom prompt from the prompts/custom_prompt.txt file.
+        Returns:
+            str: The custom prompt as a string.
+        """
+        # Path to the custom_prompt.txt file in the 'prompts' folder
+        prompt_file_path = os.path.join(os.path.dirname(__file__), 'prompts', 'custom_prompt.txt')
+
+        if os.path.exists(prompt_file_path):
+            with open(prompt_file_path, 'r') as prompt_file:
+                return prompt_file.read()
+        else:
+            raise FileNotFoundError(f"Custom prompt file not found at {prompt_file_path}. Please ensure it exists.")
 
     def initialize(self, directory_path: str,
-        embed_model_name: str = "BAAI/bge-small-en-v1.5",
+        embed_model_name: str = "hkunlp/instructor-xl",
         chunk_size: int = 1024,
         chunk_overlap: int = 200,
         load_from_disk: bool = True):
@@ -47,8 +65,9 @@ class RAGSystem:
             model_name=embed_model_name,
             embed_batch_size=100
         )
+
         # Configure settings with the new API
-        os.environ["OPENAI_API_KEY"] = self.openai_api_key  
+        os.environ["OPENAI_API_KEY"] = self.openai_api_key
         Settings.llm = OpenAI(model="gpt-4", temperature=0)
         Settings.embed_model = self.embed_model
         Settings.chunk_size = chunk_size
@@ -77,11 +96,12 @@ class RAGSystem:
             self.index.storage_context.persist(persist_dir=f"{directory_path}/embedding")
             print("Index saved to disk.")
 
-        # Create query engine with response synthesis
+        # Create query engine with refined prompt
         self.query_engine = self.index.as_query_engine(
             response_mode="tree_summarize",
             similarity_top_k=3,
-            streaming=True
+            streaming=True,
+            custom_prompt=self.custom_prompt  # Load from file
         )
 
     def query(self, question: str) -> Dict[str, Any]:
@@ -133,10 +153,11 @@ class RAGSystem:
 
 if __name__ == "__main__":
     rag = RAGSystem()
-    rag.initialize(
-        directory_path="./Output/websites/tum"
-    )
-    
+    relative_directory_path = "../Output/websites/tum"
+    absolute_directory_path = os.path.abspath(relative_directory_path)
+    rag.initialize(directory_path=absolute_directory_path)
+
+
     print("Welcome!")
     # Example query
     while True:
