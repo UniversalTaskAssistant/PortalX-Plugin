@@ -13,6 +13,7 @@ export class WebsiteManager {
         this.initializeEventListeners();
         this.initializeWebsiteSearch();
         this.initializeCrawlButton();
+        this.initializeWebsiteEntryHandler();
     }
 
     // ****************************
@@ -32,6 +33,12 @@ export class WebsiteManager {
 
         // Add history tab listener
         $('#history-tab').on('shown.bs.tab', () => this.updateWebsitesHistoryList());
+
+        // Add event listener for modal hidden event
+        $('#websiteDetailsModal').on('hidden.bs.modal', function () {
+            // Ensure the start chat button loses focus after modal is hidden
+            $('#startChatBtn').blur();
+        });
     }
     
     // Initialize the website search
@@ -54,6 +61,36 @@ export class WebsiteManager {
             $('#hostName').val(currentInfo.hostName);
             $('#subdomainLimit').val(currentInfo.subdomain);
             new bootstrap.Modal('#crawlParametersModal').show();
+        });
+    }
+
+    // Website entry click handler to show the website details modal
+    initializeWebsiteEntryHandler() {
+        $(document).on('click', '.website-entry', (event) => {
+            const url = $(event.currentTarget).data('url');
+            const websiteData = this.getWebsiteData(url);
+            if (!websiteData) return;
+            const $modal = $('#websiteDetailsModal');
+            
+            // Update modal content
+            const faviconUrl = this.getFaviconUrl(websiteData.start_urls[0]);
+            $modal.find('.company-name').html(`
+                <img src="${faviconUrl}" alt="">
+                <span>${websiteData.company_name}</span>
+            `);
+            
+            $modal.find('.start-url')
+                .text(websiteData.start_urls[0])
+                .attr('href', websiteData.start_urls[0]);
+            $modal.find('.pages-count').text(websiteData.visited_urls.length);
+            $modal.find('.domains-count').text(Object.keys(websiteData.domain_urls).length);
+            
+            this.updateModalDomainsList($modal, websiteData);
+            this.updateModalFailedUrlsList($modal, websiteData);
+            
+            // Show modal using Bootstrap
+            const modal = new bootstrap.Modal($modal);
+            modal.show();
         });
     }
 
@@ -207,5 +244,77 @@ export class WebsiteManager {
         if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes/60)}h ago`;
         return `${Math.floor(diffInMinutes/1440)}d ago`;
     }
-    
+
+    // Update the domains list in the modal
+    updateModalDomainsList($modal, websiteData) {
+        const $domainsList = $modal.find('.domains-list').empty();
+        Object.entries(websiteData.domain_urls).forEach(([domain, count]) => {
+            $domainsList.append(`
+                <div class="domain-item d-flex justify-content-between align-items-center mb-1">
+                    <span class="domain-name">${domain}</span>
+                    <span class="domain-count badge">${count} pages</span>
+                </div>
+            `);
+        });
+    }
+
+    // Update the failed URLs list in the modal
+    updateModalFailedUrlsList($modal, websiteData) {
+        const $failedList = $modal.find('.failed-urls-list').empty();
+        if (websiteData.failed_urls?.length > 0) {
+            const initialDisplay = 3;
+            const totalUrls = websiteData.failed_urls.length;
+            
+            websiteData.failed_urls.slice(0, initialDisplay).forEach(([url, reason]) => {
+                $failedList.append(`
+                    <div class="failed-url-item mb-1">
+                        <div class="text-truncate">${url}</div>
+                        <small class="text-danger">${reason}</small>
+                    </div>
+                `);
+            });
+            
+            if (totalUrls > initialDisplay) {
+                this.addShowMoreButton($failedList, websiteData.failed_urls.slice(initialDisplay));
+            }
+        } else {
+            $failedList.append('<p class="text-muted mb-0">No failed URLs</p>');
+        }
+    }
+
+    // Add the show more button to the failed URLs list
+    addShowMoreButton($failedList, remainingUrls) {
+        const $remainingUrlsDiv = $('<div>').addClass('remaining-urls d-none');
+        
+        remainingUrls.forEach(([url, reason]) => {
+            $remainingUrlsDiv.append(`
+                <div class="failed-url-item mb-1">
+                    <div class="text-truncate">${url}</div>
+                    <small class="text-danger">${reason}</small>
+                </div>
+            `);
+        });
+        
+        const $showMoreBtn = $(`
+            <button class="btn btn-link btn-sm text-decoration-none show-more-btn">
+                <i class="bi bi-plus-circle me-1"></i>
+                Show ${remainingUrls.length} more
+            </button>
+        `);
+        
+        $showMoreBtn.on('click', function() {
+            const $btn = $(this);
+            const $remaining = $failedList.find('.remaining-urls');
+            
+            if ($remaining.hasClass('d-none')) {
+                $remaining.removeClass('d-none');
+                $btn.html('<i class="bi bi-dash-circle me-1"></i>Show less');
+            } else {
+                $remaining.addClass('d-none');
+                $btn.html(`<i class="bi bi-plus-circle me-1"></i>Show ${remainingUrls.length} more`);
+            }
+        });
+        $failedList.append($remainingUrlsDiv);
+        $failedList.append($showMoreBtn);
+    }
 }
