@@ -1,4 +1,5 @@
 from llama_index.core import VectorStoreIndex, SimpleDirectoryReader, Settings, BasePromptTemplate
+from llama_index.core.schema import NodeWithScore, TextNode
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 from llama_index.llms.openai import OpenAI
 from llama_index.retrievers.bm25 import BM25Retriever
@@ -130,10 +131,11 @@ class RAGSystem:
         retrieved_docs = self.retrieve_documents(question, top_k=top_k)
 
         #TODO Step 2: Compress and filter documents
-
+        llm = OpenAI(model="gpt-4", temperature=0)
+        compressed_docs = self.compress_and_filter_documents(retrieved_docs, question, llm)
 
         # Step 3: Construct context
-        context = "\n".join([doc.text for doc in retrieved_docs])
+        context = "\n".join([doc.text for doc in compressed_docs])
 
         # Step 4: Use custom prompt to generate response
         llm = OpenAI(model="gpt-4", temperature=0)
@@ -147,9 +149,68 @@ class RAGSystem:
                     "file": doc.metadata.get('file_name', 'Unknown'),
                     "score": round(doc.score, 3) if doc.score else None,
                     "text_chunk": doc.text[:200] + "..."
-                } for doc in retrieved_docs
+                } for doc in compressed_docs
             ]
         }
+
+    @traceable(run_type="chain")
+    def compress_and_filter_documents(self, docs: List[NodeWithScore], question: str, llm) -> List[NodeWithScore]:
+        """
+        Compress and filter documents using the language model.
+        """
+        # Initialize an empty list to store the filtered and summarized documents
+        filtered_docs = []
+
+        # Loop through each NodeWithScore and process it individually
+        for node_with_score in docs:
+            # Extract the TextNode and its text content
+            text_node = node_with_score.node
+            doc_text = text_node.text
+            metadata = text_node.metadata
+
+            # Construct the compression prompt
+            prompt = (
+                f"The following is a document retrieved based on a generalized version of the original question:\n\n"
+                f"Original Question: {question}\n\n"
+                "Generalized Question:\n"
+                "Adjust the question to a broader scope to ensure the document is evaluated for any potentially useful information:\n"
+                "Generalized Question: {generalized_question}\n\n"
+                f"Document Text:\n{doc_text}\n\n"
+                "Task:\n"
+                "1. Determine if the document contains information broadly related to the generalized question.\n"
+                "2. If the document is irrelevant to the generalized question, return an empty response.\n"
+                "3. If the document is relevant to the generalized question, summarize the text while retaining as much useful information as possible for answering the original question.\n\n"
+                "Output:\n"
+                "Summarized Text (or empty if not relevant):"
+            )
+
+            prompt = PromptTemplate(prompt)
+
+            answer = llm.predict(prompt, query=question, doc_text=doc_text)
+            # Generate a response using the LLM
+            summarized_text = answer.strip() if answer else ""
+
+            # Skip documents with empty responses
+            if not summarized_text:
+                continue
+
+            # Create a new TextNode with the summarized text
+            summarized_node = TextNode(
+                id_=text_node.id_,
+                text=summarized_text,
+                metadata=metadata  # Retain metadata
+            )
+
+            # Wrap the new TextNode in a NodeWithScore
+            filtered_node_with_score = NodeWithScore(
+                node=summarized_node,
+                score=node_with_score.score  # Retain the score from the original NodeWithScore
+            )
+
+            # Add the filtered NodeWithScore to the list
+            filtered_docs.append(filtered_node_with_score)
+
+        return filtered_docs
 
     @staticmethod
     def format_response(result: Dict[str, Any], show_sources: bool = True) -> str:
