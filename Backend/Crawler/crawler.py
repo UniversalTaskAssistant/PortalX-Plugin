@@ -53,6 +53,7 @@ class Spider(scrapy.Spider):
         spider = super().from_crawler(crawler, *args, **kwargs)
         crawler.signals.connect(spider.spider_closed, signal=signals.spider_closed)
         return spider
+    
     """
     ********************
     *** Main parsing ***
