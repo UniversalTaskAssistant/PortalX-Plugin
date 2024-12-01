@@ -1,17 +1,15 @@
-from llama_index.core import VectorStoreIndex, SimpleDirectoryReader, Settings, BasePromptTemplate
+import asyncio
+
+from llama_index.core import VectorStoreIndex, SimpleDirectoryReader, Settings
 from llama_index.core.schema import NodeWithScore, TextNode
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 from llama_index.llms.openai import OpenAI
-from llama_index.retrievers.bm25 import BM25Retriever
-from llama_index.core.node_parser import SimpleNodeParser
-from llama_index.core import get_response_synthesizer
-from llama_index.core.query_engine import RetrieverQueryEngine
 from typing import Dict, Any, List
-from llama_index.core.prompts import PromptTemplate
-import Stemmer
 import os
 from dotenv import load_dotenv
 from langsmith.run_helpers import traceable
+
+from Backend.RAG.prompts import COMPRESS_AND_FILTER_PROMPT, ANSWER_PROMPT
 
 
 class RAGSystem:
@@ -19,13 +17,8 @@ class RAGSystem:
         """
         Initialize RAG system with empty components.
         """
-        # Determine the path to the 'openaikey.txt' file
 
-
-        # Load environment variables from .env file
         load_dotenv()
-
-        # Load the OpenAI API key
         self.openai_api_key = os.getenv('OPENAI_API_KEY')
 
         if not self.openai_api_key:
@@ -38,21 +31,6 @@ class RAGSystem:
         self.documents = None              # Placeholder for documents
         self.index = None                  # Vector store index
         self.query_engine = None           # Query engine with response synthesis
-        self.custom_prompt = self.load_custom_prompt()
-
-    def load_custom_prompt(self) -> str:
-        """
-        Load the custom prompt from the prompts/custom_prompt.txt file.
-        Returns:
-            str: The custom prompt as a string.
-        """
-        prompt_file_path = os.path.join(os.path.dirname(__file__), 'prompts', 'custom_prompt.txt')
-
-        if os.path.exists(prompt_file_path):
-            with open(prompt_file_path, 'r') as prompt_file:
-                return prompt_file.read()
-        else:
-            raise FileNotFoundError(f"Custom prompt file not found at {prompt_file_path}. Please ensure it exists.")
 
     def initialize(self, directory_path: str,
                    embed_model_name: str = "hkunlp/instructor-xl",
@@ -83,7 +61,6 @@ class RAGSystem:
             response_mode="tree_summarize",
             similarity_top_k=3,
             streaming=True,
-            custom_prompt=self.custom_prompt
         )
 
     def _load_index(self, directory_path, load_from_disk):
@@ -123,24 +100,23 @@ class RAGSystem:
         return retrieved_docs
 
     @traceable(run_type="chain")
-    def generate_custom_response(self, question: str, top_k: int = 3) -> Dict[str, Any]:
+    async def generate_custom_response(self, question: str, top_k: int = 3) -> Dict[str, Any]:
         """
         Generate a response by manually controlling the RAG pipeline.
         """
         # Step 1: Retrieve documents
         retrieved_docs = self.retrieve_documents(question, top_k=top_k)
 
-        #TODO Step 2: Compress and filter documents
+        #Step 2: Compress and filter documents
         llm = OpenAI(model="gpt-4", temperature=0)
-        compressed_docs = self.compress_and_filter_documents(retrieved_docs, question, llm)
+        compressed_docs = await self.compress_and_filter_documents(retrieved_docs, question, llm)
 
         # Step 3: Construct context
         context = "\n".join([doc.text for doc in compressed_docs])
 
         # Step 4: Use custom prompt to generate response
         llm = OpenAI(model="gpt-4", temperature=0)
-        prompt = PromptTemplate(self.custom_prompt)
-        answer = llm.predict(prompt, query=question, retrieved_documents=context)
+        answer = llm.predict(ANSWER_PROMPT, question=question, context=context)
 
         return {
             "answer": answer,
@@ -154,63 +130,39 @@ class RAGSystem:
         }
 
     @traceable(run_type="chain")
-    def compress_and_filter_documents(self, docs: List[NodeWithScore], question: str, llm) -> List[NodeWithScore]:
+    async def compress_and_filter_documents(self, docs: List[NodeWithScore], question: str, llm) -> List[NodeWithScore]:
         """
-        Compress and filter documents using the language model.
+        Compress and filter documents using the language model asynchronously.
         """
-        # Initialize an empty list to store the filtered and summarized documents
-        filtered_docs = []
 
-        # Loop through each NodeWithScore and process it individually
-        for node_with_score in docs:
-            # Extract the TextNode and its text content
+        async def process_document(node_with_score):
             text_node = node_with_score.node
             doc_text = text_node.text
             metadata = text_node.metadata
 
-            # Construct the compression prompt
-            prompt = (
-                f"The following is a document retrieved based on a generalized version of the original question:\n\n"
-                f"Original Question: {question}\n\n"
-                "Generalized Question:\n"
-                "Adjust the question to a broader scope to ensure the document is evaluated for any potentially useful information:\n"
-                "Generalized Question: {generalized_question}\n\n"
-                f"Document Text:\n{doc_text}\n\n"
-                "Task:\n"
-                "1. Determine if the document contains information broadly related to the generalized question.\n"
-                "2. If the document is irrelevant to the generalized question, return an empty response.\n"
-                "3. If the document is relevant to the generalized question, summarize the text while retaining as much useful information as possible for answering the original question.\n\n"
-                "Output:\n"
-                "Summarized Text (or empty if not relevant):"
-            )
 
-            prompt = PromptTemplate(prompt)
+            # Make the LLM call in a separate thread
+            response = await asyncio.to_thread(llm.predict, COMPRESS_AND_FILTER_PROMPT,query=question, text=doc_text)
+            summarized_text = response.strip() if response else ""
 
-            answer = llm.predict(prompt, query=question, doc_text=doc_text)
-            # Generate a response using the LLM
-            summarized_text = answer.strip() if answer else ""
-
-            # Skip documents with empty responses
             if not summarized_text:
-                continue
+                return None
 
-            # Create a new TextNode with the summarized text
             summarized_node = TextNode(
                 id_=text_node.id_,
                 text=summarized_text,
                 metadata=metadata  # Retain metadata
             )
 
-            # Wrap the new TextNode in a NodeWithScore
-            filtered_node_with_score = NodeWithScore(
+            return NodeWithScore(
                 node=summarized_node,
-                score=node_with_score.score  # Retain the score from the original NodeWithScore
+                score=node_with_score.score
             )
 
-            # Add the filtered NodeWithScore to the list
-            filtered_docs.append(filtered_node_with_score)
+        tasks = [process_document(node) for node in docs]
+        results = await asyncio.gather(*tasks)
 
-        return filtered_docs
+        return [result for result in results if result is not None]
 
     @staticmethod
     def format_response(result: Dict[str, Any], show_sources: bool = True) -> str:
@@ -224,7 +176,11 @@ class RAGSystem:
                 output += f"\n{idx}. {source['file']}"
         return output
 
-if __name__ == "__main__":
+
+async def main():
+    """
+    Main function to test chatbot locally in terminal
+    """
     rag = RAGSystem()
     relative_directory_path = "../Output/websites/tum"
     absolute_directory_path = os.path.abspath(relative_directory_path)
@@ -232,9 +188,16 @@ if __name__ == "__main__":
     print("Welcome!")
 
     while True:
-        question = input("Enter your question:\n")
-        if question == "quit":
+        usr_input = input("User: ")
+        if usr_input == "quit":
             break
-        response = rag.generate_custom_response(question)
+
+        response = await rag.generate_custom_response(usr_input)
+
         print("Answer:", response["answer"])
         print("Sources:", response["sources"])
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
+    # main()
