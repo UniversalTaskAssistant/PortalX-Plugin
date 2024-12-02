@@ -10,11 +10,12 @@ class HTMLParser:
     *** HTML cleaning ***
     *********************
     """
-    def clean_html(self, response):
+    def clean_html(self, response, existing_urls=None):
         """
         Cleans and simplifies HTML content by removing unnecessary elements and attributes.
         Args:
             response (scrapy.Response): The response object containing the webpage
+            existing_urls (set): Set of all URLs that have been discovered
         Returns:
             BeautifulSoup: Cleaned HTML soup object
         """
@@ -23,11 +24,10 @@ class HTMLParser:
         # Clean head
         self.clean_head(soup, response.url)
         # Clean elements
-        self.clean_elements(soup)
+        self.clean_elements(soup, existing_urls)
         # Remove redundant divs
         self.remove_redundant_divs(soup)
         
-        # Use lambda for custom 2-space indentation
         return BeautifulSoup(soup.prettify(formatter='html5'), 'html.parser')
 
     def clean_head(self, soup, page_url):
@@ -58,19 +58,28 @@ class HTMLParser:
             '''
             body.insert(0, BeautifulSoup(stamp_html, 'html.parser'))
 
-    def clean_elements(self, soup):
+    def clean_elements(self, soup, existing_urls=None):
         """
         Cleans and simplifies HTML content by removing unnecessary elements and attributes.
         Args:
             soup (BeautifulSoup): The HTML soup object to clean
+            existing_urls (set): Set of all URLs that have been discovered
         Returns:
             None (modifies soup object in place)
         """
         # Clean elements
         for tag in soup.find_all(['script', 'style', 'source']):
             tag.decompose()
+
+        # Remove <a> tags that point to any discovered URLs
+        if existing_urls and len(existing_urls) > 0:
+            for a_tag in soup.find_all('a'):
+                href = a_tag.get('href')
+                if href and href in existing_urls:
+                    a_tag.decompose()
+
         # Remove unused attributes
-        allowed_attrs = ['href', 'src', 'aria-label']
+        allowed_attrs = ['href', 'src', 'aria-label', 'type']
         for tag in soup.find_all():
             # Special handling for <i> tags
             if tag.name == 'i':
