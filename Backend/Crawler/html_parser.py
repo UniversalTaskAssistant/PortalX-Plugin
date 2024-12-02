@@ -19,6 +19,25 @@ class HTMLParser:
             BeautifulSoup: Cleaned HTML soup object
         """
         soup = BeautifulSoup(response.text, 'html.parser')
+
+        # Clean head
+        self.clean_head(soup, response.url)
+        # Clean elements
+        self.clean_elements(soup)
+        # Remove redundant divs
+        self.remove_redundant_divs(soup)
+        
+        # Use lambda for custom 2-space indentation
+        return BeautifulSoup(soup.prettify(formatter='html5'), 'html.parser')
+
+    def clean_head(self, soup, page_url):
+        """
+        Cleans and simplifies HTML content by removing unnecessary elements and attributes.
+        Args:
+            soup (BeautifulSoup): The HTML soup object to clean
+        Returns:
+            None (modifies soup object in place)
+        """
         # Clean head section
         head = soup.find('head')
         if head:
@@ -32,13 +51,21 @@ class HTMLParser:
             title_text = soup.find('title').string if soup.find('title') else "No title"
             stamp_html = f'''
             <div>
-                <h1>Source URL: <a href="{response.url}">{response.url}</a>
+                <h1>Source URL: <a href="{page_url}">{page_url}</a>
                 <br>Title: {title_text}</h1>
                 <hr>
             </div>
             '''
             body.insert(0, BeautifulSoup(stamp_html, 'html.parser'))
 
+    def clean_elements(self, soup):
+        """
+        Cleans and simplifies HTML content by removing unnecessary elements and attributes.
+        Args:
+            soup (BeautifulSoup): The HTML soup object to clean
+        Returns:
+            None (modifies soup object in place)
+        """
         # Clean elements
         for tag in soup.find_all(['script', 'style', 'source']):
             tag.decompose()
@@ -56,10 +83,6 @@ class HTMLParser:
                 for attr in attrs:
                     if attr not in allowed_attrs:
                         del tag[attr]
-
-        # Remove redundant divs
-        self.remove_redundant_divs(soup)
-        return soup
 
     @staticmethod
     def remove_redundant_divs(soup):
