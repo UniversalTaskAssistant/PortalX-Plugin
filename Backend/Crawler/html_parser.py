@@ -3,7 +3,9 @@ from bs4 import BeautifulSoup
 
 class HTMLParser:
     def __init__(self):
-        pass
+        # Record header and footer to remove redundancies
+        self.header = None
+        self.footer = None
 
     """
     *********************
@@ -25,8 +27,11 @@ class HTMLParser:
         self.clean_head(soup, response.url)
         # Clean elements
         self.clean_elements(soup)
+
         # Remove existing link elements
         self.remove_existing_link_elements(soup, existing_urls)
+        # Remove empty elements
+        self.remove_empty_elements(soup)
         # Remove redundant divs
         self.remove_redundant_divs(soup)
         
@@ -103,10 +108,24 @@ class HTMLParser:
                 if href and href in existing_urls:
                     a_tag.decompose()
 
+    def remove_empty_elements(self, soup):
+        """
+        Removes empty elements from HTML.
+        Args:
+            soup (BeautifulSoup): The HTML soup object to clean
+        Returns:
+            None (modifies soup object in place)
+        """
+        # Tags that should be kept even when empty
+        preserve_tags = {'hr', 'br', 'img', 'input', 'meta', 'link', 'textarea'}
+        
         # Recursively remove empty elements
         while True:
             removed = False
             for tag in soup.find_all():
+                # Skip if tag should be preserved
+                if tag.name in preserve_tags:
+                    continue
                 # Skip if tag has attributes
                 if tag.attrs:
                     continue
@@ -120,8 +139,7 @@ class HTMLParser:
             if not removed:
                 break
 
-    @staticmethod
-    def remove_redundant_divs(soup):
+    def remove_redundant_divs(self, soup):
         """
         Removes unnecessary nested div elements from HTML.
         Args:
