@@ -90,16 +90,17 @@ class UTASpider(scrapy.Spider):
         # Process and save current page
         try:
             print(f'\n*** Processing {response.url} ({len(self.visited_urls)}) ***')
-            soup = self.html_parser.clean_html(response)
+            soup = self.html_parser.clean_html(response, self.all_urls)
             self.save_page_content(response.url, soup)
             
+            all_page_urls = response.css('a::attr(href)').getall()
+            self.all_urls.update(all_page_urls)
             # Extract and follow links
-            for link in response.css('a::attr(href)').getall():
+            for link in all_page_urls:
                 # Ignore page anchor
                 if not self.is_valid_url(link):
                     continue
                 absolute_url = response.urljoin(link)
-                self.all_urls.add(absolute_url)
                 # Scrape the next page if it's valid
                 if self.should_follow(absolute_url):
                     yield scrapy.Request(
