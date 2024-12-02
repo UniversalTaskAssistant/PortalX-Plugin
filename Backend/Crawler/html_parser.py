@@ -24,7 +24,9 @@ class HTMLParser:
         # Clean head
         self.clean_head(soup, response.url)
         # Clean elements
-        self.clean_elements(soup, existing_urls)
+        self.clean_elements(soup)
+        # Remove existing link elements
+        self.remove_existing_link_elements(soup, existing_urls)
         # Remove redundant divs
         self.remove_redundant_divs(soup)
         
@@ -58,25 +60,17 @@ class HTMLParser:
             '''
             body.insert(0, BeautifulSoup(stamp_html, 'html.parser'))
 
-    def clean_elements(self, soup, existing_urls=None):
+    def clean_elements(self, soup):
         """
         Cleans and simplifies HTML content by removing unnecessary elements and attributes.
         Args:
             soup (BeautifulSoup): The HTML soup object to clean
-            existing_urls (set): Set of all URLs that have been discovered
         Returns:
             None (modifies soup object in place)
         """
-        # Clean elements
-        for tag in soup.find_all(['script', 'style', 'source']):
+        # Remove script, style, and source tags
+        for tag in soup.find_all(['script', 'style', 'source', 'svg']):
             tag.decompose()
-
-        # Remove <a> tags that point to any discovered URLs
-        if existing_urls and len(existing_urls) > 0:
-            for a_tag in soup.find_all('a'):
-                href = a_tag.get('href')
-                if href and href in existing_urls:
-                    a_tag.decompose()
 
         # Remove unused attributes
         allowed_attrs = ['href', 'src', 'aria-label', 'type']
@@ -92,6 +86,39 @@ class HTMLParser:
                 for attr in attrs:
                     if attr not in allowed_attrs:
                         del tag[attr]
+
+    def remove_existing_link_elements(self, soup, existing_urls):
+        """
+        Removes <a> tags that point to discovered URLs.
+        Args:
+            soup (BeautifulSoup): The HTML soup object to clean
+            existing_urls (set): Set of all URLs that have been discovered
+        Returns:
+            None (modifies soup object in place)
+        """
+        # Remove <a> tags that point to discovered URLs
+        if existing_urls and len(existing_urls) > 0:
+            for a_tag in soup.find_all('a'):
+                href = a_tag.get('href')
+                if href and href in existing_urls:
+                    a_tag.decompose()
+
+        # Recursively remove empty elements
+        while True:
+            removed = False
+            for tag in soup.find_all():
+                # Skip if tag has attributes
+                if tag.attrs:
+                    continue
+                # Get content (excluding whitespace)
+                content = ''.join(str(child) for child in tag.contents).strip()
+                # Remove if empty (no content and no attributes)
+                if not content:
+                    tag.decompose()
+                    removed = True
+                    break
+            if not removed:
+                break
 
     @staticmethod
     def remove_redundant_divs(soup):
