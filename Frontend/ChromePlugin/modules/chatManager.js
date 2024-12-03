@@ -63,7 +63,7 @@ export class ChatManager {
     // *******************************
     // ****** MESSAGES HANDLING ******
     // Add a message to the chat section
-    addMessage(text, isUser = false) {
+    addMessage(message, isUser = false) {
         if (this.$welcomeMessage.is(':visible')) {
             this.$welcomeMessage.hide();
         }
@@ -71,9 +71,8 @@ export class ChatManager {
             class: 'message-container'
         });
         const $messageDiv = $('<div>', {
-            class: `message ${isUser ? 'user' : 'assistant'}`,
-            text: text
-        });
+            class: `message ${isUser ? 'user' : 'assistant'}`
+        }).html(message);
         $messageContainer.append($messageDiv);
         this.$responseDiv.append($messageContainer);
         $messageDiv[0].scrollIntoView({ behavior: 'smooth' });

@@ -32,7 +32,7 @@ export class WebsiteManager {
         });
 
         // Add history tab listener
-        $('#history-tab').on('shown.bs.tab', () => this.updateWebsitesHistoryList());
+        $(document).on('click', '.history-tab', () => this.updateWebsitesHistoryList());
 
         // Add event listener for modal hidden event
         $('#websiteDetailsModal').on('hidden.bs.modal', function () {
@@ -157,7 +157,10 @@ export class WebsiteManager {
                     domain_limit: domainLimit
                 })
             });
-            return { success: true, message: 'Crawling completed successfully!' };
+            return { 
+                success: true, 
+                message: 'Check website analysis in the <a href="#" class="history-tab">Websites section</a>'
+            };
         } catch (error) {
             return { success: false, message: `Error during crawling: ${error.message}` };
         }
@@ -227,6 +230,7 @@ export class WebsiteManager {
                     </div>
                 `;
                 historyList.append(websiteEntry);
+                $('#history-tab').tab('show');
             });
         } catch (error) {
             console.error('Error updating history list:', error);
