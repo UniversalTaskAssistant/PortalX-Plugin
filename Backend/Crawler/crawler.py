@@ -203,7 +203,7 @@ class UTASpider(scrapy.Spider):
         # Create path for file
         path = parsed_url.path
         if not path or path == '/':
-            path = 'index'
+            path = 'root-index'
         else:
             path = path.strip('/')
         # Add query string if it exists, with safe encoding
