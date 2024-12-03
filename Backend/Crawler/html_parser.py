@@ -24,7 +24,7 @@ class HTMLParser:
         soup = BeautifulSoup(response.text, 'html.parser')
 
         # Clean head
-        self.clean_head(soup, response.url)
+        self.clean_head(soup)
         # Clean elements
         self.clean_elements(soup)
 
@@ -34,10 +34,12 @@ class HTMLParser:
         self.remove_empty_elements(soup)
         # Remove redundant divs
         self.remove_redundant_divs(soup)
-        
+
+        # Add title
+        self.add_title(soup, response.url)
         return BeautifulSoup(soup.prettify(formatter='html5'), 'html.parser')
 
-    def clean_head(self, soup, page_url):
+    def clean_head(self, soup):
         """
         Cleans and simplifies HTML content by removing unnecessary elements and attributes.
         Args:
@@ -52,18 +54,6 @@ class HTMLParser:
             for tag in head.find_all():
                 if tag.name != 'title':
                     tag.decompose()
-        # Add source URL and title stamp at the beginning of body
-        body = soup.find('body')
-        if body:
-            title_text = soup.find('title').string if soup.find('title') else "No title"
-            stamp_html = f'''
-            <div>
-                <h1>Source URL: <a href="{page_url}">{page_url}</a>
-                <br>Title: {title_text}</h1>
-                <hr>
-            </div>
-            '''
-            body.insert(0, BeautifulSoup(stamp_html, 'html.parser'))
 
     def clean_elements(self, soup):
         """
@@ -164,3 +154,20 @@ class HTMLParser:
                     break
             if not redundant_found:
                 break
+
+    def add_title(self, soup, page_url):
+        """
+        Adds a title to the HTML.
+        """
+        # Add source URL and title stamp at the beginning of body
+        body = soup.find('body')
+        if body:
+            title_text = soup.find('title').string if soup.find('title') else "No title"
+            stamp_html = f'''
+            <div>
+                <h1>Source URL: <a href="{page_url}">{page_url}</a>
+                <br>Title: {title_text}</h1>
+                <hr>
+            </div>
+            '''
+            body.insert(0, BeautifulSoup(stamp_html, 'html.parser'))
