@@ -98,12 +98,9 @@ class UTASpider(scrapy.Spider):
             self.all_urls.update(all_page_urls)
             # Extract and follow links
             for link in all_page_urls:
-                # Ignore page anchor
-                if not self.is_valid_url(link):
-                    continue
                 absolute_url = response.urljoin(link)
                 # Scrape the next page if it's valid
-                if self.should_follow(absolute_url):
+                if self.is_valid_url(absolute_url):
                     yield scrapy.Request(
                         absolute_url,
                         callback=self.parse,
@@ -133,48 +130,46 @@ class UTASpider(scrapy.Spider):
     """
     def is_valid_url(self, url):
         """
-        Checks if a URL should be processed based on domain restrictions.
-        Args:
-            url (str): URL to validate
-        Returns:
-            bool: True if URL is valid, False otherwise
-        """
-        parsed = urlparse(url)
-        domain = parsed.netloc
-        if url.startswith('#'):
-            return False
-        if domain and self.domain_limit and self.domain_limit not in url:
-            return False
-        # Check if domain contains any of the excluded domain patterns
-        if domain and self.exclude_domains:
-            for excluded in self.exclude_domains:
-                if excluded in domain:
-                    return False
-        return True
-
-    def should_follow(self, url):
-        """
         Determines if a URL should be crawled based on various criteria.
         Args:
             url (str): URL to evaluate
         Returns:
-            bool: True if URL should be followed, False otherwise
+            bool: True if URL is valid, False otherwise
         """
+        # Skip if it's just a page anchor
+        if url.startswith('#'):
+            return False
+            
+        # Skip if not a valid URL format
+        if not url.startswith(('http://', 'https://')):
+            return False
+            
         parsed = urlparse(url)
         domain = parsed.netloc
+        
         # Skip if already visited
         if url in self.visited_urls:
             return False
-        # Skip if not a valid URL
-        if not url.startswith(('http://', 'https://')):
+            
+        # Skip if domain limit is set and URL doesn't match
+        if self.domain_limit and self.domain_limit not in url:
             return False
+            
+        # Skip if domain is in excluded domains
+        if self.exclude_domains:
+            for excluded in self.exclude_domains:
+                if excluded in url:
+                    return False
+                    
         # Skip if max urls per domain reached
-        if domain in self.domain_urls and self.domain_urls[domain] >= self.max_urls_per_domain:
+        if self.domain_urls and self.domain_urls[domain] >= self.max_urls_per_domain:
             return False
-        # Skip if file extension
+            
+        # Skip if file extension matches excluded types
         skip_extensions = ['.pdf', '.jpg', '.png', '.gif', '.zip']
         if any(url.lower().endswith(ext) for ext in skip_extensions):
             return False
+            
         return True
 
     def handle_error(self, failure):

@@ -137,7 +137,7 @@ if __name__ == "__main__":
 
     web_url = 'https://www.signavio.com/'
     company_name = 'signavio'
-    domain_limit = None # None or specific domain, such as 'www.bmw.com/en-au'
+    domain_limit = 'https://www.signavio.com/' # None or specific domain, such as 'www.bmw.com/en-au'
     exclude_domains = ['www.signavio.com/de', 'www.signavio.com/es', 'www.signavio.com/fr', 'www.signavio.com/it', 'www.signavio.com/ja', 'www.signavio.com/ko', 'www.signavio.com/pt-br']
 
     utaweb.crawl_web(web_url=web_url, company_name=company_name, domain_limit=domain_limit, exclude_domains=exclude_domains)
