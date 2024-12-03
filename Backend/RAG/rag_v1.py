@@ -26,6 +26,28 @@ class RAGSystem:
         # Create query engine with response synthesis
         self.query_engine = None
 
+
+        
+        # Create query engine with response synthesis and custom prompts
+        self.system_prompt = """You are a helpful AI website customer assistant that provides clear, structured answers based on website information.
+
+        RESPONSE FORMAT REQUIREMENTS:
+        1. Structure all responses in clean, semantic HTML
+        2. Begin main answers with a short summary in a <div class="summary"> tag
+        3. Use appropriate HTML elements:
+           - <p> for paragraphs
+           - <ul>/<li> for lists
+           - <strong> for emphasis
+           - <h3> for subsections
+           - <a href="..."> for source links
+
+        GUIDELINES:
+        - Keep responses short, concise, and well-organized
+        - Always cite sources using <a> tags when referencing specific information
+        - Interact with the user in a friendly and engaging manner
+        - Refer "The website" as "I", you are now representing the website
+        """
+
     def initialize(self, directory_path: str,
         embed_model_name: str = "BAAI/bge-small-en-v1.5",
         chunk_size: int = 1024,
@@ -49,7 +71,7 @@ class RAGSystem:
         )
         # Configure settings with the new API
         os.environ["OPENAI_API_KEY"] = self.openai_api_key  
-        Settings.llm = OpenAI(model="gpt-4", temperature=0)
+        Settings.llm = OpenAI(model="gpt-4o", system_prompt=self.system_prompt)
         Settings.embed_model = self.embed_model
         Settings.chunk_size = chunk_size
         Settings.chunk_overlap = chunk_overlap
@@ -112,7 +134,7 @@ class RAGSystem:
         }
 
     @staticmethod
-    def format_response(result: Dict[str, Any], show_sources: bool = True) -> str:
+    def format_response(result: Dict[str, Any], show_sources: bool = False) -> str:
         """
         Format the query response into a readable string.
         Args:
@@ -121,7 +143,10 @@ class RAGSystem:
         Returns:
             str: Formatted string containing answer and optional source information
         """
-        output = f"Answer: {result['answer']}\n\n"
+        # Remove code block markers and HTML tags from the answer
+        output = result['answer']
+        output = output.replace('```html', '').replace('```', '')
+        
         if show_sources:
             output += "Sources:\n"
             for idx, source in enumerate(result['sources'], 1):

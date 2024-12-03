@@ -162,7 +162,7 @@ class UTASpider(scrapy.Spider):
                     return False
                     
         # Skip if max urls per domain reached
-        if self.domain_urls and self.domain_urls[domain] >= self.max_urls_per_domain:
+        if domain in self.domain_urls and self.domain_urls[domain] >= self.max_urls_per_domain:
             return False
             
         # Skip if file extension matches excluded types
