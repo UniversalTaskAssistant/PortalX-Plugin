@@ -152,8 +152,10 @@ class UTASpider(scrapy.Spider):
             return False
             
         # Skip if domain limit is set and URL doesn't match
-        if self.domain_limit and self.domain_limit not in url:
-            return False
+        if self.domain_limit:
+            url_without_query = url.split('?')[0]
+            if self.domain_limit not in url_without_query:
+                return False
             
         # Skip if domain is in excluded domains
         if self.exclude_domains:

@@ -13,6 +13,7 @@ class UTAWeb:
         self.data_dir = data_dir if data_dir is not None else "./Output/websites"
         if initializing:
             self.initialize_crawler()
+            self.initialize_rag()
 
     """
     **********************
@@ -128,19 +129,20 @@ class UTAWeb:
 if __name__ == "__main__":
     utaweb = UTAWeb()
 
-    # web_url = 'https://creuto.com/'
-    # company_name = 'creuto'
-    # domain_limit = 'https://creuto.com/' # None or specific domain, such as 'www.bmw.com/en-au'
+    web_url = 'https://www.nsw.gov.au/'
+    company_name = 'nsw'
+    domain_limit = 'https://www.nsw.gov.au/' # None or specific domain, such as 'www.bmw.com/en-au'
+
     # web_url = 'https://www.tum.de'
     # company_name = 'tum'
     # domain_limit = 'https://www.tum.de' # None or specific domain, such as 'www.bmw.com/en-au'
 
-    web_url = 'https://www.signavio.com/'
-    company_name = 'signavio'
-    domain_limit = 'https://www.signavio.com/' # None or specific domain, such as 'www.bmw.com/en-au'
-    exclude_domains = ['www.signavio.com/de', 'www.signavio.com/es', 'www.signavio.com/fr', 'www.signavio.com/it', 'www.signavio.com/ja', 'www.signavio.com/ko', 'www.signavio.com/pt-br']
+    # web_url = 'https://www.signavio.com/'
+    # company_name = 'signavio'
+    # domain_limit = 'https://www.signavio.com/' # None or specific domain, such as 'www.bmw.com/en-au'
+    # exclude_domains = ['www.signavio.com/de', 'www.signavio.com/es', 'www.signavio.com/fr', 'www.signavio.com/it', 'www.signavio.com/ja', 'www.signavio.com/ko', 'www.signavio.com/pt-br']
 
-    utaweb.crawl_web(web_url=web_url, company_name=company_name, domain_limit=domain_limit, exclude_domains=exclude_domains)
+    utaweb.crawl_web(web_url=web_url, company_name=company_name, domain_limit=domain_limit, exclude_domains=None)
     # utaweb.query_web(query="What is the name of the university?", web_url=web_url)
     # utaweb.query_web_test(web_url=web_url, company_name=company_name)
 
