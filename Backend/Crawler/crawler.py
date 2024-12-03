@@ -22,7 +22,7 @@ class UTASpider(scrapy.Spider):
     """
     name = 'UTASpider'
 
-    def __init__(self, output_dir, start_urls=['https://www.bmw.com/en-au/index.html'], company_name='bmw', domain_limit=None,
+    def __init__(self, output_dir, start_urls=['https://www.bmw.com/en-au/index.html'], company_name='bmw', domain_limit=None, exclude_domains:list[str]=None,
                   *args, **kwargs):
         super(UTASpider, self).__init__(*args, **kwargs)
         self.html_parser = HTMLParser()
@@ -32,6 +32,7 @@ class UTASpider(scrapy.Spider):
         self.start_urls = start_urls 
         self.company_name = company_name 
         self.domain_limit = domain_limit
+        self.exclude_domains = exclude_domains  # List of domains to exclude
 
         # Crawling parameters
         self.max_depth = 5
@@ -144,6 +145,11 @@ class UTASpider(scrapy.Spider):
             return False
         if domain and self.domain_limit and self.domain_limit not in url:
             return False
+        # Check if domain contains any of the excluded domain patterns
+        if domain and self.exclude_domains:
+            for excluded in self.exclude_domains:
+                if excluded in domain:
+                    return False
         return True
 
     def should_follow(self, url):

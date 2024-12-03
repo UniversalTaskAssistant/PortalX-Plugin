@@ -64,7 +64,7 @@ class UTAWeb:
             company_name = extracted.domain
         return company_name
 
-    def crawl_web(self, web_url: str, company_name: str=None, domain_limit: str=None):
+    def crawl_web(self, web_url: str, company_name: str=None, domain_limit: str=None, exclude_domains: list[str]=None):
         """
         Initialize and run web crawler on specified URLs.
         Args:
@@ -83,7 +83,7 @@ class UTAWeb:
             return 'Exist'
         # Initialize crawler and start crawling
         self.initialize_crawler()
-        self.crawler_process.crawl(UTASpider, output_dir=self.data_dir, start_urls=[web_url], company_name=company_name, domain_limit=domain_limit)
+        self.crawler_process.crawl(UTASpider, output_dir=self.data_dir, start_urls=[web_url], company_name=company_name, domain_limit=domain_limit, exclude_domains=exclude_domains)
         self.crawler_process.start()
         return 'Success'
 
@@ -128,14 +128,19 @@ class UTAWeb:
 if __name__ == "__main__":
     utaweb = UTAWeb()
 
-    web_url = 'https://creuto.com/'
-    company_name = 'creuto'
-    domain_limit = 'https://creuto.com/' # None or specific domain, such as 'www.bmw.com/en-au'
+    # web_url = 'https://creuto.com/'
+    # company_name = 'creuto'
+    # domain_limit = 'https://creuto.com/' # None or specific domain, such as 'www.bmw.com/en-au'
     # web_url = 'https://www.tum.de'
     # company_name = 'tum'
     # domain_limit = 'https://www.tum.de' # None or specific domain, such as 'www.bmw.com/en-au'
 
-    utaweb.crawl_web(web_url=web_url, company_name=company_name, domain_limit=domain_limit)
+    web_url = 'https://www.signavio.com/'
+    company_name = 'signavio'
+    domain_limit = None # None or specific domain, such as 'www.bmw.com/en-au'
+    exclude_domains = ['www.signavio.com/de', 'www.signavio.com/es', 'www.signavio.com/fr', 'www.signavio.com/it', 'www.signavio.com/ja', 'www.signavio.com/ko', 'www.signavio.com/pt-br']
+
+    utaweb.crawl_web(web_url=web_url, company_name=company_name, domain_limit=domain_limit, exclude_domains=exclude_domains)
     # utaweb.query_web(query="What is the name of the university?", web_url=web_url)
     # utaweb.query_web_test(web_url=web_url, company_name=company_name)
 
