@@ -12,6 +12,10 @@ export class ChatManager {
 
         this.conversationId = this.generateConversationId();
         this.chatHistory = [];
+
+        this.currentChatWebsite = {
+
+        };
         
         this.initializeEventListeners();
     }
@@ -103,8 +107,16 @@ export class ChatManager {
         const companyInfo = this.$startChatBtn.closest('.modal-content').find('.company-name');
         const companyName = companyInfo.find('span').text();
         const companyLogo = companyInfo.find('img').attr('src');
+        const startUrl = this.$startChatBtn.closest('.modal-content').find('.start-url').attr('href');
+        this.currentChatWebsite = {
+            startUrl: startUrl,
+            name: companyName,
+            logo: companyLogo
+        };
         this.startNewChat(companyName, companyLogo);
         $('#chat-tab').tab('show');
+
+        console.log(this.currentChatWebsite);
     }
 
     // Load a chat by id (conversation id)

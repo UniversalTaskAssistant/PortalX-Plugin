@@ -46,7 +46,6 @@ $(document).ready(function() {
             chatManager.addMessage('Please enter a question', true);
             return;
         }
-        
         try {
             chatManager.setQueryButtonLoading(true);
             chatManager.addMessage(query, true);
@@ -58,7 +57,7 @@ $(document).ready(function() {
                     user_id: 'test1',
                     conversation_id: chatManager.conversationId,
                     query: query,
-                    web_url: websiteManager.currentWebsiteInfo.domainName
+                    web_url: chatManager.currentChatWebsite.startUrl
                 })
             });
             chatManager.addMessage(response.answer);

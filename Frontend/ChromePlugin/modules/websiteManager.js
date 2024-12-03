@@ -33,12 +33,6 @@ export class WebsiteManager {
 
         // Add history tab listener
         $(document).on('click', '.history-tab', () => this.updateWebsitesHistoryList());
-
-        // Add event listener for modal hidden event
-        $('#websiteDetailsModal').on('hidden.bs.modal', function () {
-            // Ensure the start chat button loses focus after modal is hidden
-            $('#startChatBtn').blur();
-        });
     }
     
     // Initialize the website search
