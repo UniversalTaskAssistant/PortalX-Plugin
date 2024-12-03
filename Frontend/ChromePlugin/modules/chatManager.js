@@ -100,6 +100,21 @@ export class ChatManager {
             </div>
         `).show();
         this.$queryInput.val('');
+        this.$queryInput.prop('placeholder', 'Type your question here...');
+    }
+
+    initializingMessage(companyName, companyLogo) {
+        this.conversationId = this.generateConversationId();
+        $('.message-container').remove();
+        this.$welcomeMessage.html(`
+            <div class="align-items-center mb-2">
+                <h5>Initializing chating system for</h5>
+                <h5 class="text-muted"><img src="${companyLogo}" alt="Logo" class="me-2" style="width: 20px; height: 20px;">${companyName}</h5>
+                <h5><span class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></span></h5>
+            </div>
+        `).show();
+        this.$queryInput.val('');
+        this.$queryInput.prop('placeholder', 'Waiting for initializing...');
     }
 
     // Start a new chat with company info
@@ -113,10 +128,34 @@ export class ChatManager {
             name: companyName,
             logo: companyLogo
         };
-        this.startNewChat(companyName, companyLogo);
         $('#chat-tab').tab('show');
 
-        console.log(this.currentChatWebsite);
+        // Disable input while initializing RAG
+        this.setQueryButtonLoading(true);
+        this.initializingMessage(companyName, companyLogo);
+
+        // Initialize RAG before starting the chat
+        $.ajax({
+            url: 'http://127.0.0.1:7777/initialize_rag',
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({ web_url: startUrl }),
+            success: (response) => {
+                if (response.status === 'success') {
+                    this.setQueryButtonLoading(false);
+                    this.startNewChat(companyName, companyLogo);
+                } else {
+                    console.error('Failed to initialize RAG:', response.message);
+                    this.addMessage("Failed to initialize chat capabilities. Please try again.");
+                    this.setQueryButtonLoading(false);
+                }
+            },
+            error: (xhr, status, error) => {
+                console.error('Error initializing RAG:', error);
+                this.addMessage("Failed to initialize chat capabilities. Please try again.");
+                this.setQueryButtonLoading(false);
+            }
+        });
     }
 
     // Load a chat by id (conversation id)

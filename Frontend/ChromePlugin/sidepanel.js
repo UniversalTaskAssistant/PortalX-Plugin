@@ -30,6 +30,8 @@ $(document).ready(function() {
                 .html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Crawling...');
                 
             const result = await websiteManager.startCrawl(companyName, domainLimit);
+            $('.message-container').remove();
+            $('#welcome-message').hide();
             chatManager.addMessage(result.message);
         } catch (error) {
             chatManager.addMessage(`Error during crawling: ${error.message}`);

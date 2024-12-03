@@ -1,4 +1,5 @@
 import os
+from os.path import join as pjoin
 import sys
 from flask import Flask, request, jsonify
 from flask_cors import CORS
@@ -22,7 +23,7 @@ CORS(app, resources={
 })
 
 # Create singleton UTAWeb instance for rag system
-utaweb = UTAWeb(initializing=False, data_dir="./Output/websites")
+utaweb = UTAWeb(initializing=True, data_dir="./Output/websites")
 
 @app.route('/get_chat_history', methods=['POST'])
 def get_chat_history():
@@ -107,6 +108,15 @@ def get_websites():
     # Sort by crawl time, newest first
     websites.sort(key=lambda x: x['crawl_time'], reverse=True)
     return jsonify(websites)
+
+@app.route('/initialize_rag', methods=['POST'])
+def initialize_rag_systems():
+    print(request.json)
+    data = request.json
+    utaweb.initialize_rag(directory_path=pjoin(utaweb.data_dir, utaweb.get_company_name_from_url(data['web_url'])))
+    print('RAG systems initialized')
+    return jsonify({"status": "success", "message": "RAG systems initialized"})
+
 
 if __name__ == '__main__':
     print("Starting server...")

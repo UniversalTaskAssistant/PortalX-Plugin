@@ -219,7 +219,7 @@ export class WebsiteManager {
                             <span class="badge ${site.crawl_finished ? 'bg-success' : 'bg-warning'} me-2">
                                 ${site.crawl_finished ? 'Analyzed' : 'In Progress'}
                             </span>
-                            <span class="stats-text">${site.visited_urls.length} pages crawled</span>
+                            <span class="stats-text">${site.visited_urls.length} pages analyzed</span>
                         </div>
                     </div>
                 `;
