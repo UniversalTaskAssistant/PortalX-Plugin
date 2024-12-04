@@ -1,6 +1,6 @@
 import asyncio
 
-from llama_index.core import VectorStoreIndex, SimpleDirectoryReader, Settings
+from llama_index.core import StorageContext, VectorStoreIndex, SimpleDirectoryReader, Settings, load_index_from_storage
 from llama_index.core.schema import NodeWithScore, TextNode
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 from llama_index.llms.openai import OpenAI
@@ -42,6 +42,8 @@ class RAGSystem:
         """
         self.current_directory_path = directory_path
 
+        os.makedirs(directory_path, exist_ok=True)
+
         # Initialize embedding model
         self.embed_model = HuggingFaceEmbedding(
             model_name=embed_model_name,
@@ -66,23 +68,35 @@ class RAGSystem:
     def _load_index(self, directory_path, load_from_disk):
         if load_from_disk and os.path.exists(f"{directory_path}/embedding"):
             print("Loading saved index from disk...")
-            from llama_index.core import StorageContext, load_index_from_storage
             storage_context = StorageContext.from_defaults(persist_dir=f"{directory_path}/embedding")
             self.index = load_index_from_storage(storage_context)
         else:
-            print("Creating new index...")
+            print("Creating new index incrementally...")
             self.documents = SimpleDirectoryReader(
                 directory_path,
                 recursive=True,
                 exclude_hidden=True,
                 filename_as_id=True
             ).load_data()
-            self.index = VectorStoreIndex.from_documents(
-                self.documents,
-                show_progress=True
-            )
-            self.index.storage_context.persist(persist_dir=f"{directory_path}/embedding")
-            print("Index saved to disk.")
+
+            storage_context = StorageContext.from_defaults(persist_dir=f"{directory_path}/embedding")
+
+            async def process_and_store_document(document):
+                print(f"Embedding document: {document.doc_id}")
+                doc_index = VectorStoreIndex.from_documents([document])
+                doc_index.storage_context.persist(persist_dir=storage_context.persist_dir)
+                print(f"Document {document.doc_id} saved successfully.")
+
+            async def process_all_documents():
+                tasks = [
+                    process_and_store_document(document) for document in self.documents
+                ]
+                await asyncio.gather(*tasks)
+
+            asyncio.run(process_all_documents())
+            print("All documents have been embedded and saved incrementally.")
+
+
 
     @traceable(run_type="chain")
     def retrieve_documents(self, question: str, top_k: int = 3) -> list:
@@ -182,7 +196,7 @@ async def main():
     Main function to test chatbot locally in terminal
     """
     rag = RAGSystem()
-    relative_directory_path = "../Output/websites/tum"
+    relative_directory_path = "../Output/websites/creuto"
     absolute_directory_path = os.path.abspath(relative_directory_path)
     rag.initialize(directory_path=absolute_directory_path)
     print("Welcome!")
