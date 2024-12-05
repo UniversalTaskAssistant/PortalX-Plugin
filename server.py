@@ -21,9 +21,9 @@ CORS(app, resources={
         "allow_headers": ["Content-Type"]
     }
 })
+# Global variable declaration
+utaweb = None
 
-# Create singleton UTAWeb instance for rag system
-utaweb = UTAWeb(initializing=True, data_dir="./Output/websites")
 
 @app.route('/get_chat_history', methods=['POST'])
 def get_chat_history():
@@ -47,9 +47,11 @@ def get_chat_history():
     chat_history.sort(key=lambda x: x['timestamp'], reverse=True)
     return jsonify(chat_history)
 
-def crawl_process(web_url, company_name, domain_limit):
+def crawl_process(web_url, domain_limit):
     # Create temporary UTAWeb instance for crawler process
     utaweb_instance = UTAWeb(data_dir="./Output/websites")
+    # Get company name here if not provided
+    company_name = utaweb_instance.get_company_name_from_url(web_url)
     utaweb_instance.crawl_web(
         web_url=web_url,
         company_name=company_name,
@@ -64,13 +66,11 @@ def crawl():
     if web_url == '':
         return jsonify({"status": "error", "message": "Web URL is empty"})
 
-    # Get info
-    company_name = data['company_name'] if data['company_name'] != '' else utaweb.get_company_name_from_url(web_url)
-    domain_limit = data['domain_limit'] if data['domain_limit'] != '' else None
     # Start crawl process
+    domain_limit = data['domain_limit'] if data['domain_limit'] != '' else None
     process = Process(
         target=crawl_process,
-        args=(web_url, company_name, domain_limit)
+        args=(web_url, domain_limit)
     )
     process.start()
     return jsonify({"status": "success", "message": "Crawling started in background"})
@@ -118,6 +118,12 @@ def initialize_rag_systems():
     return jsonify({"status": "success", "message": "RAG systems initialized"})
 
 
+# Singleton initialization in the main
 if __name__ == '__main__':
+    # Create singleton UTAWeb instance for rag system
+    utaweb = UTAWeb(initializing=False, data_dir="./Output/websites", debug='init')
+    utaweb.initialize_crawler()
+    utaweb.initialize_rag()
+    
     print("Starting server...")
     app.run(host='127.0.0.1', port=7777, debug=True) 
