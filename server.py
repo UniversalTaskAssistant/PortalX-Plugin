@@ -121,7 +121,7 @@ def initialize_rag_systems():
 # Singleton initialization in the main
 if __name__ == '__main__':
     # Create singleton UTAWeb instance for rag system
-    utaweb = UTAWeb(initializing=False, data_dir="./Output/websites", debug='init')
+    utaweb = UTAWeb(initializing=False, data_dir="./Output/websites")
     utaweb.initialize_crawler()
     utaweb.initialize_rag()
     
