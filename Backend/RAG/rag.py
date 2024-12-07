@@ -33,69 +33,84 @@ class RAGSystem:
         self.query_engine = None           # Query engine with response synthesis
 
     def initialize(self, directory_path: str,
-                   embed_model_name: str = "hkunlp/instructor-xl",
+                   embed_model_name: str = "BAAI/bge-small-en-v1.5",
                    chunk_size: int = 1024,
                    chunk_overlap: int = 200,
                    load_from_disk: bool = True):
-        """
-        Initialize the RAG system components and load documents.
-        """
+        """Initialize the RAG system components."""
         self.current_directory_path = directory_path
+        self._initialize_models(embed_model_name, chunk_size, chunk_overlap)
 
-        os.makedirs(directory_path, exist_ok=True)
-
-        # Initialize embedding model
-        self.embed_model = HuggingFaceEmbedding(
-            model_name=embed_model_name,
-            embed_batch_size=100
-        )
-
-        # Configure settings with the new API
-        os.environ["OPENAI_API_KEY"] = self.openai_api_key
-        Settings.llm = OpenAI(model="gpt-4", temperature=0)
-        Settings.embed_model = self.embed_model
-        Settings.chunk_size = chunk_size
-        Settings.chunk_overlap = chunk_overlap
-
-        self._load_index(directory_path, load_from_disk)
+        if load_from_disk and os.path.exists(f"{directory_path}/embedding"):
+            self.index = self._load_index_from_disk(directory_path)
+        else:
+            self.index = self._create_and_save_indices(directory_path)
 
         self.query_engine = self.index.as_query_engine(
             response_mode="tree_summarize",
             similarity_top_k=3,
-            streaming=True,
+            streaming=True
         )
 
-    def _load_index(self, directory_path, load_from_disk):
-        if load_from_disk and os.path.exists(f"{directory_path}/embedding"):
-            print("Loading saved index from disk...")
-            storage_context = StorageContext.from_defaults(persist_dir=f"{directory_path}/embedding")
-            self.index = load_index_from_storage(storage_context)
-        else:
-            print("Creating new index incrementally...")
-            self.documents = SimpleDirectoryReader(
-                directory_path,
-                recursive=True,
-                exclude_hidden=True,
-                filename_as_id=True
-            ).load_data()
+    def _initialize_models(self, embed_model_name: str, chunk_size: int, chunk_overlap: int):
+        """Initialize embedding model and configure settings."""
+        self.embed_model = HuggingFaceEmbedding(
+            model_name=embed_model_name,
+            embed_batch_size=100
+        )
+        os.environ["OPENAI_API_KEY"] = self.openai_api_key
+        Settings.llm = OpenAI(model="gpt-4")
+        Settings.embed_model = self.embed_model
+        Settings.chunk_size = chunk_size
+        Settings.chunk_overlap = chunk_overlap
 
-            storage_context = StorageContext.from_defaults(persist_dir=f"{directory_path}/embedding")
+    def _load_index_from_disk(self, directory_path: str):
+        """Load saved index from disk."""
+        print("Loading saved index from disk...")
+        from llama_index.core import StorageContext, load_index_from_storage
+        storage_context = StorageContext.from_defaults(persist_dir=f"{directory_path}/embedding")
+        return load_index_from_storage(storage_context)
 
-            async def process_and_store_document(document):
-                print(f"Embedding document: {document.doc_id}")
-                doc_index = VectorStoreIndex.from_documents([document])
-                doc_index.storage_context.persist(persist_dir=storage_context.persist_dir)
-                print(f"Document {document.doc_id} saved successfully.")
+    def _create_and_save_indices(self, directory_path: str):
+        """Create and save indices for each document."""
+        print("Creating new indices...")
+        # Create embedding directory if it doesn't exist
+        embedding_dir = f"{directory_path}/embedding"
+        os.makedirs(embedding_dir, exist_ok=True)
 
-            async def process_all_documents():
-                tasks = [
-                    process_and_store_document(document) for document in self.documents
-                ]
-                await asyncio.gather(*tasks)
+        reader = SimpleDirectoryReader(
+            directory_path,
+            recursive=True,
+            exclude_hidden=True,
+            filename_as_id=True
+        )
 
-            asyncio.run(process_all_documents())
-            print("All documents have been embedded and saved incrementally.")
+        all_docs = []
+        for docs in reader.iter_data(show_progress=True):
+            for doc in docs:
+                print(f"Processing document: {doc.doc_id}")
+                # Save individual document index
+                doc_path = f"{directory_path}/embedding/{doc.doc_id}"
+                os.makedirs(doc_path, exist_ok=True)
 
+                doc_index = VectorStoreIndex.from_documents(
+                    [doc],
+                    show_progress=True
+                )
+                doc_index.storage_context.persist(persist_dir=doc_path)
+                print(f"Index saved for {doc.doc_id}")
+
+                all_docs.append(doc)
+
+        # Create final index from all documents
+        final_index = VectorStoreIndex.from_documents(
+            all_docs,
+            show_progress=True
+        )
+
+        # Save final index
+        final_index.storage_context.persist(persist_dir=f"{directory_path}/embedding")
+        return final_index
 
 
     @traceable(run_type="chain")
@@ -196,7 +211,7 @@ async def main():
     Main function to test chatbot locally in terminal
     """
     rag = RAGSystem()
-    relative_directory_path = "../Output/websites/creuto"
+    relative_directory_path = "../Output/websites/signavio"
     absolute_directory_path = os.path.abspath(relative_directory_path)
     rag.initialize(directory_path=absolute_directory_path)
     print("Welcome!")
