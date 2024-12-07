@@ -12,6 +12,10 @@ export class ChatManager {
 
         this.conversationId = this.generateConversationId();
         this.chatHistory = [];
+
+        this.currentChatWebsite = {
+
+        };
         
         this.initializeEventListeners();
     }
@@ -63,7 +67,7 @@ export class ChatManager {
     // *******************************
     // ****** MESSAGES HANDLING ******
     // Add a message to the chat section
-    addMessage(text, isUser = false) {
+    addMessage(message, isUser = false) {
         if (this.$welcomeMessage.is(':visible')) {
             this.$welcomeMessage.hide();
         }
@@ -71,9 +75,8 @@ export class ChatManager {
             class: 'message-container'
         });
         const $messageDiv = $('<div>', {
-            class: `message ${isUser ? 'user' : 'assistant'}`,
-            text: text
-        });
+            class: `message ${isUser ? 'user' : 'assistant'}`
+        }).html(message);
         $messageContainer.append($messageDiv);
         this.$responseDiv.append($messageContainer);
         $messageDiv[0].scrollIntoView({ behavior: 'smooth' });
@@ -97,6 +100,21 @@ export class ChatManager {
             </div>
         `).show();
         this.$queryInput.val('');
+        this.$queryInput.prop('placeholder', 'Type your question here...');
+    }
+
+    initializingMessage(companyName, companyLogo) {
+        this.conversationId = this.generateConversationId();
+        $('.message-container').remove();
+        this.$welcomeMessage.html(`
+            <div class="align-items-center mb-2">
+                <h5>Initializing chating system for</h5>
+                <h5 class="text-muted"><img src="${companyLogo}" alt="Logo" class="me-2" style="width: 20px; height: 20px;">${companyName}</h5>
+                <h5><span class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></span></h5>
+            </div>
+        `).show();
+        this.$queryInput.val('');
+        this.$queryInput.prop('placeholder', 'Waiting for initializing...');
     }
 
     // Start a new chat with company info
@@ -104,8 +122,40 @@ export class ChatManager {
         const companyInfo = this.$startChatBtn.closest('.modal-content').find('.company-name');
         const companyName = companyInfo.find('span').text();
         const companyLogo = companyInfo.find('img').attr('src');
-        this.startNewChat(companyName, companyLogo);
+        const startUrl = this.$startChatBtn.closest('.modal-content').find('.start-url').attr('href');
+        this.currentChatWebsite = {
+            startUrl: startUrl,
+            name: companyName,
+            logo: companyLogo
+        };
         $('#chat-tab').tab('show');
+
+        // Disable input while initializing RAG
+        this.setQueryButtonLoading(true);
+        this.initializingMessage(companyName, companyLogo);
+
+        // Initialize RAG before starting the chat
+        $.ajax({
+            url: 'http://127.0.0.1:7777/initialize_rag',
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({ web_url: startUrl }),
+            success: (response) => {
+                if (response.status === 'success') {
+                    this.setQueryButtonLoading(false);
+                    this.startNewChat(companyName, companyLogo);
+                } else {
+                    console.error('Failed to initialize RAG:', response.message);
+                    this.addMessage("Failed to initialize chat capabilities. Please try again.");
+                    this.setQueryButtonLoading(false);
+                }
+            },
+            error: (xhr, status, error) => {
+                console.error('Error initializing RAG:', error);
+                this.addMessage("Failed to initialize chat capabilities. Please try again.");
+                this.setQueryButtonLoading(false);
+            }
+        });
     }
 
     // Load a chat by id (conversation id)

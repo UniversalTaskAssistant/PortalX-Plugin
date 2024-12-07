@@ -9,8 +9,10 @@ from os.path import join as pjoin
 from datetime import datetime
 from urllib.parse import urlparse, quote
 import base64
+from Crawler.html_parser import HTMLParser
 
-class Spider(scrapy.Spider):
+
+class UTASpider(scrapy.Spider):
     """
     Scrapy spider for crawling websites and saving cleaned HTML content.
     Args:
@@ -20,14 +22,17 @@ class Spider(scrapy.Spider):
     """
     name = 'UTASpider'
 
-    def __init__(self, output_dir, start_urls=['https://www.bmw.com/en-au/index.html'], company_name='bmw', domain_limit=None,
+    def __init__(self, output_dir, start_urls=['https://www.bmw.com/en-au/index.html'], company_name='bmw', domain_limit=None, exclude_domains:list[str]=None,
                   *args, **kwargs):
-        super(Spider, self).__init__(*args, **kwargs)
+        super(UTASpider, self).__init__(*args, **kwargs)
+        self.html_parser = HTMLParser()
+
         # Website info
         self.name = company_name
         self.start_urls = start_urls 
         self.company_name = company_name 
         self.domain_limit = domain_limit
+        self.exclude_domains = exclude_domains  # List of domains to exclude
 
         # Crawling parameters
         self.max_depth = 5
@@ -53,6 +58,7 @@ class Spider(scrapy.Spider):
         spider = super().from_crawler(crawler, *args, **kwargs)
         crawler.signals.connect(spider.spider_closed, signal=signals.spider_closed)
         return spider
+    
     """
     ********************
     *** Main parsing ***
@@ -85,18 +91,16 @@ class Spider(scrapy.Spider):
         # Process and save current page
         try:
             print(f'\n*** Processing {response.url} ({len(self.visited_urls)}) ***')
-            soup = self.clean_html(response)
+            soup = self.html_parser.clean_html(response, self.all_urls)
             self.save_page_content(response.url, soup)
             
+            all_page_urls = response.css('a::attr(href)').getall()
+            self.all_urls.update(all_page_urls)
             # Extract and follow links
-            for link in response.css('a::attr(href)').getall():
-                # Ignore page anchor
-                if not self.is_valid_url(link):
-                    continue
+            for link in all_page_urls:
                 absolute_url = response.urljoin(link)
-                self.all_urls.add(absolute_url)
                 # Scrape the next page if it's valid
-                if self.should_follow(absolute_url):
+                if self.is_valid_url(absolute_url):
                     yield scrapy.Request(
                         absolute_url,
                         callback=self.parse,
@@ -113,93 +117,11 @@ class Spider(scrapy.Spider):
         """
         Handler for spider_closed signal to perform cleanup tasks.
         Args:
-            spider (Spider): The spider instance that was closed
+            spider (UTASpider): The spider instance that was closed
         """
         self.crawl_finished = True
         self.save_website_info()  # Save final state
         print(f'\n!!! Crawling finished for {self.company_name} !!!\n')
-
-    """
-    *********************
-    *** HTML cleaning ***
-    *********************
-    """
-    def clean_html(self, response):
-        """
-        Cleans and simplifies HTML content by removing unnecessary elements and attributes.
-        Args:
-            response (scrapy.Response): The response object containing the webpage
-        Returns:
-            BeautifulSoup: Cleaned HTML soup object
-        """
-        soup = BeautifulSoup(response.text, 'html.parser')
-        # Clean head section
-        head = soup.find('head')
-        if head:
-            # Remove all elements from head except title
-            for tag in head.find_all():
-                if tag.name != 'title':
-                    tag.decompose()
-        # Add source URL and title stamp at the beginning of body
-        body = soup.find('body')
-        if body:
-            title_text = soup.find('title').string if soup.find('title') else "No title"
-            stamp_html = f'''
-            <div>
-                <h1>Source URL: <a href="{response.url}">{response.url}</a>
-                <br>Title: {title_text}</h1>
-                <hr>
-            </div>
-            '''
-            body.insert(0, BeautifulSoup(stamp_html, 'html.parser'))
-
-        # Clean elements
-        for tag in soup.find_all(['script', 'style', 'source']):
-            tag.decompose()
-        # Remove unused attributes
-        allowed_attrs = ['href', 'src', 'aria-label']
-        for tag in soup.find_all():
-            # Special handling for <i> tags
-            if tag.name == 'i':
-                attrs = dict(tag.attrs)
-                for attr in attrs:
-                    if attr not in allowed_attrs + ['class', 'data-icon']:
-                        del tag[attr]
-            else:
-                attrs = dict(tag.attrs)
-                for attr in attrs:
-                    if attr not in allowed_attrs:
-                        del tag[attr]
-
-        # Remove redundant divs
-        self.remove_redundant_divs(soup)
-        return soup
-
-    def remove_redundant_divs(self, soup):
-        """
-        Removes unnecessary nested div elements from HTML.
-        Args:
-            soup (BeautifulSoup): The HTML soup object to clean
-        Returns:
-            None (modifies soup object in place)
-        """
-        while True:
-            redundant_found = False
-            for div in soup.find_all('div'):
-                # Get all children, excluding empty whitespace
-                children = list(div.children)
-                children = [c for c in children if not isinstance(c, str) or c.strip()]
-                # Remove div if it's empty or has only one child
-                if len(children) == 0:
-                    div.decompose()
-                    redundant_found = True
-                    break
-                elif len(children) == 1:
-                    div.replace_with(children[0])
-                    redundant_found = True
-                    break
-            if not redundant_found:
-                break
 
     """
     *********************
@@ -208,43 +130,48 @@ class Spider(scrapy.Spider):
     """
     def is_valid_url(self, url):
         """
-        Checks if a URL should be processed based on domain restrictions.
-        Args:
-            url (str): URL to validate
-        Returns:
-            bool: True if URL is valid, False otherwise
-        """
-        parsed = urlparse(url)
-        domain = parsed.netloc
-        if url.startswith('#'):
-            return False
-        if domain and self.domain_limit and self.domain_limit not in url:
-            return False
-        return True
-
-    def should_follow(self, url):
-        """
         Determines if a URL should be crawled based on various criteria.
         Args:
             url (str): URL to evaluate
         Returns:
-            bool: True if URL should be followed, False otherwise
+            bool: True if URL is valid, False otherwise
         """
+        # Skip if it's just a page anchor
+        if url.startswith('#'):
+            return False
+            
+        # Skip if not a valid URL format
+        if not url.startswith(('http://', 'https://')):
+            return False
+            
         parsed = urlparse(url)
         domain = parsed.netloc
+        
         # Skip if already visited
         if url in self.visited_urls:
             return False
-        # Skip if not a valid URL
-        if not url.startswith(('http://', 'https://')):
-            return False
+            
+        # Skip if domain limit is set and URL doesn't match
+        if self.domain_limit:
+            url_without_query = url.split('?')[0]
+            if self.domain_limit not in url_without_query:
+                return False
+            
+        # Skip if domain is in excluded domains
+        if self.exclude_domains:
+            for excluded in self.exclude_domains:
+                if excluded in url:
+                    return False
+                    
         # Skip if max urls per domain reached
         if domain in self.domain_urls and self.domain_urls[domain] >= self.max_urls_per_domain:
             return False
-        # Skip if file extension
+            
+        # Skip if file extension matches excluded types
         skip_extensions = ['.pdf', '.jpg', '.png', '.gif', '.zip']
         if any(url.lower().endswith(ext) for ext in skip_extensions):
             return False
+            
         return True
 
     def handle_error(self, failure):
@@ -279,7 +206,7 @@ class Spider(scrapy.Spider):
         # Create path for file
         path = parsed_url.path
         if not path or path == '/':
-            path = 'index'
+            path = 'root-index'
         else:
             path = path.strip('/')
         # Add query string if it exists, with safe encoding
@@ -338,5 +265,5 @@ if __name__ == "__main__":
         'DOWNLOAD_DELAY': 1,
         'DOWNLOAD_TIMEOUT': 10
     })
-    process.crawl(Spider, start_urls=[web_urls], company_name=company_name, domain_limit=domain_limit)
+    process.crawl(UTASpider, start_urls=[web_urls], company_name=company_name, domain_limit=domain_limit)
     process.start()

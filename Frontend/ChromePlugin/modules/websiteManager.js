@@ -32,13 +32,7 @@ export class WebsiteManager {
         });
 
         // Add history tab listener
-        $('#history-tab').on('shown.bs.tab', () => this.updateWebsitesHistoryList());
-
-        // Add event listener for modal hidden event
-        $('#websiteDetailsModal').on('hidden.bs.modal', function () {
-            // Ensure the start chat button loses focus after modal is hidden
-            $('#startChatBtn').blur();
-        });
+        $(document).on('click', '.history-tab', () => this.updateWebsitesHistoryList());
     }
     
     // Initialize the website search
@@ -157,7 +151,10 @@ export class WebsiteManager {
                     domain_limit: domainLimit
                 })
             });
-            return { success: true, message: 'Crawling completed successfully!' };
+            return { 
+                success: true, 
+                message: 'Check website analysis in the <a href="#" class="history-tab">Websites section</a>'
+            };
         } catch (error) {
             return { success: false, message: `Error during crawling: ${error.message}` };
         }
@@ -222,11 +219,12 @@ export class WebsiteManager {
                             <span class="badge ${site.crawl_finished ? 'bg-success' : 'bg-warning'} me-2">
                                 ${site.crawl_finished ? 'Analyzed' : 'In Progress'}
                             </span>
-                            <span class="stats-text">${site.visited_urls.length} pages crawled</span>
+                            <span class="stats-text">${site.visited_urls.length} pages analyzed</span>
                         </div>
                     </div>
                 `;
                 historyList.append(websiteEntry);
+                $('#history-tab').tab('show');
             });
         } catch (error) {
             console.error('Error updating history list:', error);

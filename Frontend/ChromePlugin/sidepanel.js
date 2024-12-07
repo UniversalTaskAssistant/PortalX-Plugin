@@ -30,6 +30,8 @@ $(document).ready(function() {
                 .html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Crawling...');
                 
             const result = await websiteManager.startCrawl(companyName, domainLimit);
+            $('.message-container').remove();
+            $('#welcome-message').hide();
             chatManager.addMessage(result.message);
         } catch (error) {
             chatManager.addMessage(`Error during crawling: ${error.message}`);
@@ -46,7 +48,6 @@ $(document).ready(function() {
             chatManager.addMessage('Please enter a question', true);
             return;
         }
-        
         try {
             chatManager.setQueryButtonLoading(true);
             chatManager.addMessage(query, true);
@@ -58,7 +59,7 @@ $(document).ready(function() {
                     user_id: 'test1',
                     conversation_id: chatManager.conversationId,
                     query: query,
-                    web_url: websiteManager.currentWebsiteInfo.domainName
+                    web_url: chatManager.currentChatWebsite.startUrl
                 })
             });
             chatManager.addMessage(response.answer);
