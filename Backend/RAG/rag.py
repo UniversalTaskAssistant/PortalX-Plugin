@@ -1,24 +1,39 @@
+# Standard library imports
+import os
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
-
-from llama_index.core import StorageContext, VectorStoreIndex, SimpleDirectoryReader, Settings, load_index_from_storage
-from llama_index.core.schema import NodeWithScore, TextNode
-from llama_index.embeddings.huggingface import HuggingFaceEmbedding
-from llama_index.llms.openai import OpenAI
 from typing import Dict, Any, List
-import os
+
+# Third-party imports
 from dotenv import load_dotenv
 from langsmith.run_helpers import traceable
 
+# LlamaIndex imports
+from llama_index.core import (
+    StorageContext,
+    VectorStoreIndex,
+    SimpleDirectoryReader,
+    Settings,
+    load_index_from_storage
+)
+from llama_index.core.schema import NodeWithScore, TextNode
+from llama_index.embeddings.huggingface import HuggingFaceEmbedding
+from llama_index.llms.openai import OpenAI
+
+# Local imports
 from Backend.RAG.prompts import COMPRESS_AND_FILTER_PROMPT, ANSWER_PROMPT
 
 
 class RAGSystem:
-    def __init__(self,max_concurrent_tasks: int = 3):
+    """A Retrieval-Augmented Generation (RAG) system for document processing and querying."""
+
+    def __init__(self, max_concurrent_tasks: int = 3):
         """
         Initialize RAG system with empty components.
-        """
 
+        Args:
+            max_concurrent_tasks: Maximum number of concurrent tasks to process
+        """
         load_dotenv()
         self.openai_api_key = os.getenv('OPENAI_API_KEY')
 
@@ -26,11 +41,14 @@ class RAGSystem:
             raise ValueError(
                 "OpenAI API key not found in .env file. Please ensure the file contains the key as OPENAI_API_KEY.")
 
-        self.current_directory_path = None  # Path to the currently loaded directory
-        self.embed_model = None            # Initialize embedding model
-        self.documents = None              # Placeholder for documents
-        self.index = None                  # Vector store index
-        self.query_engine = None           # Query engine with response synthesis
+        # System components
+        self.current_directory_path = None
+        self.embed_model = None
+        self.documents = None
+        self.index = None
+        self.query_engine = None
+
+        # Concurrency controls
         self.max_concurrent_tasks = max_concurrent_tasks
         self.semaphore = asyncio.Semaphore(max_concurrent_tasks)
         self.executor = ThreadPoolExecutor(max_workers=max_concurrent_tasks)
@@ -78,14 +96,8 @@ class RAGSystem:
         Settings.chunk_overlap = chunk_overlap
 
     async def _load_index_from_disk(self, directory_path: str):
-        """
-        Load saved index from disk asynchronously.
-
-        Args:
-            directory_path: Path to the directory containing the index
-        """
+        """Load saved index from disk asynchronously."""
         print("Loading saved index from disk...")
-        from llama_index.core import StorageContext, load_index_from_storage
 
         loop = asyncio.get_event_loop()
         storage_context = await loop.run_in_executor(
@@ -99,32 +111,20 @@ class RAGSystem:
         )
 
     async def _process_single_document(self, doc, embedding_dir: str) -> tuple:
-        """
-        Process a single document asynchronously - create and save its index.
-
-        Args:
-            doc: Document to process
-            embedding_dir: Directory to store embeddings
-
-        Returns:
-            Tuple of (processed document, document index)
-        """
+        """Process a single document asynchronously - create and save its index."""
         async with self.semaphore:
             print(f"Processing document: {doc.doc_id}")
 
-            # Calculate relative path and create directories
             relative_path = doc.doc_id.replace(self.current_directory_path + '/', '')
             doc_path = os.path.join(embedding_dir, relative_path)
             os.makedirs(os.path.dirname(doc_path), exist_ok=True)
 
-            # Create document index in thread pool
             loop = asyncio.get_event_loop()
             doc_index = await loop.run_in_executor(
                 self.executor,
                 lambda: VectorStoreIndex.from_documents([doc], show_progress=True)
             )
 
-            # Save individual document index
             await loop.run_in_executor(
                 self.executor,
                 lambda: doc_index.storage_context.persist(persist_dir=doc_path)
@@ -134,20 +134,11 @@ class RAGSystem:
             return doc, doc_index
 
     async def _create_and_save_indices(self, directory_path: str):
-        """
-        Create and save indices for each document asynchronously while maintaining a condensed index.
-
-        Args:
-            directory_path: Path to the directory containing documents
-
-        Returns:
-            Condensed index combining all documents
-        """
+        """Create and save indices for each document asynchronously."""
         print("Creating new indices...")
         embedding_dir = f"{directory_path}/embedding"
         os.makedirs(embedding_dir, exist_ok=True)
 
-        # Initialize document reader
         reader = SimpleDirectoryReader(
             directory_path,
             recursive=True,
@@ -155,7 +146,6 @@ class RAGSystem:
             filename_as_id=True
         )
 
-        # Process documents concurrently
         tasks = []
         all_docs = []
 
@@ -164,14 +154,11 @@ class RAGSystem:
                 task = self._process_single_document(doc, embedding_dir)
                 tasks.append(task)
 
-        # Wait for all documents to be processed
         results = await asyncio.gather(*tasks)
 
-        # Collect processed documents
         for doc, _ in results:
             all_docs.append(doc)
 
-        # Create and save condensed index
         loop = asyncio.get_event_loop()
         condensed_index = await loop.run_in_executor(
             self.executor,
@@ -186,36 +173,23 @@ class RAGSystem:
         print("Condensed index saved successfully")
         return condensed_index
 
-    def cleanup(self):
-        """Clean up resources used by the async system."""
-        if self.executor:
-            self.executor.shutdown()
-
     @traceable(run_type="chain")
     def retrieve_documents(self, question: str, top_k: int = 3) -> list:
-        """
-        Retrieve relevant documents and compress/filter them.
-        """
+        """Retrieve relevant documents and compress/filter them."""
         if not self.index:
             raise ValueError("Index has not been initialized.")
 
-        # Retrieve documents from the index
         query_engine = self.index.as_query_engine(similarity_top_k=top_k)
         response = query_engine.query(question)
-        retrieved_docs = response.source_nodes
-
-        return retrieved_docs
+        return response.source_nodes
 
     @traceable(run_type="chain")
     async def generate_custom_response(self, question: str, top_k: int = 3) -> Dict[str, Any]:
-        """
-        Generate a response by manually controlling the RAG pipeline.
-        """
+        """Generate a response by manually controlling the RAG pipeline."""
         # Step 1: Retrieve documents
         retrieved_docs = self.retrieve_documents(question, top_k=top_k)
 
-        #Step 2: Compress and filter documents
-        #TODO
+        # Step 2: Compress and filter documents (TODO)
         # llm = OpenAI(model="gpt-4", temperature=0)
         # compressed_docs = await self.compress_and_filter_documents(retrieved_docs, question, llm)
 
@@ -238,31 +212,28 @@ class RAGSystem:
             ]
         }
 
-    # return {
-    #     "answer": answer,
-    #     "sources": [
-    #         {
-    #             "file": doc.metadata.get('file_name', 'Unknown'),
-    #             "score": round(doc.score, 3) if doc.score else None,
-    #             "text_chunk": doc.text[:200] + "..."
-    #         } for doc in compressed_docs
-    #     ]
-    # }
+        # Alternative response format with compressed docs:
+        # return {
+        #     "answer": answer,
+        #     "sources": [
+        #         {
+        #             "file": doc.metadata.get('file_name', 'Unknown'),
+        #             "score": round(doc.score, 3) if doc.score else None,
+        #             "text_chunk": doc.text[:200] + "..."
+        #         } for doc in compressed_docs
+        #     ]
+        # }
 
     @traceable(run_type="chain")
     async def compress_and_filter_documents(self, docs: List[NodeWithScore], question: str, llm) -> List[NodeWithScore]:
-        """
-        Compress and filter documents using the language model asynchronously.
-        """
+        """Compress and filter documents using the language model asynchronously."""
 
         async def process_document(node_with_score):
             text_node = node_with_score.node
             doc_text = text_node.text
             metadata = text_node.metadata
 
-
-            # Make the LLM call in a separate thread
-            response = await asyncio.to_thread(llm.predict, COMPRESS_AND_FILTER_PROMPT,query=question, text=doc_text)
+            response = await asyncio.to_thread(llm.predict, COMPRESS_AND_FILTER_PROMPT, query=question, text=doc_text)
             summarized_text = response.strip() if response else ""
 
             if not summarized_text:
@@ -271,7 +242,7 @@ class RAGSystem:
             summarized_node = TextNode(
                 id_=text_node.id_,
                 text=summarized_text,
-                metadata=metadata  # Retain metadata
+                metadata=metadata
             )
 
             return NodeWithScore(
@@ -281,14 +252,16 @@ class RAGSystem:
 
         tasks = [process_document(node) for node in docs]
         results = await asyncio.gather(*tasks)
-
         return [result for result in results if result is not None]
+
+    def cleanup(self):
+        """Clean up resources used by the async system."""
+        if self.executor:
+            self.executor.shutdown()
 
     @staticmethod
     def format_response(result: Dict[str, Any], show_sources: bool = True) -> str:
-        """
-        Format the query response into a readable string.
-        """
+        """Format the query response into a readable string."""
         output = f"Answer: {result['answer']}\n\n"
         if show_sources:
             output += "Sources:\n"
@@ -298,34 +271,27 @@ class RAGSystem:
 
 
 async def main():
-    """
-    Main function to test chatbot locally in terminal
-    """
-
+    """Main function to test chatbot locally in terminal."""
     rag = RAGSystem(max_concurrent_tasks=3)
     relative_directory_path = "../Output/websites/signavio"
     absolute_directory_path = os.path.abspath(relative_directory_path)
+
     try:
-        await rag.initialize(
-            directory_path=absolute_directory_path  # Create new indices
-        )
-        # Use the system...
+        await rag.initialize(directory_path=absolute_directory_path)
+
+        print("Welcome!")
+        while True:
+            usr_input = input("User: ")
+            if usr_input == "quit":
+                break
+
+            response = await rag.generate_custom_response(usr_input)
+            print("Answer:", response["answer"])
+            print("Sources:", response["sources"])
+
     finally:
         rag.cleanup()
-
-    print("Welcome!")
-
-    while True:
-        usr_input = input("User: ")
-        if usr_input == "quit":
-            break
-
-        response = await rag.generate_custom_response(usr_input)
-
-        print("Answer:", response["answer"])
-        print("Sources:", response["sources"])
 
 
 if __name__ == "__main__":
     asyncio.run(main())
-    # main()
