@@ -21,7 +21,7 @@ from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 from llama_index.llms.openai import OpenAI
 
 # Local imports
-from Backend.RAG.prompts import COMPRESS_AND_FILTER_PROMPT, ANSWER_PROMPT
+from Backend.RAG.prompts import COMPRESS_AND_FILTER_PROMPT, SYSTEM_PROMPT
 
 
 class RAGSystem:
@@ -55,7 +55,7 @@ class RAGSystem:
 
     async def initialize(self,
                          directory_path: str,
-                         embed_model_name: str = "BAAI/bge-small-en-v1.5",
+                         embed_model_name: str = "hkunlp/instructor-base",
                          chunk_size: int = 1024,
                          chunk_overlap: int = 200,
                          load_from_disk: bool = True):
@@ -90,7 +90,7 @@ class RAGSystem:
             embed_batch_size=100
         )
         os.environ["OPENAI_API_KEY"] = self.openai_api_key
-        Settings.llm = OpenAI(model="gpt-4")
+        Settings.llm = OpenAI(model="gpt-4o")
         Settings.embed_model = self.embed_model
         Settings.chunk_size = chunk_size
         Settings.chunk_overlap = chunk_overlap
@@ -184,7 +184,7 @@ class RAGSystem:
         return response.source_nodes
 
     @traceable(run_type="chain")
-    async def generate_custom_response(self, question: str, top_k: int = 3) -> Dict[str, Any]:
+    def generate_custom_response(self, question: str, top_k: int = 3) -> Dict[str, Any]:
         """Generate a response by manually controlling the RAG pipeline."""
         # Step 1: Retrieve documents
         retrieved_docs = self.retrieve_documents(question, top_k=top_k)
@@ -199,7 +199,7 @@ class RAGSystem:
 
         # Step 4: Use custom prompt to generate response
         llm = OpenAI(model="gpt-4", temperature=0)
-        answer = llm.predict(ANSWER_PROMPT, question=question, context=context)
+        answer = llm.predict(SYSTEM_PROMPT, question=question, context=context)
 
         return {
             "answer": answer,
@@ -285,7 +285,7 @@ async def main():
             if usr_input == "quit":
                 break
 
-            response = await rag.generate_custom_response(usr_input)
+            response = rag.generate_custom_response(usr_input)
             print("Answer:", response["answer"])
             print("Sources:", response["sources"])
 
