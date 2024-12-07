@@ -1,4 +1,5 @@
 import asyncio
+from concurrent.futures import ThreadPoolExecutor
 
 from llama_index.core import StorageContext, VectorStoreIndex, SimpleDirectoryReader, Settings, load_index_from_storage
 from llama_index.core.schema import NodeWithScore, TextNode
@@ -13,7 +14,7 @@ from Backend.RAG.prompts import COMPRESS_AND_FILTER_PROMPT, ANSWER_PROMPT
 
 
 class RAGSystem:
-    def __init__(self):
+    def __init__(self,max_concurrent_tasks: int = 3):
         """
         Initialize RAG system with empty components.
         """
@@ -25,26 +26,38 @@ class RAGSystem:
             raise ValueError(
                 "OpenAI API key not found in .env file. Please ensure the file contains the key as OPENAI_API_KEY.")
 
-        # Initialize other attributes
         self.current_directory_path = None  # Path to the currently loaded directory
         self.embed_model = None            # Initialize embedding model
         self.documents = None              # Placeholder for documents
         self.index = None                  # Vector store index
         self.query_engine = None           # Query engine with response synthesis
+        self.max_concurrent_tasks = max_concurrent_tasks
+        self.semaphore = asyncio.Semaphore(max_concurrent_tasks)
+        self.executor = ThreadPoolExecutor(max_workers=max_concurrent_tasks)
 
-    def initialize(self, directory_path: str,
-                   embed_model_name: str = "BAAI/bge-small-en-v1.5",
-                   chunk_size: int = 1024,
-                   chunk_overlap: int = 200,
-                   load_from_disk: bool = True):
-        """Initialize the RAG system components."""
+    async def initialize(self,
+                         directory_path: str,
+                         embed_model_name: str = "BAAI/bge-small-en-v1.5",
+                         chunk_size: int = 1024,
+                         chunk_overlap: int = 200,
+                         load_from_disk: bool = True):
+        """
+        Initialize the RAG system components asynchronously.
+
+        Args:
+            directory_path: Path to document directory
+            embed_model_name: Name of the embedding model to use
+            chunk_size: Size of text chunks for processing
+            chunk_overlap: Overlap between consecutive chunks
+            load_from_disk: Whether to load existing index from disk
+        """
         self.current_directory_path = directory_path
         self._initialize_models(embed_model_name, chunk_size, chunk_overlap)
 
         if load_from_disk and os.path.exists(f"{directory_path}/embedding"):
-            self.index = self._load_index_from_disk(directory_path)
+            self.index = await self._load_index_from_disk(directory_path)
         else:
-            self.index = self._create_and_save_indices(directory_path)
+            self.index = await self._create_and_save_indices(directory_path)
 
         self.query_engine = self.index.as_query_engine(
             response_mode="tree_summarize",
@@ -64,22 +77,77 @@ class RAGSystem:
         Settings.chunk_size = chunk_size
         Settings.chunk_overlap = chunk_overlap
 
-    def _load_index_from_disk(self, directory_path: str):
-        """Load saved index from disk."""
+    async def _load_index_from_disk(self, directory_path: str):
+        """
+        Load saved index from disk asynchronously.
+
+        Args:
+            directory_path: Path to the directory containing the index
+        """
         print("Loading saved index from disk...")
         from llama_index.core import StorageContext, load_index_from_storage
-        storage_context = StorageContext.from_defaults(persist_dir=f"{directory_path}/embedding")
-        return load_index_from_storage(storage_context)
 
-    def _create_and_save_indices(self, directory_path: str):
+        loop = asyncio.get_event_loop()
+        storage_context = await loop.run_in_executor(
+            self.executor,
+            lambda: StorageContext.from_defaults(persist_dir=f"{directory_path}/embedding")
+        )
+
+        return await loop.run_in_executor(
+            self.executor,
+            lambda: load_index_from_storage(storage_context)
+        )
+
+    async def _process_single_document(self, doc, embedding_dir: str) -> tuple:
         """
-        Create and save indices for each document while maintaining a condensed index.
-        Returns both individual document indices and a condensed index for efficient querying.
+        Process a single document asynchronously - create and save its index.
+
+        Args:
+            doc: Document to process
+            embedding_dir: Directory to store embeddings
+
+        Returns:
+            Tuple of (processed document, document index)
+        """
+        async with self.semaphore:
+            print(f"Processing document: {doc.doc_id}")
+
+            # Calculate relative path and create directories
+            relative_path = doc.doc_id.replace(self.current_directory_path + '/', '')
+            doc_path = os.path.join(embedding_dir, relative_path)
+            os.makedirs(os.path.dirname(doc_path), exist_ok=True)
+
+            # Create document index in thread pool
+            loop = asyncio.get_event_loop()
+            doc_index = await loop.run_in_executor(
+                self.executor,
+                lambda: VectorStoreIndex.from_documents([doc], show_progress=True)
+            )
+
+            # Save individual document index
+            await loop.run_in_executor(
+                self.executor,
+                lambda: doc_index.storage_context.persist(persist_dir=doc_path)
+            )
+
+            print(f"Index saved for {doc.doc_id}")
+            return doc, doc_index
+
+    async def _create_and_save_indices(self, directory_path: str):
+        """
+        Create and save indices for each document asynchronously while maintaining a condensed index.
+
+        Args:
+            directory_path: Path to the directory containing documents
+
+        Returns:
+            Condensed index combining all documents
         """
         print("Creating new indices...")
         embedding_dir = f"{directory_path}/embedding"
         os.makedirs(embedding_dir, exist_ok=True)
 
+        # Initialize document reader
         reader = SimpleDirectoryReader(
             directory_path,
             recursive=True,
@@ -87,37 +155,41 @@ class RAGSystem:
             filename_as_id=True
         )
 
-        # Initialize storage for all documents
+        # Process documents concurrently
+        tasks = []
         all_docs = []
 
-        # Process individual documents
         for docs in reader.iter_data(show_progress=True):
             for doc in docs:
-                print(f"Processing document: {doc.doc_id}")
+                task = self._process_single_document(doc, embedding_dir)
+                tasks.append(task)
 
-                # Save individual document index
-                relative_path = doc.doc_id.replace(directory_path + '/', '')
-                doc_path = os.path.join(embedding_dir, relative_path)
-                os.makedirs(os.path.dirname(doc_path), exist_ok=True)
+        # Wait for all documents to be processed
+        results = await asyncio.gather(*tasks)
 
-                doc_index = VectorStoreIndex.from_documents(
-                    [doc],
-                    show_progress=True
-                )
-                doc_index.storage_context.persist(persist_dir=doc_path)
-                print(f"Index saved for {doc.doc_id}")
+        # Collect processed documents
+        for doc, _ in results:
+            all_docs.append(doc)
 
-                # Collect document for condensed index
-                all_docs.append(doc)
-
-        condensed_index = VectorStoreIndex.from_documents(
-            all_docs,
-            show_progress=True
+        # Create and save condensed index
+        loop = asyncio.get_event_loop()
+        condensed_index = await loop.run_in_executor(
+            self.executor,
+            lambda: VectorStoreIndex.from_documents(all_docs, show_progress=True)
         )
-        condensed_index.storage_context.persist(persist_dir=embedding_dir)
-        print("Condensed index saved successfully")
 
+        await loop.run_in_executor(
+            self.executor,
+            lambda: condensed_index.storage_context.persist(persist_dir=embedding_dir)
+        )
+
+        print("Condensed index saved successfully")
         return condensed_index
+
+    def cleanup(self):
+        """Clean up resources used by the async system."""
+        if self.executor:
+            self.executor.shutdown()
 
     @traceable(run_type="chain")
     def retrieve_documents(self, question: str, top_k: int = 3) -> list:
@@ -143,11 +215,13 @@ class RAGSystem:
         retrieved_docs = self.retrieve_documents(question, top_k=top_k)
 
         #Step 2: Compress and filter documents
-        llm = OpenAI(model="gpt-4", temperature=0)
-        compressed_docs = await self.compress_and_filter_documents(retrieved_docs, question, llm)
+        #TODO
+        # llm = OpenAI(model="gpt-4", temperature=0)
+        # compressed_docs = await self.compress_and_filter_documents(retrieved_docs, question, llm)
 
         # Step 3: Construct context
-        context = "\n".join([doc.text for doc in compressed_docs])
+        # context = "\n".join([doc.text for doc in compressed_docs])
+        context = "\n".join([doc.text for doc in retrieved_docs])
 
         # Step 4: Use custom prompt to generate response
         llm = OpenAI(model="gpt-4", temperature=0)
@@ -160,9 +234,20 @@ class RAGSystem:
                     "file": doc.metadata.get('file_name', 'Unknown'),
                     "score": round(doc.score, 3) if doc.score else None,
                     "text_chunk": doc.text[:200] + "..."
-                } for doc in compressed_docs
+                } for doc in retrieved_docs
             ]
         }
+
+    # return {
+    #     "answer": answer,
+    #     "sources": [
+    #         {
+    #             "file": doc.metadata.get('file_name', 'Unknown'),
+    #             "score": round(doc.score, 3) if doc.score else None,
+    #             "text_chunk": doc.text[:200] + "..."
+    #         } for doc in compressed_docs
+    #     ]
+    # }
 
     @traceable(run_type="chain")
     async def compress_and_filter_documents(self, docs: List[NodeWithScore], question: str, llm) -> List[NodeWithScore]:
@@ -216,10 +301,18 @@ async def main():
     """
     Main function to test chatbot locally in terminal
     """
-    rag = RAGSystem()
+
+    rag = RAGSystem(max_concurrent_tasks=3)
     relative_directory_path = "../Output/websites/signavio"
     absolute_directory_path = os.path.abspath(relative_directory_path)
-    rag.initialize(directory_path=absolute_directory_path)
+    try:
+        await rag.initialize(
+            directory_path=absolute_directory_path  # Create new indices
+        )
+        # Use the system...
+    finally:
+        rag.cleanup()
+
     print("Welcome!")
 
     while True:
