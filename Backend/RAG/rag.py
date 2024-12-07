@@ -72,9 +72,11 @@ class RAGSystem:
         return load_index_from_storage(storage_context)
 
     def _create_and_save_indices(self, directory_path: str):
-        """Create and save indices for each document."""
+        """
+        Create and save indices for each document while maintaining a condensed index.
+        Returns both individual document indices and a condensed index for efficient querying.
+        """
         print("Creating new indices...")
-        # Create embedding directory if it doesn't exist
         embedding_dir = f"{directory_path}/embedding"
         os.makedirs(embedding_dir, exist_ok=True)
 
@@ -85,13 +87,18 @@ class RAGSystem:
             filename_as_id=True
         )
 
+        # Initialize storage for all documents
         all_docs = []
+
+        # Process individual documents
         for docs in reader.iter_data(show_progress=True):
             for doc in docs:
                 print(f"Processing document: {doc.doc_id}")
+
                 # Save individual document index
-                doc_path = f"{directory_path}/embedding/{doc.doc_id}"
-                os.makedirs(doc_path, exist_ok=True)
+                relative_path = doc.doc_id.replace(directory_path + '/', '')
+                doc_path = os.path.join(embedding_dir, relative_path)
+                os.makedirs(os.path.dirname(doc_path), exist_ok=True)
 
                 doc_index = VectorStoreIndex.from_documents(
                     [doc],
@@ -100,18 +107,17 @@ class RAGSystem:
                 doc_index.storage_context.persist(persist_dir=doc_path)
                 print(f"Index saved for {doc.doc_id}")
 
+                # Collect document for condensed index
                 all_docs.append(doc)
 
-        # Create final index from all documents
-        final_index = VectorStoreIndex.from_documents(
+        condensed_index = VectorStoreIndex.from_documents(
             all_docs,
             show_progress=True
         )
+        condensed_index.storage_context.persist(persist_dir=embedding_dir)
+        print("Condensed index saved successfully")
 
-        # Save final index
-        final_index.storage_context.persist(persist_dir=f"{directory_path}/embedding")
-        return final_index
-
+        return condensed_index
 
     @traceable(run_type="chain")
     def retrieve_documents(self, question: str, top_k: int = 3) -> list:
