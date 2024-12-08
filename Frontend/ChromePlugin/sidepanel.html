@@ -37,6 +37,26 @@
                 <!-- Input Area -->
                 <div class="mt-auto">
                     <div class="input-section">
+                        <!-- Selected Website tab -->
+                        <div class="website-bar selected-website-bar mb-3">
+                            <h6 class="text-muted">Chating with <a class="text-muted current-website-domain">www.uta.au</a></h6>
+                            <div class="row g-2">
+                                <div class="col-9" style="margin: 0;">
+                                    <div class="current-website">
+                                        <!-- Website info will be inserted here -->
+                                    </div>
+                                </div>
+                                <div class="col-3 d-flex align-items-center justify-content-center" style="margin: 0;">
+                                    <button id="changeWebsiteBtn" class="btn btn-outline-primary bar-btn" 
+                                        data-bs-toggle="tooltip" 
+                                        data-bs-placement="top"
+                                        title="Change Website">
+                                        Change
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- Query Section -->
                         <div class="query-section">
                             <textarea id="queryInput" class="form-control text-start" rows="3" placeholder="Type your question here..."></textarea>
@@ -80,9 +100,8 @@
                 <!-- Websites List -->
                 <div id="history-list">
                     <!-- Current Website tab -->
-                    <div class="current-website-tab mb-3">
-                        <h6>Current Website</h6>
-                        <p class="text-muted current-website-domain">www.uta.au</p>
+                    <div class="current-website-bar website-bar mb-3">
+                        <h6 class="text-muted">Current Website <a class="text-muted current-website-domain">www.uta.au</a></h6>
                         <div class="row g-2">
                             <div class="col-9" style="margin: 0;">
                                 <div class="current-website">
@@ -90,7 +109,7 @@
                                 </div>
                             </div>
                             <div class="col-3 d-flex align-items-center justify-content-center" style="margin: 0;">
-                                <button id="crawlButton" class="btn btn-outline-primary" 
+                                <button id="crawlButton" class="btn btn-outline-primary bar-btn" 
                                     data-bs-toggle="tooltip" 
                                     data-bs-placement="top"
                                     title="Analyze this website">

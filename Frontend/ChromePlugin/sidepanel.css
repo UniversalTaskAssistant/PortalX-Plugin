@@ -262,7 +262,7 @@ textarea:focus {
 }
 
 /* Button styling */
-#crawlButton {
+.bar-btn{
     padding: 0.8rem;
     margin: 0 3px 0 0;
     transition: all 0.3s ease;
@@ -278,9 +278,10 @@ textarea:focus {
     font-size: 14px;
 }
 
-#crawlButton:hover {
-    background-color: var(--primary-light);
+.bar-btn:hover {
+    background-color: var(--primary-color);
     transform: translateY(-2px);
+    border: 1.5px solid var(--primary-color);
     box-shadow: 0 4px 12px rgba(202, 107, 229, 0.15);
 }
 
@@ -841,24 +842,6 @@ textarea:focus {
 }
 
 /* Update analyze section spacing */
-.current-website-tab {
-    background-color: #e2e2e277;
-    border-radius: 8px;
-    padding: 10px;
-}
-
-.current-website-tab .btn {
-    margin-top: 0.5rem;
-}
-
-.current-website-tab h6 {
-    margin-left: 0.5rem;
-}
-
-.current-website-domain {
-    margin: 0.7rem;
-}
-
 .query-section {
     position: relative;
 }
@@ -904,4 +887,15 @@ textarea:focus {
 
 #crawlParametersForm .text-muted {
     margin-left: 0.3rem;
+}
+
+/* Current chat website */
+.website-bar{
+    background-color: #e2e2e277;
+    border-radius: 8px;
+    padding: 10px;
+}
+
+.website-bar h6 {
+    margin-left: 0.5rem;
 }

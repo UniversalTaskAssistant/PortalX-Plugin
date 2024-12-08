@@ -195,7 +195,10 @@ export class WebsiteManager {
                 </div>
             </div>
         `);
-        $('.current-website-domain').text(this.currentWebsiteInfo.domainName);
+        console.log(this.currentWebsiteInfo);
+        $('.current-website-domain')
+            .text(this.currentWebsiteInfo.domainName)
+            .attr('href', `https://${this.currentWebsiteInfo.domainName}`);
     }
 
     // Update the history list
