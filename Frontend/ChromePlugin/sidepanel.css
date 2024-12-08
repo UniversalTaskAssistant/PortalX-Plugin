@@ -848,14 +848,22 @@ textarea:focus {
 }
 
 /* Update analyze section spacing */
-.analyze-section {
+.current-website-tab {
     background-color: #e2e2e277;
     border-radius: 8px;
-    margin-bottom: 1rem;
+    padding: 10px;
 }
 
-.analyze-section .btn {
+.current-website-tab .btn {
     margin-top: 0.5rem;
+}
+
+.current-website-tab h6 {
+    margin-left: 0.5rem;
+}
+
+.current-website-domain {
+    margin: 0.7rem;
 }
 
 .query-section {

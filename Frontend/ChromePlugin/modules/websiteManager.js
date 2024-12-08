@@ -107,8 +107,8 @@ export class WebsiteManager {
                     hostName: hostName,
                     subdomain: subdomain
                 };
-                // Update the html analysis section
-                this.updateAnalysisSection();
+                // Update the html current website tab
+                this.updateCurrentWebsiteTab();
                 console.log('Current URL updated:', currentUrl);
             }
         });
@@ -182,8 +182,8 @@ export class WebsiteManager {
 
     // *******************************
     // ******* UPDATE SECTIONS *******
-    // Update the analysis section
-    updateAnalysisSection() {
+    // Update the current website tab
+    updateCurrentWebsiteTab() {
         const faviconUrl = this.getFaviconUrl(this.currentWebsiteInfo.url);
         const $currentWebsite = $('.current-website');
         $currentWebsite.empty();
@@ -195,6 +195,7 @@ export class WebsiteManager {
                 </div>
             </div>
         `);
+        $('.current-website-domain').text(this.currentWebsiteInfo.domainName);
     }
 
     // Update the history list
