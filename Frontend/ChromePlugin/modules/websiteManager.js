@@ -33,6 +33,12 @@ export class WebsiteManager {
 
         // Add history tab listener
         $(document).on('click', '.history-tab', () => this.updateWebsitesHistoryList());
+
+        // Add change website button listener
+        $('#changeWebsiteBtn').on('click', () => {
+            $('#history-tab').tab('show');
+            this.updateWebsitesHistoryList();
+        });
     }
     
     // Initialize the website search
@@ -108,7 +114,7 @@ export class WebsiteManager {
                     subdomain: subdomain
                 };
                 // Update the html current website tab
-                this.updateCurrentWebsiteTab();
+                this.updateCurrentWebsiteBar();
                 console.log('Current URL updated:', currentUrl);
             }
         });
@@ -183,7 +189,7 @@ export class WebsiteManager {
     // *******************************
     // ******* UPDATE SECTIONS *******
     // Update the current website tab
-    updateCurrentWebsiteTab() {
+    updateCurrentWebsiteBar() {
         const faviconUrl = this.getFaviconUrl(this.currentWebsiteInfo.url);
         const $currentWebsite = $('.current-website');
         $currentWebsite.empty();
