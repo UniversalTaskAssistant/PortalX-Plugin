@@ -105,13 +105,26 @@
                                 </div>
                             </div>
                             <div class="col-3 d-flex align-items-center justify-content-center" style="margin: 0;">
-                                <button id="crawlButton" class="btn btn-outline-primary bar-btn" 
+                                <button class="btn btn-outline-primary bar-btn analyze-setting-btn" 
                                     data-bs-toggle="tooltip" 
                                     data-bs-placement="top"
                                     title="Analyze this website">
                                     Analyze
                                 </button>
                             </div>
+                        </div>
+
+                        <!-- Add new other website input -->
+                        <div class="other-website mt-2">
+                            <form class="input-group enter-website">
+                                <input type="text" class="form-control form-control-sm" 
+                                    id="otherWebsiteInput" 
+                                    placeholder="Or enter another website URL (www.example.com)"
+                                    style="padding-right: 40px;">
+                                <button type="submit" class="btn position-absolute analyze-setting-btn" style="border: none; background: none; z-index: 10; top: 50%; right: 5px; transform: translateY(-50%);">
+                                    <i class="bi bi-send"></i>
+                                </button>
+                            </form>
                         </div>
                     </div>
                 </div>

@@ -12,7 +12,7 @@ export class WebsiteManager {
         this.updateCurrentWebsiteInfo();
         this.initializeEventListeners();
         this.initializeWebsiteSearch();
-        this.initializeCrawlButton();
+        this.initializeAnalyzeSettingButton();
         this.initializeWebsiteEntryHandler();
     }
 
@@ -58,14 +58,45 @@ export class WebsiteManager {
     }
 
     // Initialize the crawl settings button
-    initializeCrawlButton() {
+    initializeAnalyzeSettingButton() {
         const self = this;  // Store reference to class instance
-        $('#crawlButton').on('click', function() {
-            const currentInfo = self.getCurrentWebsiteInfo();
-            $('#websiteDomain').val(currentInfo.domainName);
-            $('#hostName').val(currentInfo.hostName);
-            $('#subdomainLimit').val(currentInfo.subdomain);
-            new bootstrap.Modal('#crawlParametersModal').show();
+
+        // Handle the URL input form separately
+        $('.enter-website').off('submit').on('submit', function(e) {
+            e.preventDefault();
+            const inputUrl = $('#otherWebsiteInput').val();
+            // URL validation regex pattern
+            const urlPattern = /^(https?:\/\/)?([\w-]+\.)+[\w-]+(\/[\w-./?%&=]*)?$/;
+            try {
+                // First check if it matches basic URL pattern
+                if (!urlPattern.test(inputUrl)) {
+                    throw new Error('Invalid URL format');
+                }
+                
+                // Try to add https:// if not present
+                const urlToTest = inputUrl.startsWith('http') ? inputUrl : `https://${inputUrl}`;
+                // Try to construct URL object (this will catch malformed URLs)
+                new URL(urlToTest);
+                const websiteInfo = self.getWebsiteInfoFromUrl(urlToTest);
+                
+                // Clear any previous error messages
+                $('#urlError').remove();
+                // Only show modal and set values if all validation passes
+                $('#websiteDomain').val(websiteInfo.domainName);
+                $('#hostName').val(websiteInfo.hostName);
+                $('#subdomainLimit').val(websiteInfo.subdomain);
+                new bootstrap.Modal('#crawlParametersModal').show();
+            } catch (error) {
+                // Remove any existing error message
+                $('#urlError').remove();
+                
+                // Add error message below the input
+                const errorMessage = `
+                    <div id="urlError" class="alert alert-danger mt-2 mb-0">
+                        <small>Invalid URL format. Please enter a valid URL like "example.com" or "https://example.com"</small>
+                    </div>`;
+                $('.other-website').append(errorMessage);
+            }
         });
     }
 
@@ -149,25 +180,24 @@ export class WebsiteManager {
         chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
             if (tabs[0]) {
                 const currentUrl = tabs[0].url;
-                const urlObj = new URL(currentUrl);
-                // Extract domain, host, and subdomain
-                const domainName = urlObj.hostname;
-                const hostName = domainName.replace('www.', '').split('.')[0];
-                const subdomain = urlObj.pathname.split('/')[1] ?
-                    `${domainName}/${urlObj.pathname.split('/')[1]}/` :
-                    domainName + '/';
-                this.currentWebsiteInfo = {
-                    url: currentUrl,
-                    title: tabs[0].title || urlObj.hostname,
-                    domainName: domainName,
-                    hostName: hostName,
-                    subdomain: subdomain
-                };
+                this.currentWebsiteInfo = this.getWebsiteInfoFromUrl(currentUrl);
                 // Update the html current website tab
                 this.updateCurrentWebsiteBar();
                 console.log('Current URL updated:', currentUrl);
             }
         });
+    }
+
+    // Get the website info from the url
+    getWebsiteInfoFromUrl(url) {
+        const urlObj = new URL(url);
+        const title = urlObj.hostname;
+        const domainName = urlObj.hostname;
+        const hostName = domainName.replace('www.', '').split('.')[0];
+        const subdomain = urlObj.pathname.split('/')[1] ?
+            `${domainName}/${urlObj.pathname.split('/')[1]}/` :
+            domainName + '/';
+        return {url: url, title: title, domainName: domainName, hostName: hostName, subdomain: subdomain};
     }
 
     // Update the current website tab
