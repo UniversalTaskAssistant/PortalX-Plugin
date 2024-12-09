@@ -352,6 +352,10 @@ textarea:focus {
     box-shadow: 0 0 0 2px var(--primary-light) !important;
 }
 
+#queryInput:disabled {
+    background-color: #f8f9fa !important;
+}
+
 /* Section headers */
 .text-uppercase {
     font-size: 0.75rem;
@@ -895,7 +899,7 @@ textarea:focus {
 
 /* Current chat website */
 .info-bar{
-    background-color: #e2e2e277;
+    background-color: #f3f4f9;
     border-radius: 8px;
     padding: 5px;
 }
