@@ -918,3 +918,24 @@ textarea:focus {
     box-shadow: 0 8px 14px rgba(202, 107, 229, 0.15);
     border-color: var(--primary-color);
 }
+
+/* Other Website Input */
+#otherWebsiteInput{
+    padding-right: 40px;
+}
+
+.enter-website .analyze-setting-btn{
+    border: none;
+    background: none;
+    position: absolute;
+    z-index: 10;
+    right: 5px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.enter-website .analyze-setting-btn:hover{
+    color: var(--primary-color);
+    transition: all 0.2s;
+    transform: translateY(-55%);
+}

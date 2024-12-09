@@ -224,7 +224,7 @@ export class WebsiteManager {
         try {
             const websites = await this.loadAllWebsitesHistory();
             let historyList = $('#history-list');
-            historyList.empty();
+            $('.website-entry').remove();
             websites.forEach(site => {
                 const faviconUrl = this.getFaviconUrl(site.start_urls[0]);
                 const websiteEntry = `
