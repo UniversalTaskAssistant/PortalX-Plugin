@@ -816,6 +816,10 @@ textarea:focus {
 }
 
 /* Current Website in Analysis Section */
+#website-analysis{
+    margin: 5px;
+}
+
 .current-website-bar h6{
     padding: 10px 5px !important;
 }
@@ -894,13 +898,13 @@ textarea:focus {
 }
 
 /* Current chat website */
-.website-bar{
+.info-bar{
     background-color: #e2e2e277;
     border-radius: 8px;
     padding: 5px;
 }
 
-.website-bar h6 {
+.info-bar h6 {
     margin-left: 0.5rem;
 }
 

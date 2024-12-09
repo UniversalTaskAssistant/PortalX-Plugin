@@ -122,8 +122,6 @@ def initialize_rag_systems():
 if __name__ == '__main__':
     # Create singleton UTAWeb instance for rag system
     utaweb = UTAWeb(initializing=False, data_dir="./Output/websites")
-    utaweb.initialize_crawler()
-    utaweb.initialize_rag()
     
     print("Starting server...")
     app.run(host='127.0.0.1', port=7777, debug=True) 
