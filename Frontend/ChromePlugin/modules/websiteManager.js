@@ -39,6 +39,11 @@ export class WebsiteManager {
             $('#history-tab').tab('show');
             this.updateWebsitesHistoryList();
         });
+
+        // Click on the selected website bar to show the website details modal
+        $(document).on('click', '.selected-website', (e) => {
+            this.updateWebInfoModal(e);
+        });
     }
     
     // Initialize the website search
@@ -67,56 +72,7 @@ export class WebsiteManager {
     // Website entry click handler to show the website details modal
     initializeWebsiteEntryHandler() {
         $(document).on('click', '.website-entry', (event) => {
-            const url = $(event.currentTarget).data('url');
-            const websiteData = this.getWebsiteData(url);
-            if (!websiteData) return;
-            const $modal = $('#websiteDetailsModal');
-            
-            // Update modal content
-            const faviconUrl = this.getFaviconUrl(websiteData.start_urls[0]);
-            $modal.find('.company-name').html(`
-                <img src="${faviconUrl}" alt="">
-                <span>${websiteData.company_name}</span>
-            `);
-            
-            $modal.find('.start-url')
-                .text(websiteData.start_urls[0])
-                .attr('href', websiteData.start_urls[0]);
-            $modal.find('.pages-count').text(websiteData.visited_urls.length);
-            $modal.find('.domains-count').text(Object.keys(websiteData.domain_urls).length);
-            
-            this.updateModalDomainsList($modal, websiteData);
-            this.updateModalFailedUrlsList($modal, websiteData);
-            
-            // Show modal using Bootstrap
-            const modal = new bootstrap.Modal($modal);
-            modal.show();
-        });
-    }
-
-    // Update the current website info
-    updateCurrentWebsiteInfo() {
-        chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
-            if (tabs[0]) {
-                const currentUrl = tabs[0].url;
-                const urlObj = new URL(currentUrl);
-                // Extract domain, host, and subdomain
-                const domainName = urlObj.hostname;
-                const hostName = domainName.replace('www.', '').split('.')[0];
-                const subdomain = urlObj.pathname.split('/')[1] ?
-                    `${domainName}/${urlObj.pathname.split('/')[1]}/` :
-                    domainName + '/';
-                this.currentWebsiteInfo = {
-                    url: currentUrl,
-                    title: tabs[0].title || urlObj.hostname,
-                    domainName: domainName,
-                    hostName: hostName,
-                    subdomain: subdomain
-                };
-                // Update the html current website tab
-                this.updateCurrentWebsiteBar();
-                console.log('Current URL updated:', currentUrl);
-            }
+            this.updateWebInfoModal(event)
         });
     }
     
@@ -188,6 +144,32 @@ export class WebsiteManager {
 
     // *******************************
     // ******* UPDATE SECTIONS *******
+    // Update the current website info
+    updateCurrentWebsiteInfo() {
+        chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
+            if (tabs[0]) {
+                const currentUrl = tabs[0].url;
+                const urlObj = new URL(currentUrl);
+                // Extract domain, host, and subdomain
+                const domainName = urlObj.hostname;
+                const hostName = domainName.replace('www.', '').split('.')[0];
+                const subdomain = urlObj.pathname.split('/')[1] ?
+                    `${domainName}/${urlObj.pathname.split('/')[1]}/` :
+                    domainName + '/';
+                this.currentWebsiteInfo = {
+                    url: currentUrl,
+                    title: tabs[0].title || urlObj.hostname,
+                    domainName: domainName,
+                    hostName: hostName,
+                    subdomain: subdomain
+                };
+                // Update the html current website tab
+                this.updateCurrentWebsiteBar();
+                console.log('Current URL updated:', currentUrl);
+            }
+        });
+    }
+
     // Update the current website tab
     updateCurrentWebsiteBar() {
         const faviconUrl = this.getFaviconUrl(this.currentWebsiteInfo.url);
@@ -241,7 +223,36 @@ export class WebsiteManager {
         }
     }
 
+    // *******************
+    // ****** Modal ******
     // Format the timestamp
+    updateWebInfoModal(event) {
+        const url = $(event.currentTarget).data('url');
+        const websiteData = this.getWebsiteData(url);
+        if (!websiteData) return;
+        const $modal = $('#websiteDetailsModal');
+        
+        // Update modal content
+        const faviconUrl = this.getFaviconUrl(websiteData.start_urls[0]);
+        $modal.find('.company-name').html(`
+            <img src="${faviconUrl}" alt="">
+            <span>${websiteData.company_name}</span>
+        `);
+        
+        $modal.find('.start-url')
+            .text(websiteData.start_urls[0])
+            .attr('href', websiteData.start_urls[0]);
+        $modal.find('.pages-count').text(websiteData.visited_urls.length);
+        $modal.find('.domains-count').text(Object.keys(websiteData.domain_urls).length);
+        
+        this.updateModalDomainsList($modal, websiteData);
+        this.updateModalFailedUrlsList($modal, websiteData);
+        
+        // Show modal using Bootstrap
+        const modal = new bootstrap.Modal($modal);
+        modal.show();
+    }
+
     formatTimestamp(timestamp) {
         const date = new Date(timestamp);
         const now = new Date();

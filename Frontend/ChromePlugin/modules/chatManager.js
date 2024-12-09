@@ -103,15 +103,17 @@ export class ChatManager {
     }
 
     // Update the selected website tab
-    updateSelectedWebsiteTab(companyName, companyLogo) {
+    updateSelectedWebsiteTab(companyName, companyLogo, startUrl) {
         const $selectedWebsite = $('.selected-website');
         $selectedWebsite.empty();
+        $selectedWebsite.attr('data-url', startUrl);
         $selectedWebsite.append(`
             <h6 class="text-muted"><img src="${companyLogo}" alt="Logo" class="me-2" style="width: 20px; height: 20px;">${companyName}</h6>
         `);
+        $('#changeWebsiteBtn').text('Change');
     }
 
-
+    // Initialize chat message for the selected website
     initializingMessage(companyName, companyLogo) {
         this.conversationId = this.generateConversationId();
         $('.message-container').remove();
@@ -153,7 +155,7 @@ export class ChatManager {
                 if (response.status === 'success') {
                     this.setQueryButtonLoading(false);
                     this.startNewChat(companyName, companyLogo);
-                    this.updateSelectedWebsiteTab(companyName, companyLogo);
+                    this.updateSelectedWebsiteTab(companyName, companyLogo, startUrl);
                 } else {
                     console.error('Failed to initialize RAG:', response.message);
                     this.addMessage("Failed to initialize chat capabilities. Please try again.");

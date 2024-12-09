@@ -15,7 +15,6 @@ $(document).ready(function() {
     }
     initializeTooltips();
 
-
     // Add handler for the start crawl button
     $('#startCrawlBtn').on('click', async function() {
         const companyName = $('#hostName').val()?.trim() || '';

@@ -375,6 +375,7 @@ textarea:focus {
     transform: translateY(-3px);
     box-shadow: 0 8px 24px rgba(202, 107, 229, 0.15);
     border-color: var(--primary-color);
+    transition: all 0.2s;
 }
 
 .website-entry h6 {
@@ -903,3 +904,13 @@ textarea:focus {
     margin-left: 0.5rem;
 }
 
+.selected-website-bar {
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.selected-website-bar:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 14px rgba(202, 107, 229, 0.15);
+    border-color: var(--primary-color);
+}
