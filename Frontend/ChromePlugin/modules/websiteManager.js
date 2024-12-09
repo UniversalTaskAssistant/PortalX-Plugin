@@ -60,6 +60,13 @@ export class WebsiteManager {
     // Initialize the crawl settings button
     initializeAnalyzeSettingButton() {
         const self = this;  // Store reference to class instance
+        $('.analyze-setting-btn').on('click', function() {
+            const currentInfo = self.getCurrentWebsiteInfo();
+            $('#websiteDomain').val(currentInfo.domainName);
+            $('#hostName').val(currentInfo.hostName);
+            $('#subdomainLimit').val(currentInfo.subdomain);
+            new bootstrap.Modal('#crawlParametersModal').show();
+        })
 
         // Handle the URL input form separately
         $('.enter-website').off('submit').on('submit', function(e) {
@@ -181,9 +188,9 @@ export class WebsiteManager {
             if (tabs[0]) {
                 const currentUrl = tabs[0].url;
                 this.currentWebsiteInfo = this.getWebsiteInfoFromUrl(currentUrl);
+                this.currentWebsiteInfo.title = tabs[0].title
                 // Update the html current website tab
                 this.updateCurrentWebsiteBar();
-                console.log('Current URL updated:', currentUrl);
             }
         });
     }
@@ -213,7 +220,6 @@ export class WebsiteManager {
                 </div>
             </div>
         `);
-        console.log(this.currentWebsiteInfo);
         $('.current-website-domain')
             .text(this.currentWebsiteInfo.domainName)
             .attr('href', `https://${this.currentWebsiteInfo.domainName}`);
