@@ -60,13 +60,18 @@ export class WebsiteManager {
     // Initialize the crawl settings button
     initializeAnalyzeSettingButton() {
         const self = this;  // Store reference to class instance
-        $('.analyze-setting-btn').on('click', function() {
+        $('.analyze-setting-btn').on('click', function(e) {
+            // Don't trigger if this is part of a form submission
+            if ($(this).closest('form').length > 0) {
+                return;
+            }
+            
             const currentInfo = self.getCurrentWebsiteInfo();
             $('#websiteDomain').val(currentInfo.domainName);
             $('#hostName').val(currentInfo.hostName);
             $('#subdomainLimit').val(currentInfo.subdomain);
             new bootstrap.Modal('#crawlParametersModal').show();
-        })
+        });
 
         // Handle the URL input form separately
         $('.enter-website').off('submit').on('submit', function(e) {
@@ -99,10 +104,16 @@ export class WebsiteManager {
                 
                 // Add error message below the input
                 const errorMessage = `
-                    <div id="urlError" class="alert alert-danger mt-2 mb-0">
-                        <small>Invalid URL format. Please enter a valid URL like "example.com" or "https://example.com"</small>
+                    <div id="urlError" class="alert alert-danger mt-2 mb-0 d-flex justify-content-between align-items-center">
+                        <small>Invalid URL format. Please enter a valid URL like "example.com" or "https://www.example.com"</small>
+                        <button type="button" class="btn-close btn-close-sm" aria-label="Close" style="transform: scale(0.7);"></button>
                     </div>`;
                 $('.other-website').append(errorMessage);
+
+                // Add click handler for close button
+                $('#urlError .btn-close').on('click', function() {
+                    $('#urlError').remove();
+                });
             }
         });
     }
