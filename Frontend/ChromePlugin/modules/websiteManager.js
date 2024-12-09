@@ -207,13 +207,6 @@ export class WebsiteManager {
             .attr('href', `https://${this.currentWebsiteInfo.domainName}`);
     }
 
-    // Update the selected website tab
-    updateSelectedWebsiteTab() {
-        const faviconUrl = this.getFaviconUrl(this.currentWebsiteInfo.url);
-        const $selectedWebsite = $('.selected-website');
-        $selectedWebsite.empty();
-    }
-
     // Update the history list
     async updateWebsitesHistoryList() {
         try {
