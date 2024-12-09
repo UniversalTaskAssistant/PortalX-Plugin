@@ -184,35 +184,23 @@ class RAGSystem:
         return response.source_nodes
 
     @traceable(run_type="chain")
-    def generate_custom_response(self, question: str, top_k: int = 3) -> Dict[str, Any]:
+    async def generate_custom_response(self, question: str, top_k: int = 3) -> Dict[str, Any]:
         """Generate a response by manually controlling the RAG pipeline."""
         # Step 1: Retrieve documents
         retrieved_docs = self.retrieve_documents(question, top_k=top_k)
 
         # Step 2: Compress and filter documents (TODO)
-        # llm = OpenAI(model="gpt-4", temperature=0)
-        # compressed_docs = await self.compress_and_filter_documents(retrieved_docs, question, llm)
+        llm = OpenAI(model="gpt-4o", temperature=0)
+        compressed_docs = await self.compress_and_filter_documents(retrieved_docs, question, llm)
 
         # Step 3: Construct context
-        # context = "\n".join([doc.text for doc in compressed_docs])
-        context = "\n".join([doc.text for doc in retrieved_docs])
+        context = "\n".join([doc.text for doc in compressed_docs])
+        # context = "\n".join([doc.text for doc in retrieved_docs])
 
         # Step 4: Use custom prompt to generate response
-        llm = OpenAI(model="gpt-4", temperature=0)
+        llm = OpenAI(model="gpt-4o", temperature=0)
         answer = llm.predict(SYSTEM_PROMPT, question=question, context=context)
 
-        return {
-            "answer": answer,
-            "sources": [
-                {
-                    "file": doc.metadata.get('file_name', 'Unknown'),
-                    "score": round(doc.score, 3) if doc.score else None,
-                    "text_chunk": doc.text[:200] + "..."
-                } for doc in retrieved_docs
-            ]
-        }
-
-        # Alternative response format with compressed docs:
         # return {
         #     "answer": answer,
         #     "sources": [
@@ -220,9 +208,21 @@ class RAGSystem:
         #             "file": doc.metadata.get('file_name', 'Unknown'),
         #             "score": round(doc.score, 3) if doc.score else None,
         #             "text_chunk": doc.text[:200] + "..."
-        #         } for doc in compressed_docs
+        #         } for doc in retrieved_docs
         #     ]
         # }
+
+        # Alternative response format with compressed docs:
+        return {
+            "answer": answer,
+            "sources": [
+                {
+                    "file": doc.metadata.get('file_name', 'Unknown'),
+                    "score": round(doc.score, 3) if doc.score else None,
+                    "text_chunk": doc.text[:200] + "..."
+                } for doc in compressed_docs
+            ]
+        }
 
     @traceable(run_type="chain")
     async def compress_and_filter_documents(self, docs: List[NodeWithScore], question: str, llm) -> List[NodeWithScore]:
@@ -273,7 +273,7 @@ class RAGSystem:
 async def main():
     """Main function to test chatbot locally in terminal."""
     rag = RAGSystem(max_concurrent_tasks=3)
-    relative_directory_path = "../Output/websites/signavio"
+    relative_directory_path = "../Output/websites/nsw"
     absolute_directory_path = os.path.abspath(relative_directory_path)
 
     try:
@@ -285,7 +285,7 @@ async def main():
             if usr_input == "quit":
                 break
 
-            response = rag.generate_custom_response(usr_input)
+            response = await rag.generate_custom_response(usr_input,3)
             print("Answer:", response["answer"])
             print("Sources:", response["sources"])
 
