@@ -27,10 +27,27 @@
             <div class="tab-pane fade show active h-100" id="chat-content">
                 <!-- Response Area -->
                 <div class="flex-grow-1 overflow-auto" id="response">
-                    <div class="welcome-msg text-center py-5">
-                        <img src="img/logo2.png" alt="Logo" class="me-2" style="width: 24px; height: 24px;">
-                        <h5 class="text-muted">Ask me anything about this website</h5>
-                        <p class="text-secondary small">I'll analyze the content and help you find what you need</p>
+                    <div class="welcome-msg text-center">
+                        <div class="welcome-icon mb-4">
+                            <img src="img/logo2.png" alt="Logo" class="welcome-logo">
+                        </div>
+                        <h5 class="welcome-title mb-3">Welcome to UTAWeb Assistant</h5>
+                        <p class="welcome-subtitle mb-4">Your AI-powered guide for website exploration</p>
+                        <div class="features-grid">
+                            <div class="feature-item">
+                                <i class="bi bi-search"></i>
+                                <span>Smart Search</span>
+                            </div>
+                            <div class="feature-item">
+                                <i class="bi bi-chat-dots"></i>
+                                <span>Interactive Chat</span>
+                            </div>
+                            <div class="feature-item">
+                                <i class="bi bi-lightning"></i>
+                                <span>Quick Answers</span>
+                            </div>
+                        </div>
+                        <p class="start-prompt mt-4">Select a website to begin your conversation</p>
                     </div>
                 </div>
 
@@ -38,8 +55,8 @@
                 <div class="mt-auto">
                     <div class="input-section">
                         <!-- Selected Website tab -->
-                        <div class="info-bar selected-website-bar mb-3 row g-2">
-                            <div class="col-9 selected-website">
+                        <div class="info-bar selected-website-bar mb-3 row g-2 card-box-shadow">
+                            <div class="col-9 selected-website mt-0">
                                 <!-- Website info will be inserted here -->
                                 <h6 class="text-muted">No website selected</h6>
                             </div>
@@ -54,28 +71,19 @@
                         </div>
 
                         <!-- Query Section -->
-                        <div class="query-section">
-                            <textarea id="queryInput" disabled class="form-control text-start text-muted" rows="3" placeholder="Select a website to start chatting with it!"></textarea>
+                        <div class="query-section glass-effect">
+                            <textarea id="queryInput" disabled class="form-control" rows="3" placeholder="Select a website to start chatting with it!"></textarea>
                             <div class="chat-actions position-absolute bottom-0 w-100 ms-2 mb-2 z-1 d-flex justify-content-between">
-                                <div>
-                                    <button id="historyConversationsBtn" class="btn btn-icon">
-                                        <i class="bi bi-clock-fill" 
-                                        data-bs-toggle="tooltip" 
-                                        data-bs-placement="right"
-                                        title="Previous Chats"></i>
+                                <div class="action-buttons">
+                                    <button id="historyConversationsBtn" class="btn btn-icon" data-bs-toggle="tooltip" data-bs-placement="top" title="Previous Chats">
+                                        <i class="bi bi-clock-history"></i>
                                     </button>
-                                    <button id="newConversationBtn" class="btn btn-icon">
-                                        <i class="bi bi-plus-circle-fill"
-                                        data-bs-toggle="tooltip" 
-                                        data-bs-placement="right"
-                                        title="New Chat"></i>
+                                    <button id="newConversationBtn" class="btn btn-icon" data-bs-toggle="tooltip" data-bs-placement="top" title="New Chat">
+                                        <i class="bi bi-plus-circle"></i>
                                     </button>
                                 </div>
-                                <button id="queryButton" class="btn btn-icon me-2">
-                                    <i class="bi bi-send-fill" 
-                                    data-bs-toggle="tooltip" 
-                                    data-bs-placement="top"
-                                    title="Send"></i>
+                                <button id="queryButton" class="btn btn-icon" data-bs-toggle="tooltip" data-bs-placement="top" title="Send">
+                                    <i class="bi bi-send-fill"></i>
                                 </button>
                             </div>
                         </div>
@@ -96,7 +104,7 @@
                 <!-- Website Analysis Section -->
                 <div id="website-analysis">
                     <!-- Current Website bar -->
-                    <div class="current-website-bar info-bar mb-3">
+                    <div class="current-website-bar info-bar card-box-shadow">
                         <h6><i class="bi bi-globe me-2"></i>Current Website <a class="text-muted current-website-domain">www.uta.au</a></h6>
                         <div class="row g-2">
                             <div class="col-9" style="margin: 0;">
@@ -132,7 +140,7 @@
                 <!-- Websites List -->
                 <div id="history-list">
                     <!-- Sample Website Entry -->
-                    <div class="website-entry">
+                    <div class="website-entry card-box-shadow">
                         <div class="d-flex justify-content-between align-items-start mb-2">
                             <h6 class="mb-0">UTA Computer Science</h6>
                             <small class="text-muted">2 mins ago</small>

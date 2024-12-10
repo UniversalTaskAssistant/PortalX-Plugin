@@ -245,7 +245,7 @@ export class WebsiteManager {
             websites.forEach(site => {
                 const faviconUrl = this.getFaviconUrl(site.start_urls[0]);
                 const websiteEntry = `
-                    <div class="website-entry" data-url="${site.start_urls[0]}">
+                    <div class="website-entry card-box-shadow" data-url="${site.start_urls[0]}">
                         <div class="d-flex justify-content-between align-items-start mb-2">
                             <div class="d-flex align-items-center">
                                 <img src="${faviconUrl}" alt="" class="website-favicon me-2">
