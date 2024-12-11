@@ -50,6 +50,9 @@ $(document).ready(function() {
         try {
             chatManager.setQueryButtonLoading(true);
             chatManager.addMessage(query, true);
+            // Add thinking message
+            chatManager.addThinkingMessage();
+            
             const response = await $.ajax({
                 url: 'http://localhost:7777/query',
                 method: 'POST',
@@ -61,9 +64,12 @@ $(document).ready(function() {
                     web_url: chatManager.currentChatWebsite.startUrl
                 })
             });
+            // Remove thinking message before showing the response
+            chatManager.removeThinkingMessage();
             chatManager.addMessage(response.answer);
             chatManager.clearQueryInput();
         } catch (error) {
+            chatManager.removeThinkingMessage();
             chatManager.addMessage(`Error getting response: ${error.message}`);
         } finally {
             chatManager.setQueryButtonLoading(false);

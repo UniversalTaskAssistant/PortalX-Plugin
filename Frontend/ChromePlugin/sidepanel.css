@@ -1115,3 +1115,42 @@ textarea:focus {
 .website-status-bg-warning{
     background: orange;
 }
+
+.thinking-indicator {
+    display: inline-block;
+}
+
+.thinking-indicator span {
+    opacity: 0;
+    animation: dots 1.5s infinite;
+}
+
+.thinking-indicator .dot-1 {
+    animation-delay: 0s;
+}
+
+.thinking-indicator .dot-2 {
+    animation-delay: 0.25s;
+}
+
+.thinking-indicator .dot-3 {
+    animation-delay: 0.5s;
+}
+
+.thinking-indicator .dot-4 {
+    animation-delay: 0.75s;
+}
+
+.thinking-indicator .dot-5 {
+    animation-delay: 1s;
+}
+
+.thinking-indicator .dot-6 {
+    animation-delay: 1.25s;
+}
+
+@keyframes dots {
+    0% { opacity: 0; }
+    50% { opacity: 1; }
+    100% { opacity: 0; }
+}
