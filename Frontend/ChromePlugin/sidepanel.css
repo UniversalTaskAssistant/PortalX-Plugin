@@ -260,7 +260,7 @@ textarea:focus {
     transition: all 0.3s ease;
     border: none;
     color: white;
-    height: 20px;
+    height: 30px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -605,6 +605,32 @@ textarea:focus {
     padding: 1.5rem;
 }
 
+.modal-btn{
+    border-radius: 10px;
+    transition: all 0.3s ease;
+    border: none;
+    color: white;
+    height: 38px;
+    width: 100%;
+    align-items: center;
+    justify-content: center;
+    font-weight: 500;
+    font-size: 14px;
+    background: var(--primary-gradient);
+}
+
+.modal-btn:hover {
+    transform: translateY(-2px);
+    border: none;
+    box-shadow: 0 4px 12px rgba(202, 107, 229, 0.15);
+}
+
+.modal-btn i {
+    font-size: 1.1em;
+    vertical-align: 0px;
+}
+
+
 .domain-item {
     padding: 0.5rem;
     background-color: #f8f9fa;
@@ -764,23 +790,6 @@ textarea:focus {
     padding: 1rem 1.5rem;
 }
 
-.start-chat-btn {
-    font-weight: 500;
-    padding: 0.75rem;
-    border-radius: 8px;
-    transition: all 0.2s;
-}
-
-.start-chat-btn:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(13, 110, 253, 0.15);
-}
-
-.start-chat-btn i {
-    font-size: 1.1em;
-    vertical-align: -2px;
-}
-
 /* Failed URLs Show More Button */
 .show-more-btn {
     color: #6c757d;
@@ -911,7 +920,7 @@ textarea:focus {
 
 /* Current chat website */
 .info-bar{
-    padding: 1rem;
+    padding: 10px;
 }
 
 .info-bar h6 {
