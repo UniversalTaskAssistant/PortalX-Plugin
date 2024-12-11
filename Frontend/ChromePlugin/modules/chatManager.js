@@ -78,7 +78,9 @@ export class ChatManager {
         }).html(message);
         $messageContainer.append($messageDiv);
         this.$responseDiv.append($messageContainer);
-        $messageDiv[0].scrollIntoView({ behavior: 'smooth' });
+        
+        // Scroll to the bottom of the response div
+        this.$responseDiv.scrollTop(this.$responseDiv[0].scrollHeight);
     }
 
     // ***************************

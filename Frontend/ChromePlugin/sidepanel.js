@@ -44,7 +44,7 @@ $(document).ready(function() {
     $('#queryButton').on('click', async function() {
         const query = chatManager.getQueryInput();
         if (!query) {
-            chatManager.addMessage('Please enter a question', true);
+            chatManager.addMessage('Please enter a question', false);
             return;
         }
         try {
