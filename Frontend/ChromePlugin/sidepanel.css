@@ -2,6 +2,7 @@
     --primary-color: #ca6be5;
     --primary-light: #f2e3f9;
     --primary-dark: #a455bc;
+    --primary-gradient: linear-gradient(135deg, var(--primary-color), orange);
 }
 
 body {
@@ -179,23 +180,6 @@ textarea:focus {
     transition: all 0.2s ease-in-out;
 }
 
-/* Tab styling */
-.nav-tabs .nav-link {
-    border: none;
-    padding: 0.75rem 1rem;
-    color: #666;
-}
-
-.nav-tabs .nav-link.active {
-    color: var(--primary-color);
-    border-bottom: 2px solid var(--primary-color);
-    background: none;
-}
-
-.nav-tabs {
-    border-bottom: 1px solid #dee2e6;
-}
-
 /* Tab content container */
 .tab-content {
     height: calc(100vh - 56px);
@@ -270,26 +254,25 @@ textarea:focus {
 }
 
 /* Button styling */
-.bar-btn{
-    padding: 0.8rem;
+.bar-btn{    
+    padding: 0.5rem 1.25rem;
     margin: 0 3px 0 0;
     transition: all 0.3s ease;
-    border: 1.5px solid var(--primary-color);
-    color: var(--primary-color);
+    border: none;
+    color: white;
     height: 20px;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: ghostwhite;
     border-radius:40px;
     font-weight: 500;
     font-size: 14px;
+    background: var(--primary-gradient);
 }
 
 .bar-btn:hover {
-    background-color: var(--primary-color);
     transform: translateY(-2px);
-    border: 1.5px solid var(--primary-color);
+    border: none;
     box-shadow: 0 4px 12px rgba(202, 107, 229, 0.15);
 }
 
@@ -301,7 +284,7 @@ textarea:focus {
     height: auto !important;
     background: transparent !important;
     border: none !important;
-    color: var(--primary-color) !important;
+    color: gray !important;
     box-shadow: none !important;
 }
 
@@ -340,29 +323,6 @@ textarea:focus {
     cursor: not-allowed;
 }
 
-/* Textarea styling */
-#queryInput {
-    background-color: transparent !important;
-    border: 1px solid rgba(0, 0, 0, 0.08);
-    border-radius: 16px;
-    padding: 1rem;
-    padding-right: 60px;
-    padding-bottom: 3rem;
-    font-size: 0.95rem;
-    line-height: 1.5;
-    resize: none;
-    transition: all 0.3s ease;
-}
-
-#queryInput:focus {
-    border-color: var(--primary-color);
-    box-shadow: none;
-}
-
-#queryInput:disabled {
-    background-color: #f8f9fa !important;
-    cursor: not-allowed;
-}
 
 /* Section headers */
 .text-uppercase {
@@ -445,15 +405,18 @@ textarea:focus {
     background: #f8f9fa;
 }
 
+/* Tab styling */
 .nav-tabs .nav-link {
     font-weight: 500;
     padding: 0.75rem 1.5rem;
     border-radius: 12px 12px 0 0;
+    color: rgba(128, 128, 128, 0.767);
     transition: all 0.2s ease;
+    border: none;
 }
 
 .nav-tabs .nav-link.active {
-    color: var(--primary-color);
+    color: dimgray;
     border: none;
     background: white;
     box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
@@ -581,7 +544,7 @@ textarea:focus {
 .chat-actions .btn-icon {
     background: transparent;
     border: none;
-    color: var(--primary-color);
+    color: black;
     padding: 0.5rem;
     font-size: 1.2rem;
     line-height: 1;
@@ -992,16 +955,6 @@ textarea:focus {
     transform: translateY(-55%);
 }
 
-/* Selected website bar styling */
-.bar-btn {
-    padding: 0.5rem 1.25rem;
-    border-radius: 20px;
-    font-size: 0.9rem;
-    font-weight: 500;
-    transition: all 0.2s ease;
-    border: 1.5px solid var(--primary-color);
-}
-
 /* Query section styling */
 .query-section {
     position: relative;
@@ -1019,7 +972,7 @@ textarea:focus {
 #queryInput {
     background-color: transparent !important;
     border: 1px solid rgba(0, 0, 0, 0.08);
-    border-radius: 16px;
+    border-radius: 10px;
     padding: 1rem;
     padding-right: 60px;
     padding-bottom: 3rem;
@@ -1076,7 +1029,6 @@ textarea:focus {
     width: 42px;
     height: 42px;
     background: var(--primary-color);
-    color: white;
     margin-right: 0.5rem;
 }
 
@@ -1101,7 +1053,7 @@ textarea:focus {
 
 .card-box-shadow{
     background: linear-gradient(145deg, #ffffff, #f8f9fa);
-    border-radius: 12px;
+    border-radius: 10px;
     box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;
     border: 1px solid rgba(0, 0, 0, 0.007);
 }
@@ -1121,13 +1073,13 @@ textarea:focus {
     box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;
 }
 
-.gradient-bgk-text{
-    background: linear-gradient(135deg, var(--primary-color), orange) !important;
+.gradient-bkg-text{
+    background: var(--primary-gradient) !important;
     -webkit-background-clip: text !important;
     background-clip: text !important;
     color: transparent !important;
 }
 
-.gradient-bgk{
-    background: linear-gradient(135deg, var(--primary-color), orange);
+.gradient-bkg{
+    background: var(--primary-gradient) !important;
 }
