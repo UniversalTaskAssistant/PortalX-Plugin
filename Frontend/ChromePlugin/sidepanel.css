@@ -6,8 +6,13 @@
 }
 
 body {
-    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
     background: linear-gradient(to bottom right, #f8f9fa, #ffffff);
+}
+
+/* Add styles for headings */
+h1, h2, h3, h4, h5, h6, .heading-font {
+    font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
 }
 
 /* Override Bootstrap's primary color */
@@ -75,6 +80,7 @@ textarea:focus {
     line-height: 1.5;
     position: relative;
     box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    font-family: 'Inter', sans-serif;
 }
 
 .message.user {

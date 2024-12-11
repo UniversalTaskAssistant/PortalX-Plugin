@@ -106,7 +106,7 @@ export class WebsiteManager {
                 const errorMessage = `
                     <div id="urlError" class="alert alert-danger mt-2 mb-0 d-flex justify-content-between align-items-center">
                         <small>Invalid URL format. Please enter a valid URL like "example.com" or "https://www.example.com"</small>
-                        <button type="button" class="btn-close btn-close-sm" aria-label="Close" style="transform: scale(0.7);"></button>
+                        <button type="button" class="btn-close btn-close-sm" aria-label="Close" style="transform: scale(0.7); padding: 2px;"></button>
                     </div>`;
                 $('.other-website').append(errorMessage);
 
