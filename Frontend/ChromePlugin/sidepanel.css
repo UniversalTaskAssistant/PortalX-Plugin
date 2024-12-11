@@ -474,21 +474,18 @@ textarea:focus {
 }
 
 .welcome-logo {
-    width: 48px;
-    height: 48px;
+    width: 36px;
+    height: 36px;
     object-fit: contain;
 }
 
 .welcome-title {
-    color: var(--primary-color);
-    font-weight: 700;
-    font-size: 1.5rem;
+    font-weight: 600;
 }
 
 .welcome-subtitle {
     color: #6c757d;
     font-size: 1rem;
-    font-weight: 500;
 }
 
 .features-grid {
@@ -528,7 +525,6 @@ textarea:focus {
 .start-prompt {
     color: #6c757d;
     font-size: 0.9rem;
-    font-weight: 500;
     padding: 0.75rem 1.5rem;
     background: #f8f9fa;
     border-radius: 30px;
@@ -962,6 +958,7 @@ textarea:focus {
 .selected-website h6 {
     margin: 0;
     font-size: 0.95rem;
+    font-weight: 400;
 }
 
 .selected-website-bar {
@@ -1122,4 +1119,15 @@ textarea:focus {
     transition: none;
     border: 1px solid rgba(0, 0, 0, 0.007);
     box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;
+}
+
+.gradient-bgk-text{
+    background: linear-gradient(135deg, var(--primary-color), orange) !important;
+    -webkit-background-clip: text !important;
+    background-clip: text !important;
+    color: transparent !important;
+}
+
+.gradient-bgk{
+    background: linear-gradient(135deg, var(--primary-color), orange);
 }
