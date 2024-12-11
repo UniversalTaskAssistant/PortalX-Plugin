@@ -592,7 +592,7 @@ textarea:focus {
 }
 
 .modal-header {
-    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    border-bottom: none;
     padding: 1rem 1.5rem;
 }
 
@@ -603,6 +603,11 @@ textarea:focus {
 
 .modal-body {
     padding: 1.5rem;
+}
+
+.modal-footer {
+    border-top: none;
+    padding: 1rem 1.5rem;
 }
 
 .modal-btn{
@@ -783,12 +788,6 @@ textarea:focus {
     background-color: #cbd5e0;
     border-radius: 3px;
 } 
-
-/* Modal Footer and Button */
-.modal-footer {
-    border-top: 1px solid rgba(0, 0, 0, 0.08);
-    padding: 1rem 1.5rem;
-}
 
 /* Failed URLs Show More Button */
 .show-more-btn {
@@ -1091,4 +1090,13 @@ textarea:focus {
 
 .gradient-bkg{
     background: var(--primary-gradient) !important;
+}
+
+
+.website-status-bg-success{
+    background: limegreen;
+}
+
+.website-status-bg-warning{
+    background: orange;
 }

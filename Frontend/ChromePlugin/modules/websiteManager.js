@@ -255,7 +255,7 @@ export class WebsiteManager {
                         </div>
                         <span class="url-text mb-3">${site.start_urls[0]}</span>
                         <div class="d-flex align-items-center">
-                            <span class="badge ${site.crawl_finished ? 'bg-success' : 'bg-warning'} me-2">
+                            <span class="badge ${site.crawl_finished ? 'website-status-bg-success' : 'website-status-bg-warning'} me-2">
                                 ${site.crawl_finished ? 'Analyzed' : 'In Progress'}
                             </span>
                             <span class="stats-text">${site.visited_urls.length} pages analyzed</span>
