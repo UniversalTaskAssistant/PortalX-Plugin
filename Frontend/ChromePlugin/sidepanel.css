@@ -317,7 +317,7 @@ textarea:focus {
     height: auto !important;
     background: transparent !important;
     border: none !important;
-    color: gray !important;
+    color: dimgray !important;
     box-shadow: none !important;
 }
 

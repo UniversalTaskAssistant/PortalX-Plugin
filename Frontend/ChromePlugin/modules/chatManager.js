@@ -138,7 +138,7 @@ export class ChatManager {
         this.$welcomeMessage.html(`
             <div class="align-items-center mb-2">
                 <h5 class="mb-4">Initializing chating system for</h5>
-                <h5 class="text-muted"><img src="${companyLogo}" alt="Logo" class="me-2" style="width: 20px; height: 20px;">${companyName}</h5>
+                <h5 class="text-muted mb-4"><img src="${companyLogo}" alt="Logo" class="me-2" style="width: 20px; height: 20px;">${companyName}</h5>
                 <h5><span class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></span></h5>
             </div>
         `).show();
@@ -238,18 +238,19 @@ export class ChatManager {
         });
     }
 
-    // Add these as public methods to be called from sidepanel.js
     setQueryButtonLoading(isLoading) {
         if (isLoading) {
             this.$queryButton.prop('disabled', true)
                 .addClass('loading')
                 .html('<span class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></span>');
             this.$queryInput.prop('disabled', true);
+            this.$newConversationBtn.prop('disabled', true);
         } else {
             this.$queryButton.prop('disabled', false)
                 .removeClass('loading')
                 .html('<i class="bi bi-send-fill"></i>');
             this.$queryInput.prop('disabled', false);
+            this.$newConversationBtn.prop('disabled', false);
         }
     }
 
