@@ -845,6 +845,7 @@ textarea:focus {
 /* Current Website in Analysis Section */
 #website-analysis{
     margin: 10px;
+    margin-top: 5px;
 }
 
 .current-website-bar h6{
