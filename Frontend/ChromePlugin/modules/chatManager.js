@@ -70,12 +70,28 @@ export class ChatManager {
         if (this.$welcomeMessage.is(':visible')) {
             this.$welcomeMessage.hide();
         }
+        
         const $messageContainer = $('<div>', {
-            class: 'message-container'
+            class: `message-container ${isUser ? '' : 'assistant-container'}`
         });
+
+        if (!isUser) {
+            // Add assistant icon
+            const $iconDiv = $('<div>', {
+                class: 'assistant-icon'
+            }).append(
+                $('<img>', {
+                    src: 'img/logo2.png',
+                    alt: 'Assistant'
+                })
+            );
+            $messageContainer.append($iconDiv);
+        }
+
         const $messageDiv = $('<div>', {
             class: `message ${isUser ? 'user' : 'assistant'}`
         }).html(message);
+        
         $messageContainer.append($messageDiv);
         this.$responseDiv.append($messageContainer);
         

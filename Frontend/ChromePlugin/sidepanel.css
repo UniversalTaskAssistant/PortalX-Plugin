@@ -86,13 +86,10 @@ textarea:focus {
     overflow-wrap: break-word;
     max-width: 85%;
     margin-bottom: 1rem;
-    padding: 1rem 1.25rem;
-    border-radius: 16px;
-    font-size: 0.95rem;
     line-height: 1.5;
     position: relative;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
     font-family: 'Inter', sans-serif;
+    text-align: justify;
 }
 
 .message.user {
@@ -100,20 +97,83 @@ textarea:focus {
     color: white;
     margin-left: auto;
     border-bottom-right-radius: 0.3rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
 }
 
 .message.assistant {
-    background: white;
+    background: none;
     color: #1c1e21;
-    margin-right: auto;
-    border-bottom-left-radius: 0.3rem;
-    border: 1px solid rgba(0,0,0,0.08);
+    margin: 0;
+    padding: 0;
+    border: none;
+    box-shadow: none;
+    flex: 1;
+}
+
+/* Add new assistant message container styling */
+.message-container.assistant-container {
+    gap: 12px;
+    padding: 0.4rem;
+    align-items: flex-start;
+    animation: fadeInUp 0.3s ease-out 0.1s both;
+}
+
+.assistant-icon {
+    width: 28px;
+    height: 28px;
+    min-width: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: -2px;
+}
+
+.assistant-icon img {
+    width: 18px;
+    height: 18px;
+    object-fit: contain;
+}
+
+.message .summary {
+    font-weight: 600;
+    line-height: 1.5;
+    margin-bottom: 1rem;
+}
+
+.message p{
+    line-height: 1.5;
+    margin-bottom: 1rem;
 }
 
 .message-container {
     display: flex;
-    flex-direction: column;
     padding: 0.4rem 0.2rem;
+    animation: fadeInUp 0.3s ease-out forwards;
+}
+
+/* Message animations */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Add animation to message containers */
+.message-container {
+    animation: fadeInUp 0.3s ease-out forwards;
+}
+
+/* Optional: Add a slight delay for assistant messages */
+.message-container.assistant-container {
+    animation: fadeInUp 0.3s ease-out 0.1s both;
 }
 
 /* Loading animation */
@@ -143,7 +203,7 @@ textarea:focus {
     scrollbar-width: thin;
     scroll-behavior: smooth;
     flex: 1;
-    padding: 0.5rem;
+    padding: 0.7rem 0.5rem;
 }
 
 /* Custom scrollbar styling */
