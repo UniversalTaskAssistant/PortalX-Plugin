@@ -150,16 +150,16 @@ export class WebsiteManager {
     // *************************
     // ****** START CRAWL ******
     // Start crawling the current website
-    async startCrawl(companyName, domainLimit) {
+    async startCrawl(domainName, hostName, domainLimit) {
         try {
             const response = await $.ajax({
                 url: 'http://localhost:7777/crawl',
                 method: 'POST',
                 contentType: 'application/json',
                 data: JSON.stringify({
-                    web_url: this.currentWebsiteInfo.url,
-                    company_name: companyName,
-                    domain_limit: domainLimit
+                    domainName: domainName,
+                    hostName: hostName,
+                    domainLimit: domainLimit
                 })
             });
             return { 
@@ -251,11 +251,11 @@ export class WebsiteManager {
                             <div class="d-flex justify-content-between align-items-start mb-2">
                                 <div class="d-flex align-items-center">
                                     <img src="${faviconUrl}" alt="" class="website-favicon me-2">
-                                    <h6 class="mb-0">${site.company_name}</h6>
+                                    <h6 class="mb-0 host-name">${site.company_name}</h6>
                                 </div>
                                 <small class="text-muted">${this.formatTimestamp(site.crawl_time)}</small>
                             </div>
-                            <span class="url-text mb-3">${site.start_urls[0]}</span>
+                            <span class="url-text mb-3 website-domain">${site.start_urls[0]}</span>
                             <div class="d-flex align-items-center">
                                 <span class="badge ${site.crawl_finished ? 'website-status-bg-success' : 'website-status-bg-warning'} me-2">
                                     ${site.crawl_finished ? 'Analyzed' : 'In Progress'}

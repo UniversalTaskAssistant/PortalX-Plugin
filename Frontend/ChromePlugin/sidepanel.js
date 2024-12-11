@@ -17,9 +17,10 @@ $(document).ready(function() {
 
     // Add handler for the start crawl button
     $('#startCrawlBtn').on('click', async function() {
-        const companyName = $('#hostName').val()?.trim() || '';
+        const domainName = $('#websiteDomain').val()?.trim() || '';
+        const hostName = $('#hostName').val()?.trim() || '';
         const domainLimit = $('#subdomainLimit').val()?.trim() || '';
-        if (!companyName) {
+        if (!hostName) {
             alert('Please enter a host name (company name)');
             return;
         }
@@ -28,7 +29,7 @@ $(document).ready(function() {
             $('#startCrawlBtn').prop('disabled', true)
                 .html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Crawling...');
                 
-            const result = await websiteManager.startCrawl(companyName, domainLimit);
+            const result = await websiteManager.startCrawl(domainName, hostName, domainLimit);
             $('.message-container').remove();
             $('#welcome-message').hide();
             chatManager.addMessage(result.message);
