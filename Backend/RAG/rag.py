@@ -50,11 +50,6 @@ class RAGSystem:
         self.semaphore: asyncio.Semaphore = asyncio.Semaphore(max_concurrent_tasks)
         self.executor: ThreadPoolExecutor = ThreadPoolExecutor(max_workers=max_concurrent_tasks)
 
-    import os
-    import json
-    import asyncio
-    from typing import Any, List
-
     async def initialize(self, directory_path: str, embed_model_name: str = "hkunlp/instructor-base",
                          chunk_size: int = 1024,
                          chunk_overlap: int = 200, load_from_disk: bool = True, resume_progress: bool = True,
