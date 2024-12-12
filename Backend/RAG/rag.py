@@ -47,7 +47,7 @@ class RAGSystem:
 
     async def initialize(self, directory_path: str, embed_model_name: str = "hkunlp/instructor-base",
                          chunk_size: int = 1024,
-                         chunk_overlap: int = 200, load_from_disk: bool = True, resume_progress: bool = True,
+                         chunk_overlap: int = 200, load_from_disk: bool = True, resume_progress: bool = False,
                          process_limit: int = -1):
         """
         Initialize the RAG system components asynchronously.
@@ -290,7 +290,7 @@ async def main():
     absolute_directory_path: str = os.path.abspath(relative_directory_path)
 
     try:
-        await rag.initialize(directory_path=absolute_directory_path,resume_progress= True, process_limit=-1)
+        await rag.initialize(directory_path=absolute_directory_path,process_limit=30)
 
         print("Welcome!")
         while True:
