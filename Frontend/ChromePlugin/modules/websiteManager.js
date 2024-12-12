@@ -298,7 +298,7 @@ export class WebsiteManager {
             <span>${websiteData.company_name}</span>
         `);
         
-        $modal.find('.start-url')
+        $modal.find('.domain-url')
             .text(websiteData.start_urls[0])
             .attr('href', websiteData.start_urls[0]);
         $modal.find('.pages-count').text(websiteData.visited_urls.length);

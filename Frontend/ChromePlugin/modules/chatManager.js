@@ -121,10 +121,10 @@ export class ChatManager {
     }
 
     // Update the selected website tab
-    updateSelectedWebsiteTab(companyName, companyLogo, startUrl) {
+    updateSelectedWebsiteTab(companyName, companyLogo, domainUrl) {
         const $selectedWebsite = $('.selected-website');
         $selectedWebsite.empty();
-        $selectedWebsite.attr('data-url', startUrl);
+        $selectedWebsite.attr('data-url', domainUrl);
         $selectedWebsite.append(`
             <h6 class="text-muted"><img src="${companyLogo}" alt="Logo" class="me-2" style="width: 20px; height: 20px;">${companyName}</h6>
         `);
@@ -151,9 +151,9 @@ export class ChatManager {
         const companyInfo = this.$startChatBtn.closest('.modal-content').find('.company-name');
         const companyName = companyInfo.find('span').text();
         const companyLogo = companyInfo.find('img').attr('src');
-        const startUrl = this.$startChatBtn.closest('.modal-content').find('.start-url').attr('href');
+        const domainUrl = this.$startChatBtn.closest('.modal-content').find('.domain-url').attr('href');
         this.currentChatWebsite = {
-            startUrl: startUrl,
+            domainUrl: domainUrl,
             name: companyName,
             logo: companyLogo
         };
@@ -162,14 +162,14 @@ export class ChatManager {
         // Disable input while initializing RAG
         this.setQueryButtonLoading(true);
         this.initializingMessage(companyName, companyLogo);
-        this.updateSelectedWebsiteTab(companyName, companyLogo, startUrl);
+        this.updateSelectedWebsiteTab(companyName, companyLogo, domainUrl);
 
         // Initialize RAG before starting the chat
         $.ajax({
             url: 'http://127.0.0.1:7777/initialize_rag',
             method: 'POST',
             contentType: 'application/json',
-            data: JSON.stringify({ web_url: startUrl }),
+            data: JSON.stringify({ web_url: domainUrl }),
             success: (response) => {
                 if (response.status === 'success') {
                     this.setQueryButtonLoading(false);
