@@ -16,17 +16,12 @@ from llama_index.core import (
 )
 from llama_index.core.indices.base import BaseIndex
 from llama_index.core.node_parser import SentenceSplitter
-from llama_index.core.schema import NodeWithScore, TextNode, Document
-from llama_index.core.storage.docstore import SimpleDocumentStore
+from llama_index.core.schema import NodeWithScore, TextNode
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 from llama_index.llms.openai import OpenAI
 from sklearn.metrics.pairwise import cosine_similarity
-from sympy import false
 
 from Backend.RAG.prompts import SYSTEM_PROMPT
-
-# def extract_text(doc: NodeWithScore) -> Optional[str]:
-#     return doc.node.text
 
 class RAGSystem:
     """A Retrieval-Augmented Generation (RAG) system for document processing and querying."""
