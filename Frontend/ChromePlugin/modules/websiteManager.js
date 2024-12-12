@@ -66,6 +66,7 @@ export class WebsiteManager {
                 return;
             }
             
+            $('#crawlParametersModal .alert-existing-website').remove();
             const currentInfo = self.getCurrentWebsiteInfo();
             $('#websiteDomain').val(currentInfo.domainName);
             $('#hostName').val(currentInfo.hostName);

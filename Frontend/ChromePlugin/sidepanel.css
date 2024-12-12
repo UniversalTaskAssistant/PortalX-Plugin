@@ -939,6 +939,10 @@ textarea:focus {
     margin-left: 0.3rem;
 }
 
+.alert-existing-website{
+    font-size: 0.9rem;
+}
+
 /* Current chat website */
 .info-bar{
     padding: 10px;

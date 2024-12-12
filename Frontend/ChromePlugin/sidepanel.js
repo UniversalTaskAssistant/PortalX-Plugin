@@ -17,13 +17,42 @@ $(document).ready(function() {
 
     // Add handler for the start crawl button
     $('#startCrawlBtn').on('click', async function() {
-        const domainName = $('#websiteDomain').val()?.trim() || '';
+        const addHttps = (url) => {
+            if (!url) return '';
+            if (!url.startsWith('http://') && !url.startsWith('https://')) {
+                return `https://${url}`;
+            }
+            return url;
+        };
+        const domainName = addHttps($('#websiteDomain').val()?.trim() || '');
         const hostName = $('#hostName').val()?.trim() || '';
-        const domainLimit = $('#subdomainLimit').val()?.trim() || '';
+        const domainLimit = addHttps($('#subdomainLimit').val()?.trim() || '');
+        
         if (!hostName) {
             alert('Please enter a host name (company name)');
             return;
         }
+
+        // Check if website already exists in history
+        const existingEntry = $('.website-entry').filter(function() {
+            const entryDomain = $(this).find('.website-domain').text().replace(/\/$/, '');
+            const entryHost = $(this).find('.host-name').text();
+            const domainToCompare = domainName.replace(/\/$/, '');
+            return entryDomain === domainToCompare && entryHost === hostName;
+        });
+        // Show notification using Bootstrap modal or alert
+        if (existingEntry.length > 0) {
+            if ($(".alert-existing-website").length === 0) {
+                const notification = `
+                    <div class="mb-4 alert alert-warning alert-dismissible fade show alert-existing-website" role="alert">
+                        This website has already been analyzed. Please check the websites list.
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>`;
+                $('#crawlParametersModal .modal-body').prepend(notification);
+            }
+            return;
+        }
+
         try {
             $('#crawlParametersModal').modal('hide');
             $('#startCrawlBtn').prop('disabled', true)
