@@ -1,3 +1,4 @@
+import json
 import os
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
@@ -15,10 +16,12 @@ from llama_index.core import (
 )
 from llama_index.core.indices.base import BaseIndex
 from llama_index.core.node_parser import SentenceSplitter
-from llama_index.core.schema import NodeWithScore, TextNode
+from llama_index.core.schema import NodeWithScore, TextNode, Document
+from llama_index.core.storage.docstore import SimpleDocumentStore
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 from llama_index.llms.openai import OpenAI
 from sklearn.metrics.pairwise import cosine_similarity
+from sympy import false
 
 from Backend.RAG.prompts import SYSTEM_PROMPT
 
@@ -47,8 +50,15 @@ class RAGSystem:
         self.semaphore: asyncio.Semaphore = asyncio.Semaphore(max_concurrent_tasks)
         self.executor: ThreadPoolExecutor = ThreadPoolExecutor(max_workers=max_concurrent_tasks)
 
-    async def initialize(self, directory_path: str, embed_model_name: str = "hkunlp/instructor-base", chunk_size: int = 1024,
-                         chunk_overlap: int = 200, load_from_disk: bool = True):
+    import os
+    import json
+    import asyncio
+    from typing import Any, List
+
+    async def initialize(self, directory_path: str, embed_model_name: str = "hkunlp/instructor-base",
+                         chunk_size: int = 1024,
+                         chunk_overlap: int = 200, load_from_disk: bool = True, resume_progress: bool = True,
+                         process_limit: int = -1):
         """
         Initialize the RAG system components asynchronously.
 
@@ -58,15 +68,17 @@ class RAGSystem:
             chunk_size: Size of text chunks for processing
             chunk_overlap: Overlap between consecutive chunks
             load_from_disk: Whether to load existing index from disk
+            resume_progress: Whether to resume from previous progress
+            process_limit: Limit the number of documents to process (-1 for no limit)
         """
         self.current_directory_path = directory_path
         self._initialize_models(embed_model_name, chunk_size, chunk_overlap)
         self.text_splitter: SentenceSplitter = SentenceSplitter(chunk_size=150, chunk_overlap=10)
 
-        if load_from_disk and os.path.exists(f"{directory_path}/embedding"):
+        if load_from_disk and os.path.exists(f"{directory_path}/embedding") and not resume_progress:
             self.index = await self._load_index_from_disk(directory_path)
         else:
-            self.index = await self._create_and_save_indices(directory_path)
+            self.index = await self._create_and_save_indices(directory_path, resume_progress, process_limit)
 
         self.query_engine = self.index.as_query_engine(
             response_mode="tree_summarize",
@@ -101,6 +113,18 @@ class RAGSystem:
             lambda: load_index_from_storage(storage_context)
         )
 
+    def _load_progress(self, progress_path: str) -> set:
+        """Load processing progress from disk."""
+        if os.path.exists(progress_path):
+            with open(progress_path, "r") as f:
+                return set(json.load(f))
+        return set()
+
+    def _save_progress(self, progress_path: str, processed_docs: set):
+        """Save processing progress to disk."""
+        with open(progress_path, "w") as f:
+            json.dump(list(processed_docs), f)
+
     async def _process_single_document(self, doc: Any, embedding_dir: str) -> tuple:
         """Process a single document asynchronously - create and save its index."""
         async with self.semaphore:
@@ -124,11 +148,15 @@ class RAGSystem:
             print(f"Index saved for {doc.doc_id}")
             return doc, doc_index
 
-    async def _create_and_save_indices(self, directory_path: str) -> VectorStoreIndex:
+    async def _create_and_save_indices(self, directory_path: str, resume_progress: bool,
+                                       process_limit: int) -> VectorStoreIndex:
         """Create and save indices for each document asynchronously."""
         print("Creating new indices...")
         embedding_dir: str = f"{directory_path}/embedding"
         os.makedirs(embedding_dir, exist_ok=True)
+
+        progress_path = os.path.join(embedding_dir, "progress.json")
+        processed_docs = self._load_progress(progress_path) if resume_progress else set()
 
         reader = SimpleDirectoryReader(
             directory_path,
@@ -139,30 +167,53 @@ class RAGSystem:
 
         tasks: List[asyncio.Task] = []
         all_docs: List[Any] = []
+        processed_count = 0
 
-        for docs in reader.iter_data(show_progress=True):
-            for doc in docs:
-                task = self._process_single_document(doc, embedding_dir)
-                tasks.append(task)
+        try:
+            for docs in reader.iter_data(show_progress=True):
+                for doc in docs:
+                    # Skip embedding directory
+                    if os.path.commonpath([embedding_dir, doc.doc_id]) == embedding_dir:
+                        continue
 
-        results: List[tuple] = await asyncio.gather(*tasks)
+                    if process_limit != -1 and processed_count >= process_limit:
+                        print(f"Process limit reached: {process_limit} documents.")
+                        break
 
-        for doc, _ in results:
-            all_docs.append(doc)
+                    if doc.doc_id not in processed_docs:
+                        task = self._process_single_document(doc, embedding_dir)
+                        tasks.append(task)
+                        processed_count += 1
 
-        loop = asyncio.get_event_loop()
-        condensed_index: VectorStoreIndex = await loop.run_in_executor(
-            self.executor,
-            lambda: VectorStoreIndex.from_documents(all_docs, show_progress=True)
-        )
+                if process_limit != -1 and processed_count >= process_limit:
+                    break
 
-        await loop.run_in_executor(
-            self.executor,
-            lambda: condensed_index.storage_context.persist(persist_dir=embedding_dir)
-        )
+            results: List[tuple] = await asyncio.gather(*tasks, return_exceptions=True)
 
-        print("Condensed index saved successfully")
-        return condensed_index
+            for result in results:
+                if isinstance(result, tuple):
+                    doc, _ = result
+                    all_docs.append(doc)
+                    processed_docs.add(doc.doc_id)
+
+        finally:
+            # Save progress to ensure it is not lost
+            self._save_progress(progress_path, processed_docs)
+
+            # Ensure condensed_index is created even if processing was interrupted
+            loop = asyncio.get_event_loop()
+            condensed_index: VectorStoreIndex = await loop.run_in_executor(
+                self.executor,
+                lambda: VectorStoreIndex.from_documents(all_docs, show_progress=True)
+            )
+
+            await loop.run_in_executor(
+                self.executor,
+                lambda: condensed_index.storage_context.persist(persist_dir=embedding_dir)
+            )
+
+            print("Condensed index saved successfully")
+            return condensed_index
 
     @traceable(run_type="chain")
     def retrieve_documents(self, question: str, top_k: int = 3) -> List[NodeWithScore]:
@@ -245,11 +296,11 @@ class RAGSystem:
 async def main():
     """Main function to test chatbot locally in terminal."""
     rag: RAGSystem = RAGSystem(max_concurrent_tasks=3)
-    relative_directory_path: str = "../Output/websites/nsw"
+    relative_directory_path: str = "../Output/websites/signavio"
     absolute_directory_path: str = os.path.abspath(relative_directory_path)
 
     try:
-        await rag.initialize(directory_path=absolute_directory_path)
+        await rag.initialize(directory_path=absolute_directory_path,resume_progress= True, process_limit=-1)
 
         print("Welcome!")
         while True:
