@@ -674,14 +674,20 @@ textarea:focus {
     font-weight: 600;
 }
 
-.url-section .start-url {
+.url-section{
+    padding: 16px;
+    background: linear-gradient(to right, #f8f9fa, #ffffff);
+    border-radius: 8px;
+}
+
+.url-section a {
     color: #3498db;
     text-decoration: none;
     word-break: break-all;
     font-size: 0.9rem;
 }
 
-.url-section .start-url:hover {
+.url-section a:hover {
     text-decoration: underline;
 }
 

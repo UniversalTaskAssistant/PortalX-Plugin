@@ -296,6 +296,7 @@ export class WebsiteManager {
             .attr('href', websiteData.start_urls[0]);
         $modal.find('.pages-count').text(websiteData.visited_urls.length);
         $modal.find('.domains-count').text(Object.keys(websiteData.domain_urls).length);
+        $modal.find('.subdomain-limit').text(websiteData.domain_limit || 'None');
         
         this.updateModalDomainsList($modal, websiteData);
         this.updateModalFailedUrlsList($modal, websiteData);
