@@ -83,7 +83,7 @@ def query():
     # Init user for saving conversations
     user = User(user_id=data['user_id'])
     # Save conversation
-    conv = Conversation(conversation_id=data['conversation_id'], data_dir=user.chat_dir)
+    conv = Conversation(conversation_id=data['conversation_id'], host_name=data['host_name'], host_logo=data['host_logo'], data_dir=user.chat_dir)
     conv.append_conversation(role="user", content=data['query'])
     conv.append_conversation(role="assistant", content=result)
     conv.save_conversation()

@@ -7,19 +7,23 @@ $(document).ready(function() {
     // Initialize ChatManager
     const chatManager = new ChatManager();
     // Initialize tooltips
-    const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
-    const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => {
-        return new bootstrap.Tooltip(tooltipTriggerEl, {
-            trigger: 'hover'
+    initTooltips();
+
+    function initTooltips() {
+        const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+        const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => {
+            return new bootstrap.Tooltip(tooltipTriggerEl, {
+                trigger: 'hover'
+            });
         });
-    });
-    // Hide tooltip when clicking the button
-    document.getElementById('refreshWebsitesBtn').addEventListener('click', function() {
-        const tooltip = bootstrap.Tooltip.getInstance(this);
-        if (tooltip) {
-            tooltip.hide();
-        }
-    });
+        // Hide tooltip when clicking the button
+        document.getElementById('refreshWebsitesBtn').addEventListener('click', function() {
+            const tooltip = bootstrap.Tooltip.getInstance(this);
+            if (tooltip) {
+                tooltip.hide();
+            }
+        });
+    }
 
     // Add handler for the start crawl button
     $('#startCrawlBtn').on('click', async function() {
@@ -98,7 +102,9 @@ $(document).ready(function() {
                     user_id: 'test1',
                     conversation_id: chatManager.conversationId,
                     query: query,
-                    web_url: chatManager.currentChatWebsite.startUrl
+                    web_url: chatManager.currentChatWebsite.domainUrl,
+                    host_name: chatManager.currentChatWebsite.name,
+                    host_logo: chatManager.currentChatWebsite.logo
                 })
             });
             // Remove thinking message before showing the response
