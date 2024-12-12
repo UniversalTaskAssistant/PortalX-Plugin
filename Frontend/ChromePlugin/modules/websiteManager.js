@@ -34,6 +34,9 @@ export class WebsiteManager {
         // Add history tab listener
         $(document).on('click', '.history-tab', () => this.updateWebsitesHistoryList());
 
+        // Add refresh button listener
+        $('#refreshWebsitesBtn').on('click', () => this.updateWebsitesHistoryList());
+
         // Add change website button listener
         $('#changeWebsiteBtn').on('click', () => {
             $('#history-tab').tab('show');

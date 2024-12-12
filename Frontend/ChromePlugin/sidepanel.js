@@ -7,13 +7,19 @@ $(document).ready(function() {
     // Initialize ChatManager
     const chatManager = new ChatManager();
     // Initialize tooltips
-    function initializeTooltips() {
-        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-        tooltipTriggerList.map(function (tooltipTriggerEl) {
-            return new bootstrap.Tooltip(tooltipTriggerEl);
+    const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+    const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => {
+        return new bootstrap.Tooltip(tooltipTriggerEl, {
+            trigger: 'hover'
         });
-    }
-    initializeTooltips();
+    });
+    // Hide tooltip when clicking the button
+    document.getElementById('refreshWebsitesBtn').addEventListener('click', function() {
+        const tooltip = bootstrap.Tooltip.getInstance(this);
+        if (tooltip) {
+            tooltip.hide();
+        }
+    });
 
     // Add handler for the start crawl button
     $('#startCrawlBtn').on('click', async function() {

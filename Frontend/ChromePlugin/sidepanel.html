@@ -94,14 +94,20 @@
 
             <!-- Websites Tab -->
             <div class="tab-pane fade h-100" id="history-content">
+
                 <!-- Search bar -->
                 <div class="search-section px-3 pt-3">
-                    <div class="search-wrapper">
-                        <i class="bi bi-search search-icon"></i>
-                        <input type="text" id="websiteSearch" class="form-control" placeholder="Search websites...">
+                    <div class="search-wrapper d-flex">
+                        <div class="position-relative flex-grow-1">
+                            <i class="bi bi-search search-icon"></i>
+                            <input type="text" id="websiteSearch" class="form-control" placeholder="Search previous websites...">
+                        </div>
+                        <button class="btn btn-icon" id="refreshWebsitesBtn" data-bs-toggle="tooltip" data-bs-placement="top" title="Refresh websites">
+                            <i class="bi bi-arrow-clockwise"></i>
+                        </button>
                     </div>
                 </div>
-                
+
                 <!-- Website Analysis Section -->
                 <div id="website-analysis">
                     <!-- Current Website bar -->
@@ -138,7 +144,7 @@
                     </div>
                 </div>
 
-                <!-- Websites List -->
+                <!-- Websites List Section -->
                 <div id="history-list">
                     <div class="no-websites-message text-center text-muted p-4 mt-5">
                         <i class="bi bi-clock-history fs-4 mb-2"></i>
