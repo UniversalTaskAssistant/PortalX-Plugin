@@ -105,15 +105,18 @@ export class WebsiteManager {
                 
                 // Add error message below the input
                 const errorMessage = `
-                    <div id="urlError" class="alert alert-danger mt-2 mb-0 d-flex justify-content-between align-items-center">
+                    <div id="urlError" class="alert alert-danger mt-2 mb-0 d-flex justify-content-between align-items-center" style="display: none;">
                         <small>Invalid URL format. Please enter a valid URL like "example.com" or "https://www.example.com"</small>
                         <button type="button" class="btn-close btn-close-sm" aria-label="Close" style="transform: scale(0.7); padding: 2px;"></button>
                     </div>`;
                 $('.other-website').append(errorMessage);
+                $('#urlError').fadeIn(300); // Smooth fade in animation over 300ms
 
                 // Add click handler for close button
                 $('#urlError .btn-close').on('click', function() {
-                    $('#urlError').remove();
+                    $('#urlError').fadeOut(200, function() {
+                        $(this).remove();
+                    });
                 });
             }
         });
@@ -297,6 +300,7 @@ export class WebsiteManager {
             .attr('href', websiteData.start_urls[0]);
         $modal.find('.pages-count').text(websiteData.visited_urls.length);
         $modal.find('.domains-count').text(Object.keys(websiteData.domain_urls).length);
+        $modal.find('.failed-urls-count').text(websiteData.failed_urls?.length || 0);
         $modal.find('.subdomain-limit').text(websiteData.domain_limit || 'None');
         
         this.updateModalDomainsList($modal, websiteData);

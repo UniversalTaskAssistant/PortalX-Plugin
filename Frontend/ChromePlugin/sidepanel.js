@@ -44,11 +44,12 @@ $(document).ready(function() {
         if (existingEntry.length > 0) {
             if ($(".alert-existing-website").length === 0) {
                 const notification = `
-                    <div class="mb-4 alert alert-warning alert-dismissible fade show alert-existing-website" role="alert">
+                    <div class="mb-4 alert alert-warning alert-dismissible fade show alert-existing-website" role="alert" style="display: none;">
                         This website has already been analyzed. Please check the websites list.
                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>`;
                 $('#crawlParametersModal .modal-body').prepend(notification);
+                $('.alert-existing-website').fadeIn(300);
             }
             return;
         }
