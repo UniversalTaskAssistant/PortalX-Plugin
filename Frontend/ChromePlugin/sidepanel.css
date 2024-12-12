@@ -1174,3 +1174,22 @@ textarea:focus {
     50% { opacity: 1; }
     100% { opacity: 0; }
 }
+
+.strikethrough {
+    position: relative;
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.strikethrough::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    border-top: 2px solid;
+    border-image: var(--primary-gradient) 1;
+    z-index: 1;
+}
