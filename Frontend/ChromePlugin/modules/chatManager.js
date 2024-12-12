@@ -162,6 +162,7 @@ export class ChatManager {
         // Disable input while initializing RAG
         this.setQueryButtonLoading(true);
         this.initializingMessage(companyName, companyLogo);
+        this.updateSelectedWebsiteTab(companyName, companyLogo, startUrl);
 
         // Initialize RAG before starting the chat
         $.ajax({
@@ -173,7 +174,6 @@ export class ChatManager {
                 if (response.status === 'success') {
                     this.setQueryButtonLoading(false);
                     this.startNewChat(companyName, companyLogo);
-                    this.updateSelectedWebsiteTab(companyName, companyLogo, startUrl);
                 } else {
                     console.error('Failed to initialize RAG:', response.message);
                     this.addMessage("Failed to initialize chat capabilities. Please try again.");
