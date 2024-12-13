@@ -67,8 +67,13 @@ export class WebsiteManager {
         
         // Add handler for "Entire Site" button
         $('#entireSiteBtn').on('click', function() {
-            const domainName = $('#websiteDomain').val();
-            $('#subdomainLimit').val(domainName);
+            $('#subdomainPath').val(''); // Clear the path part
+        });
+
+        // Add handler for website domain changes
+        $('#websiteDomain').on('input', function() {
+            const domainName = $(this).val();
+            $('#domainPart').text(domainName + '/');
         });
 
         $('.analyze-setting-btn').on('click', function(e) {
@@ -81,7 +86,8 @@ export class WebsiteManager {
             const currentInfo = self.getCurrentWebsiteInfo();
             $('#websiteDomain').val(currentInfo.domainName);
             $('#hostName').val(currentInfo.hostName);
-            $('#subdomainLimit').val(currentInfo.subdomain);
+            $('#domainPart').text(currentInfo.domainName + '/');
+            $('#subdomainPath').val(currentInfo.subdomain.split('/')[1] + '/'); 
             new bootstrap.Modal('#crawlParametersModal').show();
         });
 
@@ -108,7 +114,8 @@ export class WebsiteManager {
                 // Only show modal and set values if all validation passes
                 $('#websiteDomain').val(websiteInfo.domainName);
                 $('#hostName').val(websiteInfo.hostName);
-                $('#subdomainLimit').val(websiteInfo.subdomain);
+                $('#domainPart').text(websiteInfo.domainName + '/');
+                $('#subdomainPath').val(websiteInfo.subdomain.split('/')[1] + '/'); 
                 new bootstrap.Modal('#crawlParametersModal').show();
             } catch (error) {
                 // Remove any existing error message
@@ -409,18 +416,7 @@ export class WebsiteManager {
         $failedList.append($showMoreBtn);
     }
 
-    validateCrawlParameters() {
-        const addHttps = (url) => {
-            if (!url) return '';
-            if (!url.startsWith('http://') && !url.startsWith('https://')) {
-                return `https://${url}`;
-            }
-            return url;
-        };
-        const domainName = addHttps($('#websiteDomain').val()?.trim() || '');
-        const hostName = $('#hostName').val()?.trim() || '';
-        const domainLimit = addHttps($('#subdomainLimit').val()?.trim() || '');
-        
+    validateCrawlParameters(domainName, hostName, domainLimit) {
         if (!hostName) {
             alert('Please enter a host name (company name)');
             return false;

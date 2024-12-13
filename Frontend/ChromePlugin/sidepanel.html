@@ -167,7 +167,7 @@
                     <form id="crawlParametersForm">
                         <div class="mb-3">
                             <label class="form-label">Website Domain</label>
-                            <input type="text" class="form-control" id="websiteDomain" readonly>
+                            <input type="text" class="form-control" id="websiteDomain" required>
                             <small class="text-muted ml-2">e.g., www.example.com</small>
                         </div>
                         <div class="mb-3">
@@ -183,12 +183,9 @@
                                    title="Will only analyze pages with this subdomain"></i>
                             </label>
                             <div class="input-group">
-                                <input type="text" class="form-control" id="subdomainLimit" 
-                                       placeholder="e.g., cs.uta.edu"
-                                       style="border-top-right-radius: 0; border-bottom-right-radius: 0;">
-                                <button class="btn" type="button" id="entireSiteBtn">
-                                    Entire Site
-                                </button>
+                                <span class="input-group-text" id="domainPart"></span>
+                                <input type="text" class="form-control" id="subdomainPath">
+                                <button class="btn" type="button" id="entireSiteBtn">Entire Site</button>
                             </div>
                             <small class="text-muted">e.g., www.example.com/en/</small>
                         </div>

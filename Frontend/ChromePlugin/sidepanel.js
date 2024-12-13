@@ -27,7 +27,18 @@ $(document).ready(function() {
 
     // Add handler for the start crawl button
     $('#startCrawlBtn').on('click', async function() {
-        if (!websiteManager.validateCrawlParameters()) {
+        const addHttps = (url) => {
+            if (!url) return '';
+            if (!url.startsWith('http://') && !url.startsWith('https://')) {
+                return `https://${url}`;
+            }
+            return url;
+        };
+        const domainName = addHttps($('#websiteDomain').val()?.trim() || '');
+        const hostName = $('#hostName').val()?.trim() || '';
+        const domainLimit = domainName + '/' + $('#subdomainPath').val()?.trim() || '';
+
+        if (!websiteManager.validateCrawlParameters(domainName, hostName, domainLimit)) {
             return;
         }
         
