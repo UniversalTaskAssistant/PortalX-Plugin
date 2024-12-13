@@ -214,6 +214,7 @@ export class ChatManager {
                 body: JSON.stringify({ user_id: userId })
             });
             this.chatHistory = await response.json();
+            console.log(this.chatHistory);
             return this.chatHistory;
         } catch (error) {
             console.error('Error fetching chat history:', error);
@@ -226,12 +227,20 @@ export class ChatManager {
         this.$chatHistoryList.empty();
         chatHistory.forEach(chat => {
             const firstMessage = chat.conversation.find(msg => msg.rule === 'user')?.content || 'Empty conversation';
+            const hostLogoHtml = chat.host_logo ? 
+                `<img src="${chat.host_logo}" alt="Host Logo" class="me-1" style="width: 16px; height: 16px;">` : '';
+            const hostNameHtml = chat.host_name ? 
+                `<span class="small">${chat.host_name}</span>` : '';
+            
             const chatEntry = `
                 <div class="chat-history-entry p-3" data-chat-id="${chat.conversation_id}">
                     <div class="d-flex justify-content-between align-items-start mb-2">
                         <span class="preview-text">${firstMessage}</span>
                     </div>
-                    <small class="text-muted">${chat.timestamp}</small>
+                    <div class="d-flex align-items-center gap-1"">
+                        <small class="text-muted">${chat.timestamp}</small>
+                        ${hostLogoHtml ? `<span class="ms-2 border-start ps-2" style="margin-top: -1px;">${hostLogoHtml}${hostNameHtml}</span>` : ''}
+                    </div>
                 </div>
             `;
             this.$chatHistoryList.append(chatEntry);
