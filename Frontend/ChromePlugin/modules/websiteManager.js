@@ -64,6 +64,13 @@ export class WebsiteManager {
     // Initialize the crawl settings button
     initializeAnalyzeSettingButton() {
         const self = this;  // Store reference to class instance
+        
+        // Add handler for "Entire Site" button
+        $('#entireSiteBtn').on('click', function() {
+            const domainName = $('#websiteDomain').val();
+            $('#subdomainLimit').val(domainName);
+        });
+
         $('.analyze-setting-btn').on('click', function(e) {
             // Don't trigger if this is part of a form submission
             if ($(this).closest('form').length > 0) {
