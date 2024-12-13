@@ -50,14 +50,14 @@ export class ChatManager {
 
         // Start chat button click handler
         this.$startChatBtn.on('click', () => {
-            const companyInfo = this.$startChatBtn.closest('.modal-content').find('.company-name');
-            const companyName = companyInfo.find('span').text();
-            const companyLogo = companyInfo.find('img').attr('src');
+            const hostInfo = this.$startChatBtn.closest('.modal-content').find('.company-name');
+            const hostName = hostInfo.find('span').text();
+            const hostLogo = hostInfo.find('img').attr('src');
             const domainUrl = this.$startChatBtn.closest('.modal-content').find('.domain-url').attr('href');
             this.currentChatWebsite = {
                 domainUrl: domainUrl,
-                name: companyName,
-                logo: companyLogo
+                name: hostName,
+                logo: hostLogo
             };
             setTimeout(() => this.startRagChatForCurrentWebsite(true), 100);
         });
@@ -127,13 +127,13 @@ export class ChatManager {
     }
 
     // Start a new chat
-    startNewChat(companyName, companyLogo) {
+    startNewChat(hostName, hostLogo) {
         this.conversationId = this.generateConversationId();
         $('.message-container').remove();
         this.$welcomeMessage.html(`
             <div class="align-items-center mb-2">
                 <h5 class="mb-4">Hello! Ask me anything about</h5>
-                <h5 class="text-muted"><img src="${companyLogo}" alt="Logo" class="me-2" style="width: 20px; height: 20px;">${companyName}</h5>
+                <h5 class="text-muted"><img src="${hostLogo}" alt="Logo" class="me-2" style="width: 20px; height: 20px;">${hostName}</h5>
             </div>
         `).show();
         this.$queryInput.val('');
@@ -141,24 +141,24 @@ export class ChatManager {
     }
 
     // Update the selected website tab
-    updateSelectedWebsiteTab(companyName, companyLogo, domainUrl) {
+    updateSelectedWebsiteTab(hostName, hostLogo, domainUrl) {
         const $selectedWebsite = $('.selected-website');
         $selectedWebsite.empty();
         $selectedWebsite.attr('data-url', domainUrl);
         $selectedWebsite.append(`
-            <h6 class="text-muted"><img src="${companyLogo}" alt="Logo" class="me-2" style="width: 20px; height: 20px;">${companyName}</h6>
+            <h6 class="text-muted"><img src="${hostLogo}" alt="Logo" class="me-2" style="width: 20px; height: 20px;">${hostName}</h6>
         `);
         $('#changeWebsiteBtn').text('Change');
     }
 
     // Initialize chat message for the selected website
-    initializingMessage(companyName, companyLogo) {
+    initializingMessage(hostName, hostLogo) {
         this.conversationId = this.generateConversationId();
         $('.message-container').remove();
         this.$welcomeMessage.html(`
             <div class="align-items-center mb-2">
                 <h5 class="mb-4">Initializing chating system for</h5>
-                <h5 class="text-muted mb-4"><img src="${companyLogo}" alt="Logo" class="me-2" style="width: 20px; height: 20px;">${companyName}</h5>
+                <h5 class="text-muted mb-4"><img src="${hostLogo}" alt="Logo" class="me-2" style="width: 20px; height: 20px;">${hostName}</h5>
                 <h5><span class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></span></h5>
             </div>
         `).show();
@@ -166,7 +166,7 @@ export class ChatManager {
         this.$queryInput.prop('placeholder', 'Waiting for initializing...');
     }
 
-    // Start a new chat with company info
+    // Start a new chat with host info
     startRagChatForCurrentWebsite(newChat = true, selectedChat = null) {
         $('#chat-tab').tab('show');
 
