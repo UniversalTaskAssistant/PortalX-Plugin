@@ -50,6 +50,15 @@ export class ChatManager {
 
         // Start chat button click handler
         this.$startChatBtn.on('click', () => {
+            const companyInfo = this.$startChatBtn.closest('.modal-content').find('.company-name');
+            const companyName = companyInfo.find('span').text();
+            const companyLogo = companyInfo.find('img').attr('src');
+            const domainUrl = this.$startChatBtn.closest('.modal-content').find('.domain-url').attr('href');
+            this.currentChatWebsite = {
+                domainUrl: domainUrl,
+                name: companyName,
+                logo: companyLogo
+            };
             setTimeout(() => this.startNewChatWithCompanyInfo(), 100);
         });
 
@@ -148,32 +157,23 @@ export class ChatManager {
 
     // Start a new chat with company info
     startNewChatWithCompanyInfo() {
-        const companyInfo = this.$startChatBtn.closest('.modal-content').find('.company-name');
-        const companyName = companyInfo.find('span').text();
-        const companyLogo = companyInfo.find('img').attr('src');
-        const domainUrl = this.$startChatBtn.closest('.modal-content').find('.domain-url').attr('href');
-        this.currentChatWebsite = {
-            domainUrl: domainUrl,
-            name: companyName,
-            logo: companyLogo
-        };
         $('#chat-tab').tab('show');
 
         // Disable input while initializing RAG
         this.setQueryButtonLoading(true);
-        this.initializingMessage(companyName, companyLogo);
-        this.updateSelectedWebsiteTab(companyName, companyLogo, domainUrl);
+        this.initializingMessage(this.currentChatWebsite.name, this.currentChatWebsite.logo);
+        this.updateSelectedWebsiteTab(this.currentChatWebsite.name, this.currentChatWebsite.logo, this.currentChatWebsite.domainUrl);
 
         // Initialize RAG before starting the chat
         $.ajax({
             url: 'http://127.0.0.1:7777/initialize_rag',
             method: 'POST',
             contentType: 'application/json',
-            data: JSON.stringify({ web_url: domainUrl }),
+            data: JSON.stringify({ web_url: this.currentChatWebsite.domainUrl }),
             success: (response) => {
                 if (response.status === 'success') {
                     this.setQueryButtonLoading(false);
-                    this.startNewChat(companyName, companyLogo);
+                    this.startNewChat(this.currentChatWebsite.name, this.currentChatWebsite.logo);
                 } else {
                     console.error('Failed to initialize RAG:', response.message);
                     this.addMessage("Failed to initialize chat capabilities. Please try again.");
