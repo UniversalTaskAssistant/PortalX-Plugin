@@ -83,10 +83,11 @@ class UTAWeb:
             print(f"\n!!! Website data for {web_url} already exists in {company_dir} !!!\n")
             return 'Exist'
         # Initialize crawler and start crawling
-        self.initialize_crawler()
-        self.crawler_process.crawl(UTASpider, output_dir=self.data_dir, start_urls=[web_url], company_name=company_name, domain_limit=domain_limit, exclude_domains=exclude_domains)
-        self.crawler_process.start()
-        return 'Success'
+        else:   
+            self.initialize_crawler()
+            self.crawler_process.crawl(UTASpider, output_dir=self.data_dir, start_urls=[web_url], company_name=company_name, domain_limit=domain_limit, exclude_domains=exclude_domains)
+            self.crawler_process.start()
+            return 'Success'
 
     def query_web(self, query: str, web_url: str, company_name=None):
         """
