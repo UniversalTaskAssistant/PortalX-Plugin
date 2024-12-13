@@ -59,16 +59,27 @@ export class ChatManager {
                 name: companyName,
                 logo: companyLogo
             };
-            setTimeout(() => this.startNewChatWithCompanyInfo(), 100);
+            setTimeout(() => this.startRagChatForCurrentWebsite(true), 100);
         });
 
         // Chat history entry click handler
         $(document).on('click', '.chat-history-entry', (e) => {
+            // Hide the chat history modal
+            const modal = bootstrap.Modal.getInstance('#chatHistoryModal');
+            modal.hide();
+
+            // Load the selected chat info
             const chatId = $(e.currentTarget).data('chat-id');
-            if (this.loadChat(chatId)) {
-                const modal = bootstrap.Modal.getInstance('#chatHistoryModal');
-                modal.hide();
-            }
+            const selectedChat = this.chatHistory.find(chat => chat.conversation_id === chatId);
+            this.conversationId = chatId;
+            this.currentChatWebsite = {
+                domainUrl: selectedChat.host_url,
+                name: selectedChat.host_name,
+                logo: selectedChat.host_logo
+            };  
+
+            // Initialize RAG for the selected chat and display it
+            this.startRagChatForCurrentWebsite(false, selectedChat);
         });
     }
 
@@ -156,7 +167,7 @@ export class ChatManager {
     }
 
     // Start a new chat with company info
-    startNewChatWithCompanyInfo() {
+    startRagChatForCurrentWebsite(newChat = true, selectedChat = null) {
         $('#chat-tab').tab('show');
 
         // Disable input while initializing RAG
@@ -173,7 +184,17 @@ export class ChatManager {
             success: (response) => {
                 if (response.status === 'success') {
                     this.setQueryButtonLoading(false);
-                    this.startNewChat(this.currentChatWebsite.name, this.currentChatWebsite.logo);
+                    if (newChat) {
+                        this.startNewChat(this.currentChatWebsite.name, this.currentChatWebsite.logo);
+                    }
+                    else if (selectedChat) {
+                        // Display the selected chat
+                        $('.message-container').remove();
+                        this.$welcomeMessage.hide();
+                        selectedChat.conversation.forEach(msg => {
+                            this.addMessage(msg.content, msg.rule === 'user');
+                        });
+                    }
                 } else {
                     console.error('Failed to initialize RAG:', response.message);
                     this.addMessage("Failed to initialize chat capabilities. Please try again.");
@@ -188,21 +209,6 @@ export class ChatManager {
         });
     }
 
-    // Load a chat by id (conversation id)
-    loadChat(chatId) {
-        const selectedChat = this.chatHistory.find(chat => chat.conversation_id === chatId);
-        if (selectedChat) {
-            this.conversationId = chatId;
-            $('.message-container').remove();
-            this.$welcomeMessage.hide();
-            selectedChat.conversation.forEach(msg => {
-                this.addMessage(msg.content, msg.rule === 'user');
-            });
-            return true;
-        }
-        return false;
-    }
-
     // Load all chat history for a user
     async loadAllChatHistory(userId) {
         try {
@@ -214,7 +220,6 @@ export class ChatManager {
                 body: JSON.stringify({ user_id: userId })
             });
             this.chatHistory = await response.json();
-            console.log(this.chatHistory);
             return this.chatHistory;
         } catch (error) {
             console.error('Error fetching chat history:', error);
@@ -224,6 +229,9 @@ export class ChatManager {
 
     // Update the chat history list
     updateChatHistoryList(chatHistory) {
+        if (chatHistory.length === 0) {
+            return;
+        }
         this.$chatHistoryList.empty();
         chatHistory.forEach(chat => {
             const firstMessage = chat.conversation.find(msg => msg.rule === 'user')?.content || 'Empty conversation';
