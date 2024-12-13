@@ -82,12 +82,16 @@ export class WebsiteManager {
                 return;
             }
             
+            // Put the current website info input the inputs
             $('#crawlParametersModal .alert-existing-website').remove();
             const currentInfo = self.getCurrentWebsiteInfo();
             $('#websiteDomain').val(currentInfo.domainName);
             $('#hostName').val(currentInfo.hostName);
             $('#domainPart').text(currentInfo.domainName + '/');
-            $('#subdomainPath').val(currentInfo.subdomain.split('/')[1] + '/'); 
+            $('#subdomainPath').val(currentInfo.subdomain.split('/')[1]); 
+
+            // Validate all input values
+            self.validateAllCrawlInputValues();
             new bootstrap.Modal('#crawlParametersModal').show();
         });
 
@@ -111,11 +115,16 @@ export class WebsiteManager {
                 
                 // Clear any previous error messages
                 $('#urlError').remove();
-                // Only show modal and set values if all validation passes
+                // Put the current website info input the inputs
                 $('#websiteDomain').val(websiteInfo.domainName);
                 $('#hostName').val(websiteInfo.hostName);
                 $('#domainPart').text(websiteInfo.domainName + '/');
-                $('#subdomainPath').val(websiteInfo.subdomain.split('/')[1] + '/'); 
+                $('#subdomainPath').val(websiteInfo.subdomain.split('/')[1]); 
+
+                console.log(websiteInfo.subdomain.split('/')[1]);
+
+                // Validate all input values
+                self.validateAllCrawlInputValues();
                 new bootstrap.Modal('#crawlParametersModal').show();
             } catch (error) {
                 // Remove any existing error message
@@ -137,6 +146,14 @@ export class WebsiteManager {
                     });
                 });
             }
+        });
+
+        // Add to initializeAnalyzeSettingButton method
+        $('#websiteDomain, #hostName, #subdomainPath').on('input', (e) => {
+            // Remove any existing validation alerts
+            $('.alert-validation').remove();
+            console.log(e.target.id);
+            self.validateAllCrawlInputValues();
         });
     }
 
@@ -416,9 +433,45 @@ export class WebsiteManager {
         $failedList.append($showMoreBtn);
     }
 
+    validateAllCrawlInputValues() {
+        let input = $('#websiteDomain');
+        const domainName = input.val().trim();
+        const domainPattern = /^(?:https?:\/\/)?(?:www\.)?([a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*\.[a-zA-Z]{2,})$/;
+        this.setValidationState(input, domainName && domainPattern.test(domainName));
+
+        input = $('#hostName');
+        const hostName = input.val().trim();
+        const hostNamePattern = /^[a-zA-Z0-9-]+$/;
+        this.setValidationState(input, hostName && hostNamePattern.test(hostName));
+
+        input = $('#subdomainPath');
+        const subdomainPath = input.val().trim();
+        const subdomainPattern = /^$|^[a-zA-Z0-9-_\.][a-zA-Z0-9-_\/\.]*$/;
+        this.setValidationState(input, subdomainPattern.test(subdomainPath));
+    }
+
     validateCrawlParameters(domainName, hostName, domainLimit) {
-        if (!hostName) {
-            alert('Please enter a host name (company name)');
+        // Remove any existing validation alerts
+        $('.alert-validation').remove();
+
+        // Check validation states of all inputs
+        const isDomainValid = $('#websiteDomain').hasClass('is-valid');
+        const isHostValid = $('#hostName').hasClass('is-valid');
+        const subdomainInput = $('#subdomainPath');
+        const isSubdomainValid = !subdomainInput.val() || subdomainInput.hasClass('is-valid');
+
+        if (!isDomainValid) {
+            this.showValidationAlert('Please enter a valid website domain (e.g., www.example.com)');
+            return false;
+        }
+
+        if (!isHostValid) {
+            this.showValidationAlert('Please enter a valid host name (letters, numbers, and hyphens only)');
+            return false;
+        }
+
+        if (!isSubdomainValid) {
+            this.showValidationAlert('Please enter a valid subdomain path (cannot start with /)');
             return false;
         }
 
@@ -443,5 +496,22 @@ export class WebsiteManager {
             return false;
         }
         return true;
+    }
+
+    // Show validation alerts on the modal
+    showValidationAlert(message, type = 'danger') {
+        const notification = `
+            <div class="mb-4 alert alert-${type} alert-dismissible fade show alert-validation" role="alert">
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>`;
+        $('#crawlParametersModal .modal-body').prepend(notification);
+        $('.alert-validation').fadeIn(300);
+    }
+
+    // Set the validation state of the input at the end
+    setValidationState(input, isValid, errorMessage) {
+        input.removeClass('is-valid is-invalid');
+        input.addClass(isValid ? 'is-valid' : 'is-invalid');
     }
 }
