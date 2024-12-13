@@ -143,7 +143,7 @@ export class ChatManager {
     }
 
     // Update the selected website tab
-    updateSelectedWebsiteTab(hostName, hostLogo, domainUrl) {
+    updateSelectedWebsiteBar(hostName, hostLogo, domainUrl) {
         const $selectedWebsite = $('.selected-website');
         $selectedWebsite.empty();
         $selectedWebsite.attr('data-url', domainUrl);
@@ -175,7 +175,7 @@ export class ChatManager {
         // Disable input while initializing RAG
         this.setQueryButtonLoading(true);
         this.initializingMessage(this.currentChatWebsite.name, this.currentChatWebsite.logo);
-        this.updateSelectedWebsiteTab(this.currentChatWebsite.name, this.currentChatWebsite.logo, this.currentChatWebsite.domainUrl);
+        this.updateSelectedWebsiteBar(this.currentChatWebsite.name, this.currentChatWebsite.logo, this.currentChatWebsite.domainUrl);
 
         // Initialize RAG before starting the chat
         $.ajax({

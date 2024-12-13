@@ -10,6 +10,7 @@ export class WebsiteManager {
         this.websitesData = new Map();
         
         this.updateCurrentWebsiteInfo();
+        this.updateWebsitesHistoryList(false);
         this.initializeEventListeners();
         this.initializeWebsiteSearch();
         this.initializeAnalyzeSettingButton();
@@ -244,7 +245,7 @@ export class WebsiteManager {
     }
 
     // Update the history list
-    async updateWebsitesHistoryList() {
+    async updateWebsitesHistoryList(switchTab = true) {
         try {
             const websites = await this.loadAllWebsitesHistory();
             let historyList = $('#history-list');
@@ -276,7 +277,9 @@ export class WebsiteManager {
             } else {
                 $('.no-websites-message').show();
             }
-            $('#history-tab').tab('show');
+            if (switchTab) {
+                $('#history-tab').tab('show');
+            }
         } catch (error) {
             console.error('Error updating history list:', error);
         }
@@ -286,8 +289,9 @@ export class WebsiteManager {
     // ****** Modal ******
     // Format the timestamp
     updateWebInfoModal(event) {
-        const url = $(event.currentTarget).data('url');
+        const url = $(event.currentTarget).attr('data-url');
         const websiteData = this.getWebsiteData(url);
+
         if (!websiteData) return;
         const $modal = $('#websiteDetailsModal');
         
