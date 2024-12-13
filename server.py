@@ -66,11 +66,12 @@ def crawl():
     if domain_name == '':
         return jsonify({"status": "error", "message": "Web URL is empty"})
 
+    # Use the domain limit as the start url if provided, otherwise use the domain name
+    domain_limit = data['domainLimit'] if data['domainLimit'] != '' else data['domainName']
     # Start crawl process
-    domain_limit = data['domainLimit'] if data['domainLimit'] != '' else None
     process = Process(
         target=crawl_process,
-        args=(domain_name, domain_limit)
+        args=(domain_limit, domain_limit)
     )
     process.start()
     return jsonify({"status": "success", "message": "Crawling started in background"})
