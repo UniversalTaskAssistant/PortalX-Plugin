@@ -20,12 +20,12 @@ from llama_index.core.schema import NodeWithScore, TextNode, Document
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 from llama_index.llms.openai import OpenAI
 from sklearn.metrics.pairwise import cosine_similarity
+from sympy import false
 
 from Backend.RAG.prompts import SYSTEM_PROMPT
 
 class RAGSystem:
-    """A Retrieval-Augmented Generation (RAG) system for document processing and querying."""
-
+    # RAG system for document processing and querying.
     def __init__(self, max_concurrent_tasks: int = 3):
         load_dotenv()
         self.openai_api_key: Optional[str] = os.getenv('OPENAI_API_KEY')
@@ -51,12 +51,10 @@ class RAGSystem:
         resume_progress: bool = False,
         process_limit: int = -1
     ):
-        """
-        Initialize the RAG system components asynchronously.
-        """
+        # Asynchronous initialization.
         self.current_directory_path = directory_path
         self._initialize_models(embed_model_name, chunk_size, chunk_overlap)
-        self.text_splitter: SentenceSplitter = SentenceSplitter(chunk_size=150, chunk_overlap=10)
+        self.text_splitter: SentenceSplitter = SentenceSplitter(chunk_size=300, chunk_overlap=10)
 
         embedding_dir = os.path.join(directory_path, "embedding")
         if load_from_disk and os.path.exists(embedding_dir) and not resume_progress:
@@ -75,7 +73,7 @@ class RAGSystem:
         )
 
     def _initialize_models(self, embed_model_name: str, chunk_size: int, chunk_overlap: int):
-        """Initialize embedding model and configure settings."""
+        # Initialize embedding model and configure settings.
         self.embed_model = HuggingFaceEmbedding(
             model_name=embed_model_name,
             embed_batch_size=100
@@ -87,7 +85,7 @@ class RAGSystem:
         Settings.chunk_overlap = chunk_overlap
 
     async def _load_index_from_disk(self, directory_path: str) -> BaseIndex:
-        """Load saved index from disk asynchronously."""
+        # Load saved index from disk.
         embedding_dir = os.path.join(directory_path, "embedding")
         print("Loading saved index from disk:", embedding_dir)
         loop = asyncio.get_event_loop()
@@ -102,20 +100,19 @@ class RAGSystem:
         return loaded_index
 
     def _load_progress(self, progress_path: str) -> set:
+        # Load progress.
         if os.path.exists(progress_path):
             with open(progress_path, "r") as f:
                 return set(json.load(f))
         return set()
 
     def _save_progress(self, progress_path: str, processed_docs: set):
+        # Save progress.
         with open(progress_path, "w") as f:
             json.dump(list(processed_docs), f)
 
     async def _process_single_document(self, doc: Document) -> Document:
-        """
-        Process a single document asynchronously.
-        Return a Document for the main index builder (no immediate persist here).
-        """
+        # Asynchronously process a single document.
         async with self.semaphore:
             print(f"Processing document: {doc.doc_id}")
             return doc
@@ -126,6 +123,7 @@ class RAGSystem:
             resume_progress: bool,
             process_limit: int
     ) -> VectorStoreIndex:
+        # Create and save indices.
         embedding_dir = os.path.join(directory_path, "embedding")
         embedding_dir = os.path.abspath(embedding_dir)
         os.makedirs(embedding_dir, exist_ok=True)
@@ -133,10 +131,10 @@ class RAGSystem:
         progress_path = os.path.join(embedding_dir, "progress.json")
         processed_docs = self._load_progress(progress_path) if resume_progress else set()
 
-        existing_docs: List[Document] = []
-        possible_index_file = os.path.join(embedding_dir, "docstore.json")
+        existing_index: Optional[VectorStoreIndex] = None
         loop = asyncio.get_event_loop()
 
+        possible_index_file = os.path.join(embedding_dir, "docstore.json")
         if os.path.exists(possible_index_file):
             print("Found existing index. Loading...")
             storage_context = await loop.run_in_executor(
@@ -147,18 +145,9 @@ class RAGSystem:
                 self.executor,
                 lambda: load_index_from_storage(storage_context)
             )
-            for doc_id, doc_node in existing_index.docstore.docs.items():
-                text_content = getattr(doc_node, 'text', None)
-                if text_content:
-                    node_id = getattr(doc_node, 'ref_doc_id', doc_id)
-                    meta = getattr(doc_node, 'metadata', {})
-                    doc_obj = Document(
-                        text=text_content,
-                        doc_id=node_id,
-                        extra_info=meta
-                    )
-                    existing_docs.append(doc_obj)
-            print(f"Loaded {len(existing_docs)} existing documents from disk.")
+            print("Index loaded successfully.")
+        else:
+            print("No existing index found. Will create a new one.")
 
         print("Loading new documents...")
         reader = SimpleDirectoryReader(
@@ -176,8 +165,6 @@ class RAGSystem:
         for docs_batch in reader.iter_data(show_progress=True):
             for doc in docs_batch:
                 doc_abs_path = os.path.abspath(doc.doc_id)
-
-                # 强制跳过 embedding_dir 下的所有文件
                 if embedding_dir in doc_abs_path:
                     continue
 
@@ -203,25 +190,43 @@ class RAGSystem:
 
         self._save_progress(progress_path, processed_docs)
 
-        # 3) 合并已有文档 + 新文档
-        all_docs: List[Document] = existing_docs + new_docs
+        print(f"Number of new docs: {len(new_docs)}")
+
+        if existing_index and len(new_docs) > 0:
+            loop = asyncio.get_event_loop()
+            await loop.run_in_executor(
+                self.executor,
+                lambda: existing_index.insert_nodes(new_docs, show_progress=True)
+            )
+            await loop.run_in_executor(
+                self.executor,
+                lambda: existing_index.storage_context.persist(persist_dir=embedding_dir)
+            )
+            print("Updated existing index with new documents. Saved successfully.")
+            return existing_index
+
+        all_docs: List[Document] = new_docs
         print(f"Total documents to build index: {len(all_docs)}")
 
-        condensed_index: VectorStoreIndex = await loop.run_in_executor(
-            self.executor,
-            lambda: VectorStoreIndex.from_documents(all_docs, show_progress=True)
-        )
-
-        await loop.run_in_executor(
-            self.executor,
-            lambda: condensed_index.storage_context.persist(persist_dir=embedding_dir)
-        )
-        print("Condensed index saved successfully")
-
-        return condensed_index
+        if not existing_index:
+            loop = asyncio.get_event_loop()
+            condensed_index: VectorStoreIndex = await loop.run_in_executor(
+                self.executor,
+                lambda: VectorStoreIndex.from_documents(all_docs, show_progress=True)
+            )
+            await loop.run_in_executor(
+                self.executor,
+                lambda: condensed_index.storage_context.persist(persist_dir=embedding_dir)
+            )
+            print("Created new index from scratch and saved successfully.")
+            return condensed_index
+        else:
+            print("No new docs to add. Returning existing index as is.")
+            return existing_index
 
     @traceable(run_type="chain")
     def retrieve_documents(self, question: str, top_k: int = 3) -> List[NodeWithScore]:
+        # Retrieve documents.
         if not self.index:
             raise ValueError("Index has not been initialized.")
         query_engine = self.index.as_query_engine(similarity_top_k=top_k)
@@ -230,7 +235,7 @@ class RAGSystem:
 
     @traceable(run_type="chain")
     def query(self, question: str, top_k: int = 3) -> Dict[str, Any]:
-        """Generate a response by manually controlling the RAG pipeline."""
+        # Generate a response by manually controlling the RAG pipeline.
         retrieved_docs: List[NodeWithScore] = self.retrieve_documents(question, top_k=top_k)
         compressed_docs: List[NodeWithScore] = self.compress_and_filter_documents(retrieved_docs, question)
 
@@ -254,7 +259,7 @@ class RAGSystem:
 
     @traceable(run_type="chain")
     def compress_and_filter_documents(self, docs: List[NodeWithScore], question: str) -> List[NodeWithScore]:
-        """Compress and filter documents using embedding similarity."""
+        # Compress and filter documents using embedding similarity.
         updated_nodes: List[NodeWithScore] = []
         query_embedding: List[float] = self.embed_model._get_text_embedding(question)
 
@@ -265,11 +270,11 @@ class RAGSystem:
             similarities: List[float] = cosine_similarity([query_embedding], embeddings)[0]
 
             filtered_texts = [
-                text for text, similarity in zip(split_texts, similarities) if similarity >= 0.85
+                text for text, similarity in zip(split_texts, similarities) if similarity >= 0.82
             ]
             if filtered_texts:
                 combined_text = " ".join(filtered_texts)
-                ref_id = getattr(doc.node, "ref_doc_id", "unknown_ref_id")
+                ref_id = getattr(doc.node, "node_id", "unknown_ref_id")
 
                 new_doc = Document(
                     text=combined_text,
@@ -284,11 +289,13 @@ class RAGSystem:
         return updated_nodes
 
     def cleanup(self):
+        # Cleanup resources.
         if self.executor:
             self.executor.shutdown()
 
     @staticmethod
     def format_response(result: Dict[str, Any], show_sources: bool = True) -> str:
+        # Format final response.
         output: str = f"Answer: {result['answer']}\n\n"
         if show_sources:
             output += "Sources:\n"
@@ -298,21 +305,21 @@ class RAGSystem:
 
 
 async def main():
-    """Main function to test the RAG system locally in terminal."""
+    # Main function to test RAG system locally.
     rag: RAGSystem = RAGSystem(max_concurrent_tasks=3)
     relative_directory_path: str = "../Output/websites/signavio"
     absolute_directory_path: str = os.path.abspath(relative_directory_path)
 
     try:
         await rag.initialize(directory_path=absolute_directory_path,
-                             process_limit=-1,
+                             process_limit=15,
                              resume_progress=True)
 
         print("Welcome!")
         while True:
             usr_input: str = input("User: ")
             if usr_input.lower() == "quit":
-                break
+                 break
 
             response: Dict[str, Any] = rag.query(usr_input, 5)
             print(rag.format_response(response))
