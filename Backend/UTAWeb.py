@@ -129,13 +129,13 @@ class UTAWeb:
 if __name__ == "__main__":
     utaweb = UTAWeb()
 
-    web_url = 'https://www.nsw.gov.au/'
-    company_name = 'nsw'
-    domain_limit = 'https://www.nsw.gov.au/' # None or specific domain, such as 'www.bmw.com/en-au'
+    # web_url = 'https://www.nsw.gov.au/'
+    # company_name = 'nsw'
+    # domain_limit = 'https://www.nsw.gov.au/' # None or specific domain, such as 'www.bmw.com/en-au'
 
-    # web_url = 'https://www.tum.de/'
-    # company_name = 'tum'
-    # domain_limit = '' # None or specific domain, such as 'www.bmw.com/en-au'
+    web_url = 'https://www.tum.de/en/studies'
+    company_name = 'tum-en'
+    domain_limit = 'https://www.tum.de/en/studies' # None or specific domain, such as 'www.bmw.com/en-au'
 
     # web_url = 'https://www.signavio.com/'
     # company_name = 'signavio'

@@ -12,11 +12,11 @@ from llama_index.core import (
     VectorStoreIndex,
     SimpleDirectoryReader,
     Settings,
-    load_index_from_storage
+    load_index_from_storage,
 )
 from llama_index.core.indices.base import BaseIndex
 from llama_index.core.node_parser import SentenceSplitter
-from llama_index.core.schema import NodeWithScore, TextNode
+from llama_index.core.schema import NodeWithScore, TextNode, Document
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 from llama_index.llms.openai import OpenAI
 from sklearn.metrics.pairwise import cosine_similarity
@@ -29,46 +29,44 @@ class RAGSystem:
     def __init__(self, max_concurrent_tasks: int = 3):
         load_dotenv()
         self.openai_api_key: Optional[str] = os.getenv('OPENAI_API_KEY')
-
         if not self.openai_api_key:
             raise ValueError("OpenAI API key not found in .env file. Please ensure the file contains the key as OPENAI_API_KEY.")
 
-        # System components
         self.current_directory_path: Optional[str] = None
         self.embed_model: Optional[HuggingFaceEmbedding] = None
-        self.documents: Optional[List[Any]] = None
         self.index: Optional[VectorStoreIndex] = None
         self.query_engine: Optional[Any] = None
 
-        # Concurrency controls
         self.max_concurrent_tasks: int = max_concurrent_tasks
         self.semaphore: asyncio.Semaphore = asyncio.Semaphore(max_concurrent_tasks)
         self.executor: ThreadPoolExecutor = ThreadPoolExecutor(max_workers=max_concurrent_tasks)
 
-    async def initialize(self, directory_path: str, embed_model_name: str = "hkunlp/instructor-base",
-                         chunk_size: int = 1024,
-                         chunk_overlap: int = 200, load_from_disk: bool = True, resume_progress: bool = False,
-                         process_limit: int = -1):
+    async def initialize(
+        self,
+        directory_path: str,
+        embed_model_name: str = "hkunlp/instructor-base",
+        chunk_size: int = 1024,
+        chunk_overlap: int = 200,
+        load_from_disk: bool = True,
+        resume_progress: bool = False,
+        process_limit: int = -1
+    ):
         """
         Initialize the RAG system components asynchronously.
-
-        Args:
-            directory_path: Path to document directory
-            embed_model_name: Name of the embedding model to use
-            chunk_size: Size of text chunks for processing
-            chunk_overlap: Overlap between consecutive chunks
-            load_from_disk: Whether to load existing index from disk
-            resume_progress: Whether to resume from previous progress
-            process_limit: Limit the number of documents to process (-1 for no limit)
         """
         self.current_directory_path = directory_path
         self._initialize_models(embed_model_name, chunk_size, chunk_overlap)
         self.text_splitter: SentenceSplitter = SentenceSplitter(chunk_size=150, chunk_overlap=10)
 
-        if load_from_disk and os.path.exists(f"{directory_path}/embedding") and not resume_progress:
+        embedding_dir = os.path.join(directory_path, "embedding")
+        if load_from_disk and os.path.exists(embedding_dir) and not resume_progress:
             self.index = await self._load_index_from_disk(directory_path)
         else:
-            self.index = await self._create_and_save_indices(directory_path, resume_progress, process_limit)
+            self.index = await self._create_and_save_indices(
+                directory_path,
+                resume_progress,
+                process_limit
+            )
 
         self.query_engine = self.index.as_query_engine(
             response_mode="tree_summarize",
@@ -90,127 +88,142 @@ class RAGSystem:
 
     async def _load_index_from_disk(self, directory_path: str) -> BaseIndex:
         """Load saved index from disk asynchronously."""
-        print("Loading saved index from disk...")
-
+        embedding_dir = os.path.join(directory_path, "embedding")
+        print("Loading saved index from disk:", embedding_dir)
         loop = asyncio.get_event_loop()
         storage_context: StorageContext = await loop.run_in_executor(
             self.executor,
-            lambda: StorageContext.from_defaults(persist_dir=f"{directory_path}/embedding")
+            lambda: StorageContext.from_defaults(persist_dir=embedding_dir)
         )
-
-        return await loop.run_in_executor(
+        loaded_index = await loop.run_in_executor(
             self.executor,
             lambda: load_index_from_storage(storage_context)
         )
+        return loaded_index
 
     def _load_progress(self, progress_path: str) -> set:
-        """Load processing progress from disk."""
         if os.path.exists(progress_path):
             with open(progress_path, "r") as f:
                 return set(json.load(f))
         return set()
 
     def _save_progress(self, progress_path: str, processed_docs: set):
-        """Save processing progress to disk."""
         with open(progress_path, "w") as f:
             json.dump(list(processed_docs), f)
 
-    async def _process_single_document(self, doc: Any, embedding_dir: str) -> tuple:
-        """Process a single document asynchronously - create and save its index."""
+    async def _process_single_document(self, doc: Document) -> Document:
+        """
+        Process a single document asynchronously.
+        Return a Document for the main index builder (no immediate persist here).
+        """
         async with self.semaphore:
             print(f"Processing document: {doc.doc_id}")
+            return doc
 
-            relative_path: str = doc.doc_id.replace(self.current_directory_path + '/', '')
-            doc_path: str = os.path.join(embedding_dir, relative_path)
-            os.makedirs(os.path.dirname(doc_path), exist_ok=True)
-
-            loop = asyncio.get_event_loop()
-            doc_index: VectorStoreIndex = await loop.run_in_executor(
-                self.executor,
-                lambda: VectorStoreIndex.from_documents([doc], show_progress=True)
-            )
-
-            await loop.run_in_executor(
-                self.executor,
-                lambda: doc_index.storage_context.persist(persist_dir=doc_path)
-            )
-
-            print(f"Index saved for {doc.doc_id}")
-            return doc, doc_index
-
-    async def _create_and_save_indices(self, directory_path: str, resume_progress: bool,
-                                       process_limit: int) -> VectorStoreIndex:
-        """Create and save indices for each document asynchronously."""
-        print("Creating new indices...")
-        embedding_dir: str = f"{directory_path}/embedding"
+    async def _create_and_save_indices(
+            self,
+            directory_path: str,
+            resume_progress: bool,
+            process_limit: int
+    ) -> VectorStoreIndex:
+        embedding_dir = os.path.join(directory_path, "embedding")
+        embedding_dir = os.path.abspath(embedding_dir)
         os.makedirs(embedding_dir, exist_ok=True)
 
         progress_path = os.path.join(embedding_dir, "progress.json")
         processed_docs = self._load_progress(progress_path) if resume_progress else set()
 
+        existing_docs: List[Document] = []
+        possible_index_file = os.path.join(embedding_dir, "docstore.json")
+        loop = asyncio.get_event_loop()
+
+        if os.path.exists(possible_index_file):
+            print("Found existing index. Loading...")
+            storage_context = await loop.run_in_executor(
+                self.executor,
+                lambda: StorageContext.from_defaults(persist_dir=embedding_dir)
+            )
+            existing_index = await loop.run_in_executor(
+                self.executor,
+                lambda: load_index_from_storage(storage_context)
+            )
+            for doc_id, doc_node in existing_index.docstore.docs.items():
+                text_content = getattr(doc_node, 'text', None)
+                if text_content:
+                    node_id = getattr(doc_node, 'ref_doc_id', doc_id)
+                    meta = getattr(doc_node, 'metadata', {})
+                    doc_obj = Document(
+                        text=text_content,
+                        doc_id=node_id,
+                        extra_info=meta
+                    )
+                    existing_docs.append(doc_obj)
+            print(f"Loaded {len(existing_docs)} existing documents from disk.")
+
+        print("Loading new documents...")
         reader = SimpleDirectoryReader(
             directory_path,
             recursive=True,
             exclude_hidden=True,
-            filename_as_id=True
+            filename_as_id=True,
+            exclude=["embedding/**"]
         )
 
         tasks: List[asyncio.Task] = []
-        all_docs: List[Any] = []
+        new_docs: List[Document] = []
         processed_count = 0
 
-        try:
-            for docs in reader.iter_data(show_progress=True):
-                for doc in docs:
-                    # Skip embedding directory
-                    if os.path.commonpath([embedding_dir, doc.doc_id]) == embedding_dir:
-                        continue
+        for docs_batch in reader.iter_data(show_progress=True):
+            for doc in docs_batch:
+                doc_abs_path = os.path.abspath(doc.doc_id)
 
-                    if process_limit != -1 and processed_count >= process_limit:
-                        print(f"Process limit reached: {process_limit} documents.")
-                        break
-
-                    if doc.doc_id not in processed_docs:
-                        task = self._process_single_document(doc, embedding_dir)
-                        tasks.append(task)
-                        processed_count += 1
+                # 强制跳过 embedding_dir 下的所有文件
+                if embedding_dir in doc_abs_path:
+                    continue
 
                 if process_limit != -1 and processed_count >= process_limit:
+                    print(f"Process limit reached: {process_limit} documents.")
                     break
 
-            results: List[tuple] = await asyncio.gather(*tasks, return_exceptions=True)
+                if doc.doc_id not in processed_docs:
+                    task = self._process_single_document(doc)
+                    tasks.append(task)
+                    processed_count += 1
 
-            for result in results:
-                if isinstance(result, tuple):
-                    doc, _ = result
-                    all_docs.append(doc)
-                    processed_docs.add(doc.doc_id)
+            if process_limit != -1 and processed_count >= process_limit:
+                break
 
-        finally:
-            # Save progress to ensure it is not lost
-            self._save_progress(progress_path, processed_docs)
+        results = await asyncio.gather(*tasks, return_exceptions=True)
+        for idx, res in enumerate(results):
+            if isinstance(res, Exception):
+                print(f"Task {idx} Exception:", res)
+            elif isinstance(res, Document):
+                new_docs.append(res)
+                processed_docs.add(res.doc_id)
 
-            # Ensure condensed_index is created even if processing was interrupted
-            loop = asyncio.get_event_loop()
-            condensed_index: VectorStoreIndex = await loop.run_in_executor(
-                self.executor,
-                lambda: VectorStoreIndex.from_documents(all_docs, show_progress=True)
-            )
+        self._save_progress(progress_path, processed_docs)
 
-            await loop.run_in_executor(
-                self.executor,
-                lambda: condensed_index.storage_context.persist(persist_dir=embedding_dir)
-            )
+        # 3) 合并已有文档 + 新文档
+        all_docs: List[Document] = existing_docs + new_docs
+        print(f"Total documents to build index: {len(all_docs)}")
 
-            print("Condensed index saved successfully")
-            return condensed_index
+        condensed_index: VectorStoreIndex = await loop.run_in_executor(
+            self.executor,
+            lambda: VectorStoreIndex.from_documents(all_docs, show_progress=True)
+        )
+
+        await loop.run_in_executor(
+            self.executor,
+            lambda: condensed_index.storage_context.persist(persist_dir=embedding_dir)
+        )
+        print("Condensed index saved successfully")
+
+        return condensed_index
 
     @traceable(run_type="chain")
     def retrieve_documents(self, question: str, top_k: int = 3) -> List[NodeWithScore]:
-        """Retrieve relevant documents and compress/filter them."""
         if not self.index:
             raise ValueError("Index has not been initialized.")
-
         query_engine = self.index.as_query_engine(similarity_top_k=top_k)
         response = query_engine.query(question)
         return response.source_nodes
@@ -232,7 +245,7 @@ class RAGSystem:
             "answer": answer,
             "sources": [
                 {
-                    "file": doc.metadata.get('file_name', 'Unknown'),
+                    "file": doc.node.extra_info.get('file_name', 'Unknown'),
                     "score": round(doc.score, 3) if doc.score else None,
                     "text_chunk": doc.node.text[:200] + "..."
                 } for doc in compressed_docs
@@ -243,39 +256,39 @@ class RAGSystem:
     def compress_and_filter_documents(self, docs: List[NodeWithScore], question: str) -> List[NodeWithScore]:
         """Compress and filter documents using embedding similarity."""
         updated_nodes: List[NodeWithScore] = []
-
         query_embedding: List[float] = self.embed_model._get_text_embedding(question)
 
         for doc in docs:
-            split_texts: List[str] = self.text_splitter.split_text(doc.node.text)
-
+            splitter = SentenceSplitter(chunk_size=150, chunk_overlap=10)
+            split_texts: List[str] = splitter.split_text(doc.node.text)
             embeddings: List[List[float]] = self.embed_model._get_text_embeddings(split_texts)
-
             similarities: List[float] = cosine_similarity([query_embedding], embeddings)[0]
 
             filtered_texts = [
                 text for text, similarity in zip(split_texts, similarities) if similarity >= 0.85
             ]
-
             if filtered_texts:
                 combined_text = " ".join(filtered_texts)
-                updated_node = NodeWithScore(
-                    node=TextNode(text=combined_text, **{k: v for k, v in doc.node.__dict__.items() if k != 'text'}),
-                    score=max(similarities)
+                ref_id = getattr(doc.node, "ref_doc_id", "unknown_ref_id")
+
+                new_doc = Document(
+                    text=combined_text,
+                    doc_id=ref_id,
+                    extra_info=getattr(doc.node, 'metadata', {})
                 )
 
-                updated_nodes.append(updated_node)
+                updated_nodes.append(
+                    NodeWithScore(node=new_doc, score=max(similarities))
+                )
 
         return updated_nodes
 
     def cleanup(self):
-        """Clean up resources used by the async system."""
         if self.executor:
             self.executor.shutdown()
 
     @staticmethod
     def format_response(result: Dict[str, Any], show_sources: bool = True) -> str:
-        """Format the query response into a readable string."""
         output: str = f"Answer: {result['answer']}\n\n"
         if show_sources:
             output += "Sources:\n"
@@ -283,14 +296,17 @@ class RAGSystem:
                 output += f"\n{idx}. {source['file']}"
         return output
 
+
 async def main():
-    """Main function to test chatbot locally in terminal."""
+    """Main function to test the RAG system locally in terminal."""
     rag: RAGSystem = RAGSystem(max_concurrent_tasks=3)
     relative_directory_path: str = "../Output/websites/signavio"
     absolute_directory_path: str = os.path.abspath(relative_directory_path)
 
     try:
-        await rag.initialize(directory_path=absolute_directory_path,process_limit=30)
+        await rag.initialize(directory_path=absolute_directory_path,
+                             process_limit=-1,
+                             resume_progress=True)
 
         print("Welcome!")
         while True:
