@@ -8,7 +8,7 @@
     "default_path": "sidepanel.html"
   },
   "background": {
-    "service_worker": "background.js"
+    "service_worker": "modules/background.js"
   },
   "icons": {
     "48": "img/logo2.png",
