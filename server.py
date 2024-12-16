@@ -24,6 +24,39 @@ CORS(app, resources={
 # Global variable declaration
 utaweb = None
 
+@app.route('/get_websites', methods=['GET'])
+def get_websites():
+    """
+    Get list of all crawled websites
+    Return:
+        websites: List of website info sorted by crawl time, newest first
+    """
+    website_files = glob.glob('Output/websites/*/website_info.json')
+    websites = []
+    for file_path in website_files:
+        try:
+            with open(file_path, 'r') as f:
+                website_data = json.load(f)
+                websites.append(website_data)
+        except Exception as e:
+            print(f"Error reading website file {file_path}: {e}")
+    # Sort by crawl time, newest first
+    websites.sort(key=lambda x: x['crawl_time'], reverse=True)
+    return jsonify(websites)
+
+@app.route('/initialize_rag', methods=['POST'])
+def initialize_rag_systems():
+    """
+    Initialize RAG systems for a company
+    Return:
+        status: success or error
+        message: message to display
+    """
+    print(request.json)
+    data = request.json
+    utaweb.initialize_rag(directory_path=pjoin(utaweb.data_dir, utaweb.get_company_name_from_url(data['web_url'])))
+    print('RAG systems initialized')
+    return jsonify({"status": "success", "message": "RAG systems initialized"})
 
 @app.route('/get_chat_history', methods=['POST'])
 def get_chat_history():
@@ -48,6 +81,12 @@ def get_chat_history():
     return jsonify(chat_history)
 
 def crawl_process(web_url, domain_limit):
+    """
+    Crawl a website
+    Return:
+        status: success or error
+        message: message to display
+    """
     # Create temporary UTAWeb instance for crawler process
     utaweb_instance = UTAWeb(data_dir="./Output/websites")
     # Get company name here if not provided
@@ -60,6 +99,12 @@ def crawl_process(web_url, domain_limit):
 
 @app.route('/crawl', methods=['POST'])
 def crawl():
+    """
+    Crawl a website
+    Return:
+        status: success or error
+        message: message to display
+    """
     print(request.json)
     data = request.json
     domain_name = data['domainName']
@@ -78,6 +123,11 @@ def crawl():
 
 @app.route('/query', methods=['POST'])
 def query():
+    """
+    Query a website
+    Return:
+        answer: answer to the query
+    """
     print(request.json)
     data = request.json
     result = utaweb.query_web(query=data['query'], web_url=data['web_url'])
@@ -89,34 +139,6 @@ def query():
     conv.append_conversation(role="assistant", content=result)
     conv.save_conversation()
     return jsonify({"answer": result})
-
-@app.route('/get_websites', methods=['GET'])
-def get_websites():
-    """
-    Get list of all crawled websites
-    Return:
-        websites: List of website info sorted by crawl time, newest first
-    """
-    website_files = glob.glob('Output/websites/*/website_info.json')
-    websites = []
-    for file_path in website_files:
-        try:
-            with open(file_path, 'r') as f:
-                website_data = json.load(f)
-                websites.append(website_data)
-        except Exception as e:
-            print(f"Error reading website file {file_path}: {e}")
-    # Sort by crawl time, newest first
-    websites.sort(key=lambda x: x['crawl_time'], reverse=True)
-    return jsonify(websites)
-
-@app.route('/initialize_rag', methods=['POST'])
-def initialize_rag_systems():
-    print(request.json)
-    data = request.json
-    utaweb.initialize_rag(directory_path=pjoin(utaweb.data_dir, utaweb.get_company_name_from_url(data['web_url'])))
-    print('RAG systems initialized')
-    return jsonify({"status": "success", "message": "RAG systems initialized"})
 
 
 # Singleton initialization in the main
