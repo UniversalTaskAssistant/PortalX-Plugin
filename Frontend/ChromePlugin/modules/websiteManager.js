@@ -73,7 +73,7 @@ export class WebsiteManager {
         // Add handler for website domain changes
         $('#websiteDomain').on('input', function() {
             const domainName = $(this).val();
-            $('#domainPart').text(domainName + '/');
+            $('#domainPart').html(`<span style="direction: ltr">${domainName}/</span>`);
         });
 
         $('.analyze-setting-btn').on('click', function(e) {
@@ -87,7 +87,7 @@ export class WebsiteManager {
             const currentInfo = self.getCurrentWebsiteInfo();
             $('#websiteDomain').val(currentInfo.domainName);
             $('#hostName').val(currentInfo.hostName);
-            $('#domainPart').text(currentInfo.domainName + '/');
+            $('#domainPart').html(`<span style="direction: ltr">${currentInfo.domainName}/</span>`);
             $('#subdomainPath').val(currentInfo.subdomain.split('/')[1]); 
 
             // Validate all input values
@@ -118,7 +118,7 @@ export class WebsiteManager {
                 // Put the current website info input the inputs
                 $('#websiteDomain').val(websiteInfo.domainName);
                 $('#hostName').val(websiteInfo.hostName);
-                $('#domainPart').text(websiteInfo.domainName + '/');
+                $('#domainPart').html(`<span style="direction: ltr">${websiteInfo.domainName}/</span>`);
                 $('#subdomainPath').val(websiteInfo.subdomain.split('/')[1]); 
 
                 console.log(websiteInfo.subdomain.split('/')[1]);

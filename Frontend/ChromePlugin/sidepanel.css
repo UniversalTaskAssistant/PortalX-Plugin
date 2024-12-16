@@ -869,6 +869,10 @@ textarea:focus {
     background: linear-gradient(to right, #f8f9fa, #ffffff);
     padding-right: 2px !important;
     max-width: 50% !important;
+    direction: rtl;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
 }
 
 #subdomainPath{
