@@ -94,7 +94,6 @@
 
             <!-- Websites Tab -->
             <div class="tab-pane fade h-100" id="history-content">
-
                 <!-- Search bar -->
                 <div class="search-section px-3 pt-3">
                     <div class="search-wrapper d-flex">
@@ -102,9 +101,6 @@
                             <i class="bi bi-search search-icon"></i>
                             <input type="text" id="websiteSearch" class="form-control" placeholder="Search previous websites...">
                         </div>
-                        <button class="btn btn-icon" id="refreshWebsitesBtn" data-bs-toggle="tooltip" data-bs-placement="top" title="Refresh websites">
-                            <i class="bi bi-arrow-clockwise"></i>
-                        </button>
                     </div>
                 </div>
 
@@ -150,6 +146,13 @@
                         <i class="bi bi-clock-history fs-4 mb-2"></i>
                         <p class="mt-3">No websites have been analyzed yet</p>
                     </div>
+                </div>
+
+                <!-- Add the refresh button here -->
+                <div class="position-fixed refresh-btn-container m-3">
+                    <button class="btn btn-icon" id="refreshWebsitesBtn" data-bs-toggle="tooltip" data-bs-placement="top" title="Refresh websites">
+                        <i class="bi bi-arrow-clockwise"></i>
+                    </button>
                 </div>
             </div>
         </div>

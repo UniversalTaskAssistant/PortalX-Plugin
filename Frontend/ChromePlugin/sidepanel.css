@@ -868,6 +868,7 @@ textarea:focus {
     border-right: none;
     background: linear-gradient(to right, #f8f9fa, #ffffff);
     padding-right: 2px !important;
+    max-width: 50% !important;
 }
 
 #subdomainPath{
@@ -880,13 +881,36 @@ textarea:focus {
     border-left: none !important;
 }
 
-#refreshWebsitesBtn{
-    margin-left: 5px;
-    margin-top: 2px;
+/* Refresh button styling */
+.refresh-btn-container{
+    bottom: 15px;
+    right: 5px;
+    z-index: 1000;
 }
 
-#refreshWebsitesBtn:hover{
-    color: var(--primary-dark);
+#refreshWebsitesBtn {
+    background: white;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    border: 1px solid var(--primary-color);
+    bottom: 10px;
+    right: 10px;
+}
+
+#refreshWebsitesBtn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(202, 107, 229, 0.2);
+    color: var(--primary-color);
+}
+
+#refreshWebsitesBtn i {
+    font-size: 1.2rem;
 }
 
 .current-website-bar h6{
