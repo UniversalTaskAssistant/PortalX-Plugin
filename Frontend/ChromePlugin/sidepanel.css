@@ -902,19 +902,19 @@ textarea:focus {
     justify-content: center;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     transition: all 0.3s ease;
-    border: 1px solid var(--primary-color);
+    /* border: 1px solid var(--primary-color); */
     bottom: 10px;
     right: 10px;
 }
 
 #refreshWebsitesBtn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(202, 107, 229, 0.2);
+    transform: translateY(-3px);
     color: var(--primary-color);
+    box-shadow: rgba(203, 107, 229, 0.336) 0px 7px 29px 0px;
 }
 
 #refreshWebsitesBtn i {
-    font-size: 1.2rem;
+    font-size: 1.3rem;
 }
 
 .current-website-bar h6{
