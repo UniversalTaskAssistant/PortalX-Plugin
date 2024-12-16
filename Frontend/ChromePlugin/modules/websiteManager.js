@@ -451,27 +451,12 @@ export class WebsiteManager {
     }
 
     validateCrawlParameters(domainName, hostName, domainLimit) {
-        // Remove any existing validation alerts
-        $('.alert-validation').remove();
-
         // Check validation states of all inputs
         const isDomainValid = $('#websiteDomain').hasClass('is-valid');
         const isHostValid = $('#hostName').hasClass('is-valid');
         const subdomainInput = $('#subdomainPath');
         const isSubdomainValid = !subdomainInput.val() || subdomainInput.hasClass('is-valid');
-
-        if (!isDomainValid) {
-            this.showValidationAlert('Please enter a valid website domain (e.g., www.example.com)');
-            return false;
-        }
-
-        if (!isHostValid) {
-            this.showValidationAlert('Please enter a valid host name (letters, numbers, and hyphens only)');
-            return false;
-        }
-
-        if (!isSubdomainValid) {
-            this.showValidationAlert('Please enter a valid subdomain path (cannot start with /)');
+        if (!isDomainValid || !isHostValid || !isSubdomainValid) {
             return false;
         }
 
@@ -482,6 +467,7 @@ export class WebsiteManager {
             const domainToCompare = domainName.replace(/\/$/, '');
             return entryDomain === domainToCompare && entryHost === hostName;
         });
+
         // Show notification using Bootstrap modal or alert
         if (existingEntry.length > 0) {
             if ($(".alert-existing-website").length === 0) {
@@ -498,20 +484,23 @@ export class WebsiteManager {
         return true;
     }
 
-    // Show validation alerts on the modal
-    showValidationAlert(message, type = 'danger') {
-        const notification = `
-            <div class="mb-4 alert alert-${type} alert-dismissible fade show alert-validation" role="alert">
-                ${message}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>`;
-        $('#crawlParametersModal .modal-body').prepend(notification);
-        $('.alert-validation').fadeIn(300);
-    }
-
     // Set the validation state of the input at the end
-    setValidationState(input, isValid, errorMessage) {
+    setValidationState(input, isValid) {
         input.removeClass('is-valid is-invalid');
         input.addClass(isValid ? 'is-valid' : 'is-invalid');
+
+        // Find the related error message element
+        let errorMsgElement;
+        if (input.attr('id') === 'subdomainPath') {
+            errorMsgElement = input.closest('.input-group').siblings('.input-error-msg');
+        } else {
+            errorMsgElement = input.siblings('.input-error-msg');
+        }
+
+        if (isValid) {
+            errorMsgElement.fadeOut(200);
+        } else {
+            errorMsgElement.fadeIn(200);
+        }
     }
 }

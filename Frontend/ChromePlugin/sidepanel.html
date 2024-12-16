@@ -168,15 +168,17 @@
                         <div class="mb-3">
                             <label class="form-label">Website Domain</label>
                             <input type="text" class="form-control" id="websiteDomain" required>
+                            <small class="text-muted ml-2 input-error-msg">Only letters, numbers, "-", and valid domain extensions</small>
                             <small class="text-muted ml-2">e.g., www.example.com</small>
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Host Name</label>
                             <input type="text" class="form-control" id="hostName" required>
+                            <small class="text-muted ml-2 input-error-msg">Only letters, numbers, and "-"</small>
                             <small class="text-muted">e.g., example</small>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Subdomain Limit
+                            <label class="form-label">Subdomain Limit (Optional)
                                 <i class="bi bi-info-circle-fill text-muted" 
                                    data-bs-toggle="tooltip" 
                                    data-bs-placement="right"
@@ -187,7 +189,8 @@
                                 <input type="text" class="form-control" id="subdomainPath">
                                 <button class="btn" type="button" id="entireSiteBtn">Entire Site</button>
                             </div>
-                            <small class="text-muted">e.g., www.example.com/en/</small>
+                            <small class="text-muted ml-2 input-error-msg">Only letters, numbers, "-", and "/"</small>
+                            <small class="text-muted">e.g., www.example.com/en/ </small>
                         </div>
                     </form>
                     <div class="text-center mt-5">
