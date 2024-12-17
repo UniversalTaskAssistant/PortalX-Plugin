@@ -7,6 +7,8 @@ function initializeFloatButton() {
     console.log("Initializing float button...");
 
     try {
+        let isPopupOpen = false;  // Add this flag to track popup state
+
         // Create float button
         const $floatButton = $('<button>')
             .addClass('uta-float-button')
@@ -28,12 +30,10 @@ function initializeFloatButton() {
         const currentFavicon = $('link[rel="icon"]').attr('href') || 
                              $('link[rel="shortcut icon"]').attr('href') ||
                              window.location.origin + '/favicon.ico';
-        
         if (currentFavicon) {
             $favicon.attr('src', currentFavicon);
         }
 
-        let isPopupOpen = false;  // Add this flag to track popup state
         $floatButton
             .on('mouseenter', () => {
                 if (!isPopupOpen) {  // Only do slide animation if popup is closed
@@ -59,32 +59,38 @@ function initializeFloatButton() {
         // Add click handler for the float button
         $floatButton.on('click', (event) => {
             event.stopPropagation();
-            isPopupOpen = !isPopupOpen;  // Toggle popup state
             if ($popup.is(':hidden')) {
+                isPopupOpen = true
                 $popup.show();
-                $defaultLogo.hide();
-                $favicon.show();
+                setTimeout(() => $popup.addClass('show'), 0);
             } else {
-                $popup.hide();
-                $defaultLogo.show();
+                isPopupOpen = false
+                $popup.removeClass('show');
+                setTimeout(() => $popup.hide(), 300);
+                $defaultLogo.removeClass('slide-out');
+                $favicon.removeClass('slide-in').hide();
             }
         });
 
         // Close popup when clicking outside
         $(document).on('click', (event) => {
             if (!$(event.target).closest('.uta-popup-iframe, .uta-float-button').length) {
-                $popup.hide();
-                $favicon.hide();
-                $defaultLogo.show();
+                isPopupOpen = false
+                $popup.removeClass('show');
+                setTimeout(() => $popup.hide(), 300);
+                $defaultLogo.removeClass('slide-out');
+                $favicon.removeClass('slide-in').hide();
             }
         });
 
         // Listen for minimize message from popup
         window.addEventListener('message', (event) => {
             if (event.data === 'minimize') {
-                $popup.hide();
-                $favicon.hide();
-                $defaultLogo.show();
+                isPopupOpen = false
+                $popup.removeClass('show');
+                setTimeout(() => $popup.hide(), 300);
+                $defaultLogo.removeClass('slide-out');
+                $favicon.removeClass('slide-in').hide();
             }
         });
 
