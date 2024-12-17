@@ -103,7 +103,7 @@ export class ChatManager {
                 class: 'assistant-icon'
             }).append(
                 $('<img>', {
-                    src: 'img/logo2.png',
+                    src: '../img/logo2.png',
                     alt: 'Assistant'
                 })
             );
@@ -290,7 +290,7 @@ export class ChatManager {
             class: 'assistant-icon'
         }).append(
             $('<img>', {
-                src: 'img/logo2.png',
+                src: '../img/logo2.png',
                 alt: 'Assistant'
             })
         );

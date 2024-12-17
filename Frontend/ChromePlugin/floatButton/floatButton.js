@@ -17,7 +17,7 @@ function initializeFloatButton() {
         // Create popup
         const $popup = $('<iframe>')
             .addClass('popup')
-            .attr('src', chrome.runtime.getURL('floatButton.html'))
+            .attr('src', chrome.runtime.getURL('floatButton/popup.html'))
             .hide()
             .appendTo('body');
         console.log("Popup iframe added to DOM");

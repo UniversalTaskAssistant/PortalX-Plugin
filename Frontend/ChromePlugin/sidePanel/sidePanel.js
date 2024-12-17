@@ -1,5 +1,5 @@
-import { ChatManager } from './modules/chatManager.js';
-import { WebsiteManager } from './modules/websiteManager.js';
+import { ChatManager } from './chatManager.js';
+import { WebsiteManager } from './websiteManager.js';
 
 $(document).ready(function() {
     // Initialize WebsiteManager
