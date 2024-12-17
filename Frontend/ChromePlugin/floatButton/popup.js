@@ -9,15 +9,40 @@ function initializePopup() {
     const $sendButton = $('#sendButton');
     const $newChatBtn = $('#newChatBtn');
     const $minimizeBtn = $('.minimize-btn');
+    const $welcomeMessage = $('.welcome-message');
+
+
+    // Event handlers
+    $sendButton.on('click', sendMessage);
+
+    $queryInput.on('keypress', (e) => {
+        if (e.which === 13 && !e.shiftKey) {
+            e.preventDefault();
+            sendMessage();
+        }
+    });
+
+    $newChatBtn.on('click', () => {
+        $('.message-container').remove();
+        $welcomeMessage.fadeIn(200);
+    });
+
+    $minimizeBtn.on('click', () => {
+        // Send message to parent window to minimize
+        window.parent.postMessage('minimize', '*');
+    });
 
     // Handle sending messages
     function sendMessage() {
         const query = $queryInput.val().trim();
         if (!query) return;
 
-        // Add user message
-        addMessage(query, 'user');
-        
+        // Remove welcome message and add user message after fade completes
+        $('.welcome-message').fadeOut(100, function() {
+            // Add user message
+            addMessage(query, 'user');
+        });
+
         // Clear input
         $queryInput.val('');
 
@@ -54,52 +79,5 @@ function initializePopup() {
         $messageContainer.append($message);
         $messagesContainer.append($messageContainer);
         $messagesContainer.scrollTop($messagesContainer[0].scrollHeight);
-    }
-
-    // Event handlers
-    $sendButton.on('click', sendMessage);
-
-    $queryInput.on('keypress', (e) => {
-        if (e.which === 13 && !e.shiftKey) {
-            e.preventDefault();
-            sendMessage();
-        }
-    });
-
-    $newChatBtn.on('click', () => {
-        $messagesContainer.empty();
-        // Re-add welcome message
-        addWelcomeMessage();
-    });
-
-    $minimizeBtn.on('click', () => {
-        // Send message to parent window to minimize
-        window.parent.postMessage('minimize', '*');
-    });
-
-    function addWelcomeMessage() {
-        const welcomeHtml = `
-            <div class="welcome-message">
-                <div class="welcome-icon">
-                    <img src="../img/logo2.png" alt="Logo" class="welcome-logo">
-                </div>
-                <h5 class="welcome-title">Ask anything about this website</h5>
-                <div class="features-grid">
-                    <div class="feature-item">
-                        <i class="bi bi-search"></i>
-                        <span>Smart Search</span>
-                    </div>
-                    <div class="feature-item">
-                        <i class="bi bi-chat-dots"></i>
-                        <span>Interactive Chat</span>
-                    </div>
-                    <div class="feature-item">
-                        <i class="bi bi-lightning"></i>
-                        <span>Quick Answers</span>
-                    </div>
-                </div>
-            </div>
-        `;
-        $messagesContainer.html(welcomeHtml);
     }
 } 
