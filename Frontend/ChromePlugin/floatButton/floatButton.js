@@ -9,18 +9,18 @@ function initializeFloatButton() {
     try {
         // Create float button
         const $floatButton = $('<button>')
-            .addClass('float-button')
+            .addClass('uta-float-button')
             .appendTo('body');
 
         // Add logo image
         const $defaultLogo = $('<img>')
             .attr('src', chrome.runtime.getURL('../img/logo2.png'))
-            .addClass('default-logo')
+            .addClass('uta-default-logo')
             .appendTo($floatButton);
 
         // Add favicon image (initially hidden)
         const $favicon = $('<img>')
-            .addClass('favicon-logo')
+            .addClass('uta-favicon-logo')
             .hide()
             .appendTo($floatButton);
 
@@ -46,7 +46,7 @@ function initializeFloatButton() {
 
         // Create popup
         const $popup = $('<iframe>')
-            .addClass('popup')
+            .addClass('uta-popup')
             .attr('src', chrome.runtime.getURL('floatButton/popup.html'))
             .hide()
             .appendTo('body');
@@ -68,7 +68,7 @@ function initializeFloatButton() {
 
         // Close popup when clicking outside
         $(document).on('click', (event) => {
-            if (!$(event.target).closest('.popup, .float-button').length) {
+            if (!$(event.target).closest('.uta-popup, .uta-float-button').length) {
                 $popup.hide();
                 $favicon.hide();
                 $defaultLogo.show();

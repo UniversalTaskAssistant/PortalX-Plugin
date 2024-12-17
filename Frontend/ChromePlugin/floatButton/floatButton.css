@@ -1,5 +1,5 @@
-/* Float Button in the window */
-.float-button {
+/* Float Button styles with uta- prefix */
+.uta-float-button {
     position: fixed;
     bottom: 60px;
     right: 40px;
@@ -18,14 +18,14 @@
     justify-content: center;
 }
 
-.float-button img {
+.uta-float-button img {
     width: 100%;
     height: 100%;
     object-fit: contain;
     transition: opacity 0.2s ease;
 }
 
-.float-button .favicon-logo {
+.uta-float-button .uta-favicon-logo {
     position: absolute;
     top: 50%;
     left: 50%;
@@ -34,12 +34,13 @@
     height: 50%;
 }
 
-.float-button:hover {
+.uta-float-button:hover {
     transform: translateY(-2px);
     box-shadow: 0 6px 30px rgba(202, 107, 229, 0.3);
 }
 
-.popup {
+/* Iframe container */
+.uta-popup {
     position: fixed;
     bottom: 120px;
     right: 40px;
@@ -50,12 +51,4 @@
     box-shadow: 0 4px 25px rgba(0, 0, 0, 0.1);
     z-index: 2147483646;
     background-color: white;
-}
-
-.popup-container {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    background: #f8f9fa;
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 }
