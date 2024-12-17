@@ -13,5 +13,21 @@
   "icons": {
     "48": "img/logo2.png",
     "128": "img/logo2.png"
-  }
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "css": ["floatButton/floatButton.css"],
+      "js": [
+        "lib/jquery-3.7.1.min.js",
+        "floatButton/floatButton.js"
+      ],
+      "run_at": "document_end"
+    }
+  ],
+  "web_accessible_resources": [{
+    "resources": ["floatButton.html", "floatButton/floatButton.css"],
+    "matches": ["<all_urls>"]
+  }],
+  "host_permissions": ["<all_urls>"]
 } 
