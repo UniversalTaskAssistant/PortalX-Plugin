@@ -30,11 +30,29 @@ function initializePopup() {
 
     // Add a message to the chat
     function addMessage(text, type) {
+        const $messageContainer = $('<div>', {
+            class: `message-container ${type === 'assistant' ? 'assistant-container' : ''}`
+        });
+
+        if (type === 'assistant') {
+            // Add assistant icon
+            const $iconDiv = $('<div>', {
+                class: 'assistant-icon'
+            }).append(
+                $('<img>', {
+                    src: '../img/logo2.png',
+                    alt: 'Assistant'
+                })
+            );
+            $messageContainer.append($iconDiv);
+        }
+
         const $message = $('<div>')
             .addClass(`message ${type}`)
-            .text(text);
+            .html(text);
         
-        $messagesContainer.append($message);
+        $messageContainer.append($message);
+        $messagesContainer.append($messageContainer);
         $messagesContainer.scrollTop($messagesContainer[0].scrollHeight);
     }
 
