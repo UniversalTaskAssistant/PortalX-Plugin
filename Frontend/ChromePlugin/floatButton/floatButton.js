@@ -33,20 +33,24 @@ function initializeFloatButton() {
             $favicon.attr('src', currentFavicon);
         }
 
-        // Add hover effects
+        let isPopupOpen = false;  // Add this flag to track popup state
         $floatButton
             .on('mouseenter', () => {
-                $defaultLogo.hide();
-                $favicon.show();
+                if (!isPopupOpen) {  // Only do slide animation if popup is closed
+                    $defaultLogo.addClass('slide-out');
+                    $favicon.show().addClass('slide-in');
+                }
             })
             .on('mouseleave', () => {
-                $favicon.hide();
-                $defaultLogo.show();
+                if (!isPopupOpen) {  // Only hide favicon if popup is closed
+                    $defaultLogo.removeClass('slide-out');
+                    $favicon.removeClass('slide-in').hide();
+                }
             });
 
         // Create popup
         const $popup = $('<iframe>')
-            .addClass('uta-popup')
+            .addClass('uta-popup-iframe')
             .attr('src', chrome.runtime.getURL('floatButton/popup.html'))
             .hide()
             .appendTo('body');
@@ -55,20 +59,20 @@ function initializeFloatButton() {
         // Add click handler for the float button
         $floatButton.on('click', (event) => {
             event.stopPropagation();
+            isPopupOpen = !isPopupOpen;  // Toggle popup state
             if ($popup.is(':hidden')) {
                 $popup.show();
                 $defaultLogo.hide();
                 $favicon.show();
             } else {
                 $popup.hide();
-                $favicon.hide();
                 $defaultLogo.show();
             }
         });
 
         // Close popup when clicking outside
         $(document).on('click', (event) => {
-            if (!$(event.target).closest('.uta-popup, .uta-float-button').length) {
+            if (!$(event.target).closest('.uta-popup-iframe, .uta-float-button').length) {
                 $popup.hide();
                 $favicon.hide();
                 $defaultLogo.show();

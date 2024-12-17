@@ -1,3 +1,17 @@
+/* Iframe container */
+.uta-popup-iframe {
+    position: fixed;
+    bottom: 130px;
+    right: 40px;
+    width: 380px;
+    height: 600px;
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 4px 25px rgba(0, 0, 0, 0.1);
+    z-index: 2147483646;
+    background-color: white;
+}
+
 /* Float Button styles with uta- prefix */
 .uta-float-button {
     position: fixed;
@@ -19,36 +33,37 @@
 }
 
 .uta-float-button img {
-    width: 100%;
-    height: 100%;
+    width: 60%;
+    height: 60%;
     object-fit: contain;
-    transition: opacity 0.2s ease;
+    transition: all 0.3s ease;
+    position: absolute;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    top: 50%;
+    opacity: 1;
+}
+
+.uta-float-button .uta-default-logo {
+    transform: translate(-50%, -50%);  /* Initial state */
+}
+
+.uta-float-button .uta-default-logo.slide-out {
+    transform: translate(-50%, 50%);   /* Slide down */
+    opacity: 0;
 }
 
 .uta-float-button .uta-favicon-logo {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 50%;
-    height: 50%;
+    transform: translate(-50%, -150%); /* Start from top */
+    opacity: 0;
+}
+
+.uta-float-button .uta-favicon-logo.slide-in {
+    transform: translate(-50%, -50%);  /* Slide to center */
+    opacity: 1;
 }
 
 .uta-float-button:hover {
-    transform: translateY(-2px);
+    transform: translateY(-3px);
     box-shadow: 0 6px 30px rgba(202, 107, 229, 0.3);
-}
-
-/* Iframe container */
-.uta-popup {
-    position: fixed;
-    bottom: 120px;
-    right: 40px;
-    width: 380px;
-    height: 600px;
-    border: none;
-    border-radius: 12px;
-    box-shadow: 0 4px 25px rgba(0, 0, 0, 0.1);
-    z-index: 2147483646;
-    background-color: white;
 }
