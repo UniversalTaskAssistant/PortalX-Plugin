@@ -121,6 +121,38 @@ export class ChatManager {
         this.$responseDiv.scrollTop(this.$responseDiv[0].scrollHeight);
     }
 
+    // Add a thinking message to the chat section
+    addThinkingMessage() {
+        const $thinkingContainer = $('<div>', {
+            class: 'message-container assistant-container thinking-message'
+        });
+
+        const $iconDiv = $('<div>', {
+            class: 'assistant-icon'
+        }).append(
+            $('<img>', {
+                src: '../img/logo2.png',
+                alt: 'Assistant'
+            })
+        );
+
+        const $messageDiv = $('<div>', {
+            class: 'message assistant'
+        }).append(
+            $('<div>', {
+                class: 'thinking-indicator'
+            }).html('Thinking <span class="dot-1">.</span><span class="dot-2">.</span><span class="dot-3">.</span><span class="dot-4">.</span><span class="dot-5">.</span><span class="dot-6">.</span>')
+        );
+        
+        $thinkingContainer.append($iconDiv, $messageDiv);
+        this.$responseDiv.append($thinkingContainer);
+        this.$responseDiv.scrollTop(this.$responseDiv[0].scrollHeight);
+    }
+
+    removeThinkingMessage() {
+        $('.thinking-message').remove();
+    }
+
     // ***************************
     // ****** CHAT HANDLING ******
     // Generate a conversation ID
@@ -279,36 +311,5 @@ export class ChatManager {
 
     clearQueryInput() {
         this.$queryInput.val('');
-    }
-
-    addThinkingMessage() {
-        const $thinkingContainer = $('<div>', {
-            class: 'message-container assistant-container thinking-message'
-        });
-
-        const $iconDiv = $('<div>', {
-            class: 'assistant-icon'
-        }).append(
-            $('<img>', {
-                src: '../img/logo2.png',
-                alt: 'Assistant'
-            })
-        );
-
-        const $messageDiv = $('<div>', {
-            class: 'message assistant'
-        }).append(
-            $('<div>', {
-                class: 'thinking-indicator'
-            }).html('Thinking <span class="dot-1">.</span><span class="dot-2">.</span><span class="dot-3">.</span><span class="dot-4">.</span><span class="dot-5">.</span><span class="dot-6">.</span>')
-        );
-        
-        $thinkingContainer.append($iconDiv, $messageDiv);
-        this.$responseDiv.append($thinkingContainer);
-        this.$responseDiv.scrollTop(this.$responseDiv[0].scrollHeight);
-    }
-
-    removeThinkingMessage() {
-        $('.thinking-message').remove();
     }
 }
