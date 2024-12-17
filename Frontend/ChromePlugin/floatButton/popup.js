@@ -11,6 +11,13 @@ function initializePopup() {
     const $minimizeBtn = $('.minimize-btn');
     const $welcomeMessage = $('.welcome-message');
 
+    // Get current tab's domain and update favicon
+    chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+        const url = new URL(tabs[0].url);
+        const domain = url.hostname;
+        const favicon = tabs[0].favIconUrl || `chrome://favicon/${tabs[0].url}`;
+        $('.website-favicon').attr('src', favicon);
+    });
 
     // Event handlers
     $sendButton.on('click', sendMessage);

@@ -33,11 +33,19 @@ body {
     padding: 0;
     height: 100vh;
     overflow: hidden;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 }
 
 /* Ensure proper box-sizing */
 * {
     box-sizing: border-box;
+}
+
+.gradient-bkg-text{
+    background: var(--primary-gradient) !important;
+    -webkit-background-clip: text !important;
+    background-clip: text !important;
+    color: transparent !important;
 }
 
 /* Overall container */
@@ -46,7 +54,6 @@ body {
     flex-direction: column;
     height: 100%;
     background: #f8f9fa;
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 }
 
 /* Chat Area */
@@ -62,8 +69,6 @@ body {
     display: flex;
     align-items: center;
     padding: 12px 16px;
-    background: white;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
     border-radius: 12px 12px 0 0;
     flex-shrink: 0;
 }
@@ -173,8 +178,6 @@ body {
 /* Input section styling */
 .input-section {
     padding: 12px 16px;
-    background: white;
-    border-top: 1px solid rgba(0, 0, 0, 0.1);
     flex-shrink: 0;
 }
 
@@ -183,6 +186,7 @@ body {
     background: white;
     border-radius: 12px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    height: 100px;
 }
 
 #queryInput {
@@ -197,6 +201,7 @@ body {
     line-height: 1.5;
     height: 100px;
     box-sizing: border-box;
+    font-family: inherit;
 }
 
 #queryInput:focus {
@@ -245,6 +250,7 @@ body {
     position: relative;
     font-family: 'Inter', sans-serif;
     text-align: justify;
+    font-size: 14px;
 }
 
 .message.user {
@@ -269,7 +275,7 @@ body {
 
 .message-container {
     display: flex;
-    padding: 0.4rem 0.2rem;
+    padding: 0.4rem 0.3rem;
     animation: fadeInUp 0.3s ease-out forwards;
 }
 
@@ -325,4 +331,16 @@ body {
 .btn-icon, .minimize-btn {
     user-select: none;
     -webkit-user-select: none;
+}
+
+.website-favicon {
+    height: 20px;
+    width: 20px;
+    vertical-align: middle;
+    margin-left: 2px;
+    margin-top: -2px;
+    padding: 2px;
+    background: white;
+    border-radius: 50%;
+    box-shadow: 0 2px 8px rgba(202, 107, 229, 0.15);
 }
