@@ -28,7 +28,8 @@
   "web_accessible_resources": [{
     "resources": [
       "floatButton/popup.html", 
-      "floatButton/floatButton.css"
+      "floatButton/floatButton.css",
+      "img/*"
     ],
     "matches": ["<all_urls>"]
   }],

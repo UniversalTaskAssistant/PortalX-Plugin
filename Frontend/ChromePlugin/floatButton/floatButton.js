@@ -10,8 +10,13 @@ function initializeFloatButton() {
         // Create float button
         const $floatButton = $('<button>')
             .addClass('float-button')
-            .html('+')
             .appendTo('body');
+
+        // Add logo image
+        $('<img>')
+            .attr('src', chrome.runtime.getURL('../img/logo2.png'))
+            .appendTo($floatButton);
+
         console.log("Float button added to DOM");
 
         // Create popup
@@ -27,10 +32,8 @@ function initializeFloatButton() {
             event.stopPropagation();
             if ($popup.is(':hidden')) {
                 $popup.show();
-                $floatButton.html('×');
             } else {
                 $popup.hide();
-                $floatButton.html('+');
             }
         });
 
@@ -38,7 +41,6 @@ function initializeFloatButton() {
         $(document).on('click', (event) => {
             if (!$(event.target).closest('.popup, .float-button').length) {
                 $popup.hide();
-                $floatButton.html('+');
             }
         });
 
@@ -46,7 +48,6 @@ function initializeFloatButton() {
         window.addEventListener('message', (event) => {
             if (event.data === 'minimize') {
                 $popup.hide();
-                $floatButton.html('+');
             }
         });
 
