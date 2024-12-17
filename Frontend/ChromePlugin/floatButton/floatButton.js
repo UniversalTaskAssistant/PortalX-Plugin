@@ -42,6 +42,14 @@ function initializeFloatButton() {
             }
         });
 
+        // Listen for minimize message from popup
+        window.addEventListener('message', (event) => {
+            if (event.data === 'minimize') {
+                $popup.hide();
+                $floatButton.html('+');
+            }
+        });
+
     } catch (error) {
         console.error("Error initializing float button:", error);
     }
