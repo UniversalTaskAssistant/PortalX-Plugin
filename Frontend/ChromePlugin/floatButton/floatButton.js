@@ -63,6 +63,8 @@ function initializeFloatButton() {
                 isPopupOpen = true
                 $popup.show();
                 setTimeout(() => $popup.addClass('show'), 0);
+                $defaultLogo.addClass('slide-out');
+                $favicon.show().addClass('slide-in');
             } else {
                 isPopupOpen = false
                 $popup.removeClass('show');
