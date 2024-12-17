@@ -1,0 +1,31 @@
+{
+  "manifest_version": 3,
+  "name": "Float Button Extension",
+  "version": "1.0",
+  "description": "A simple floating button extension",
+  "permissions": ["activeTab"],
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "img/logo.png",
+      "48": "img/logo.png",
+      "128": "img/logo.png"
+    }
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "css": ["floatButton.css"],
+      "js": [
+        "lib/jquery-3.7.1.min.js",
+        "floatButton.js"
+      ],
+      "run_at": "document_end"
+    }
+  ],
+  "web_accessible_resources": [{
+    "resources": ["popup.html", "floatButton.css"],
+    "matches": ["<all_urls>"]
+  }],
+  "host_permissions": ["<all_urls>"]
+}
