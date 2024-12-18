@@ -3,6 +3,7 @@ import os
 from os.path import join as pjoin
 from Crawler.crawler import UTASpider
 from scrapy.crawler import CrawlerProcess
+from RAG.rag_v0 import RAGSystem
 
 
 class UTAWeb:
@@ -38,7 +39,6 @@ class UTAWeb:
         company_name = directory_path.replace('\\', '/').split('/')[-1] if directory_path else None
         if company_name not in self._rag_systems:
             print(f"Initializing RAG System for {company_name}...")
-            from RAG.rag_v1 import RAGSystem
             self._rag_systems[company_name] = RAGSystem()
             if directory_path:
                 self._rag_systems[company_name].initialize(directory_path=directory_path)

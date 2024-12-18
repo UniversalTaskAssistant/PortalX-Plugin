@@ -48,6 +48,36 @@ ANSWER_PROMPT = PromptTemplate(answer_prompt)
 
 system_prompt = """You are a helpful AI website customer assistant that provides clear, structured answers based on website information.
 
+Here is an example of how to format your response:
+
+Example:
+<question>
+What support services does TUM provide for students with disabilities?
+</question>
+
+<context>
+The Technical University of Munich offers comprehensive support for students with disabilities and chronic illnesses[CITE_1_https://www.tum.de/en/support-services/disabilities]. These services include exam accommodations, technical learning aids, and assistance with application processes[CITE_1_https:www.tum.de/en/support-services/disabilities.html]. The Student Advising office provides personalized consultation and support for individual needs[CITE_2_https:www.tum.de/en/student-advising.html]. TUM also ensures structural accessibility in their buildings and provides special equipment for disabled students[CITE_1_https:www.tum.de/en/support-services/disabilities.html]. Financial support options and assistance with accommodation are also available[CITE_3_https:www.tum.de/en/financial-aid.html].
+</context>
+
+<answer>
+<p>The Technical University of Munich (TUM) provides extensive support services for students with disabilities and chronic illnesses to ensure equal participation in academic life<a href="https://www.tum.de/en/support-services/disabilities" class="citation-ref">[1]</a>.</p>
+
+<p>The support services include:</p>
+<ul>
+    <li>Exam accommodations and technical learning aids to support academic success<a href="https://www.tum.de/en/support-services/disabilities" class="citation-ref">[1]</a></li>
+    <li>Assistance throughout the application and admission process<a href="https://www.tum.de/en/support-services/disabilities" class="citation-ref">[1]</a></li>
+    <li>Personalized consultation services through the Student Advising office to address individual needs<a href="https://www.tum.de/en/student-advising" class="citation-ref">[2]</a></li>
+</ul>
+
+<p>The university has also implemented various structural accommodations, including:</p>
+<ul>
+    <li>Accessible building design and specialized equipment for disabled students<a href="https://www.tum.de/en/support-services/disabilities" class="citation-ref">[1]</a></li>
+    <li>Financial support options and assistance with finding suitable accommodation<a href="https://www.tum.de/en/financial-aid" class="citation-ref">[3]</a></li>
+</ul>
+</answer>
+
+Now please answer this question:
+
 <question>
 {question}
 </question>
@@ -56,19 +86,18 @@ system_prompt = """You are a helpful AI website customer assistant that provides
 {context}
 </context>
 
-<template>
-{html_template}
-</template>
-
 REQUIREMENTS:
-1. Generate accurate answers based on the given context
-2. The context contains citation markers in HTML format - preserve these exactly as they appear
-3. Structure your response to fit in the provided HTML template
-4. Keep all HTML markup intact when using information from the context
-5. Do not modify or remove any citation spans or numbers
-6. Format your response as paragraphs and lists when appropriate, using proper HTML tags
+1. Use the provided context to generate an accurate answer
+2. After EACH piece of information from the context, add an inline citation using this format exactly as shown in the example
+3. Make sure every fact from the context has a citation
+4. Format your response as neat paragraphs and lists using proper HTML tags
+5. Start your response with <answer> and end with </answer>
+6. Do not include any additional HTML structure beyond what goes inside the answer tags
+7. Do not add any "Sources" or "References" section
+8. Use appropriate HTML elements (p, ul, li) for structure
+9. Each citation should be immediately after the information it sources
 
-Please provide your response in HTML format, using the template provided.
+Please write your response following the example format exactly.
 """
 
 SYSTEM_PROMPT = PromptTemplate(system_prompt)
