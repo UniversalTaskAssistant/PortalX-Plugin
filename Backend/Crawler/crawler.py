@@ -153,9 +153,19 @@ class UTASpider(scrapy.Spider):
             
         # Skip if domain limit is set and URL doesn't match
         if self.domain_limit:
-            url_without_query = url.split('?')[0]
-            if self.domain_limit not in url_without_query:
+            parsed_url = urlparse(url)
+            parsed_domain_limit = urlparse(self.domain_limit)
+            
+            # Compare domains and paths
+            if parsed_url.netloc != parsed_domain_limit.netloc:
                 return False
+                
+            # If domain limit includes a path, check if URL path starts with domain limit path
+            if parsed_domain_limit.path:
+                domain_limit_path = parsed_domain_limit.path.rstrip('/')
+                url_path = parsed_url.path.rstrip('/')
+                if not url_path.startswith(domain_limit_path):
+                    return False
             
         # Skip if domain is in excluded domains
         if self.exclude_domains:
