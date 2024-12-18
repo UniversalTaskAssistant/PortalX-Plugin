@@ -44,8 +44,8 @@ class RAGSystem:
 
         GUIDELINES:
         - Keep responses short, concise, and well-organized.
-        - If none of the website information answer the question, just say you don't know.
-        - If the question is irrelevant to the website, just explain you only answer website-relevant questions.
+        - If none of the website information answer the question, say you will help redirect the question to customer service staff.
+        - If the question is irrelevant to the website, just explain that you only answer website-relevant questions.
         - Always cite exact links using <a> tags when referencing specific information.
         - Interact with the user in a friendly and engaging manner.
         - Refer "The website" as "I", you are now representing the website.

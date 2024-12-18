@@ -140,6 +140,8 @@ if __name__ == "__main__":
     # exclude_domains = ['www.signavio.com/de', 'www.signavio.com/es', 'www.signavio.com/fr', 'www.signavio.com/it', 'www.signavio.com/ja', 'www.signavio.com/ko', 'www.signavio.com/pt-br']
 
     # utaweb.crawl_web(web_url=web_url, company_name=company_name, domain_limit=domain_limit, exclude_domains=None)
-    utaweb.query_web(query="What is the name of the university?", web_url=web_url)
+    # utaweb.query_web(query="Explain the MINT study program?", web_url=web_url)
+    # utaweb.query_web(query="How many Nobel awardees graduated from TUM?", web_url=web_url)
+    utaweb.query_web(query="Can you explain to me who is Donald Trump?", web_url=web_url)
     # utaweb.query_web_test(web_url=web_url, company_name=company_name)
 
