@@ -12,7 +12,7 @@ from llama_index.core import (
     VectorStoreIndex,
     SimpleDirectoryReader,
     Settings,
-    load_index_from_storage,
+    load_index_from_storage, PromptTemplate,
 )
 from llama_index.core.indices.base import BaseIndex
 from llama_index.core.node_parser import SentenceSplitter
@@ -22,6 +22,7 @@ from llama_index.llms.openai import OpenAI
 from sklearn.metrics.pairwise import cosine_similarity
 from sympy import false
 
+from Backend.RAG.citation_manager import process_context_with_citations
 from Backend.RAG.prompts import SYSTEM_PROMPT
 
 class RAGSystem:
@@ -235,26 +236,123 @@ class RAGSystem:
 
     @traceable(run_type="chain")
     def query(self, question: str, top_k: int = 3) -> Dict[str, Any]:
-        # Generate a response by manually controlling the RAG pipeline.
+        # 检索和压缩文档
         retrieved_docs: List[NodeWithScore] = self.retrieve_documents(question, top_k=top_k)
         compressed_docs: List[NodeWithScore] = self.compress_and_filter_documents(retrieved_docs, question)
 
-        context: str = "\n".join([
-            doc.node.text for doc in compressed_docs if doc.node.text
-        ])
+        processed_context, citation_manager = process_context_with_citations(compressed_docs)
 
         llm: OpenAI = OpenAI(model="gpt-4o", temperature=0)
-        answer: str = llm.predict(SYSTEM_PROMPT, question=question, context=context)
 
+        system_prompt = """You are a helpful AI website customer assistant that provides clear, structured answers based on website information.
+
+        Here is an example of how to format your response:
+
+        Example:
+        <question>
+        What support services does TUM provide for students with disabilities?
+        </question>
+
+        <context>
+        The Technical University of Munich offers comprehensive support for students with disabilities and chronic illnesses[CITE_1_https://www.tum.de/en/support-services/disabilities]. These services include exam accommodations, technical learning aids, and assistance with application processes[CITE_1_https:www.tum.de/en/support-services/disabilities.html]. The Student Advising office provides personalized consultation and support for individual needs[CITE_2_https:www.tum.de/en/student-advising.html]. TUM also ensures structural accessibility in their buildings and provides special equipment for disabled students[CITE_1_https:www.tum.de/en/support-services/disabilities.html]. Financial support options and assistance with accommodation are also available[CITE_3_https:www.tum.de/en/financial-aid.html].
+        </context>
+
+        <answer>
+        <p>The Technical University of Munich (TUM) provides extensive support services for students with disabilities and chronic illnesses to ensure equal participation in academic life<a href="https://www.tum.de/en/support-services/disabilities" class="citation-ref">[1]</a>.</p>
+
+        <p>The support services include:</p>
+        <ul>
+            <li>Exam accommodations and technical learning aids to support academic success<a href="https://www.tum.de/en/support-services/disabilities" class="citation-ref">[1]</a></li>
+            <li>Assistance throughout the application and admission process<a href="https://www.tum.de/en/support-services/disabilities" class="citation-ref">[1]</a></li>
+            <li>Personalized consultation services through the Student Advising office to address individual needs<a href="https://www.tum.de/en/student-advising" class="citation-ref">[2]</a></li>
+        </ul>
+
+        <p>The university has also implemented various structural accommodations, including:</p>
+        <ul>
+            <li>Accessible building design and specialized equipment for disabled students<a href="https://www.tum.de/en/support-services/disabilities" class="citation-ref">[1]</a></li>
+            <li>Financial support options and assistance with finding suitable accommodation<a href="https://www.tum.de/en/financial-aid" class="citation-ref">[3]</a></li>
+        </ul>
+        </answer>
+
+        Now please answer this question:
+
+        <question>
+        {question}
+        </question>
+
+        <context>
+        {context}
+        </context>
+
+        REQUIREMENTS:
+        1. Use the provided context to generate an accurate answer
+        2. After EACH piece of information from the context, add an inline citation using this format exactly as shown in the example
+        3. Make sure every fact from the context has a citation
+        4. Format your response as neat paragraphs and lists using proper HTML tags
+        5. Start your response with <answer> and end with </answer>
+        6. Do not include any additional HTML structure beyond what goes inside the answer tags
+        7. Do not add any "Sources" or "References" section
+        8. Use appropriate HTML elements (p, ul, li) for structure
+        9. Each citation should be immediately after the information it sources
+
+        Please write your response following the example format exactly.
+        """
+
+        # 预测答案内容
+        raw_answer = llm.predict(
+            PromptTemplate(system_prompt),
+            question=question,
+            context=processed_context
+        )
+
+        # 提取<answer>标签之间的内容
+        answer_content = raw_answer
+        if '<answer>' in raw_answer and '</answer>' in raw_answer:
+            answer_content = raw_answer.split('<answer>')[1].split('</answer>')[0].strip()
+
+        # 构建完整的HTML
+        full_html = f"""<!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Answer</title>
+        <style>
+            body {{
+                font-family: Arial, sans-serif;
+                line-height: 1.6;
+                max-width: 800px;
+                margin: 0 auto;
+                padding: 20px;
+            }}
+            .citation-ref {{
+                font-size: 0.8em;
+                vertical-align: super;
+                cursor: pointer;
+                color: #0066cc;
+                text-decoration: none;
+            }}
+            .citation-ref:hover {{
+                text-decoration: underline;
+            }}
+            ul {{
+                padding-left: 20px;
+            }}
+            li {{
+                margin-bottom: 10px;
+            }}
+        </style>
+    </head>
+    <body>
+        <div class="response-container">
+            {answer_content}
+        </div>
+    </body>
+    </html>"""
+
+        # 返回结果
         return {
-            "answer": answer,
-            "sources": [
-                {
-                    "file": doc.node.extra_info.get('file_name', 'Unknown'),
-                    "score": round(doc.score, 3) if doc.score else None,
-                    "text_chunk": doc.node.text[:200] + "..."
-                } for doc in compressed_docs
-            ]
+            "answer": full_html,
         }
 
     @traceable(run_type="chain")
@@ -264,13 +362,13 @@ class RAGSystem:
         query_embedding: List[float] = self.embed_model._get_text_embedding(question)
 
         for doc in docs:
-            splitter = SentenceSplitter(chunk_size=150, chunk_overlap=10)
+            splitter = SentenceSplitter(chunk_size=100, chunk_overlap=20)
             split_texts: List[str] = splitter.split_text(doc.node.text)
             embeddings: List[List[float]] = self.embed_model._get_text_embeddings(split_texts)
             similarities: List[float] = cosine_similarity([query_embedding], embeddings)[0]
 
             filtered_texts = [
-                text for text, similarity in zip(split_texts, similarities) if similarity >= 0.82
+                text for text, similarity in zip(split_texts, similarities) if similarity >= 0.83
             ]
             if filtered_texts:
                 combined_text = " ".join(filtered_texts)
@@ -294,7 +392,7 @@ class RAGSystem:
             self.executor.shutdown()
 
     @staticmethod
-    def format_response(result: Dict[str, Any], show_sources: bool = True) -> str:
+    def format_response(result: Dict[str, Any], show_sources: bool = false) -> str:
         # Format final response.
         output: str = f"Answer: {result['answer']}\n\n"
         if show_sources:
