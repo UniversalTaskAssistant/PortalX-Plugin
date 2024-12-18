@@ -101,3 +101,51 @@ Please write your response following the example format exactly.
 """
 
 SYSTEM_PROMPT = PromptTemplate(system_prompt)
+
+ANSWER_TEMPLATE = """<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Answer</title>
+    <style>
+        body {{
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }}
+        .citation-ref {{
+            font-size: 0.8em;
+            vertical-align: super;
+            cursor: pointer;
+            color: #0066cc;
+            text-decoration: none;
+        }}
+        .citation-ref:hover {{
+            text-decoration: underline;
+        }}
+        ul {{
+            padding-left: 20px;
+        }}
+        li {{
+            margin-bottom: 10px;
+        }}
+    </style>
+</head>
+<body>
+    <div class="response-container">
+        {answer_content}
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {{
+            const citations = document.querySelectorAll('.citation-ref');
+            citations.forEach(citation => {{
+                citation.setAttribute('target', '_blank');
+            }});
+        }});
+    </script>
+</body>
+</html>"""

@@ -23,7 +23,8 @@ from sklearn.metrics.pairwise import cosine_similarity
 from sympy import false
 
 from Backend.RAG.citation_manager import process_context_with_citations
-from Backend.RAG.prompts import SYSTEM_PROMPT
+from Backend.RAG.prompts import SYSTEM_PROMPT, ANSWER_TEMPLATE
+
 
 class RAGSystem:
     # RAG system for document processing and querying.
@@ -42,17 +43,54 @@ class RAGSystem:
         self.semaphore: asyncio.Semaphore = asyncio.Semaphore(max_concurrent_tasks)
         self.executor: ThreadPoolExecutor = ThreadPoolExecutor(max_workers=max_concurrent_tasks)
 
-    async def initialize(
-        self,
-        directory_path: str,
-        embed_model_name: str = "hkunlp/instructor-base",
-        chunk_size: int = 1024,
-        chunk_overlap: int = 200,
-        load_from_disk: bool = True,
-        resume_progress: bool = False,
-        process_limit: int = -1
+    def initialize(
+            self,
+            directory_path: str,
+            embed_model_name: str = "hkunlp/instructor-base",
+            chunk_size: int = 1024,
+            chunk_overlap: int = 200,
+            load_from_disk: bool = True,
+            resume_progress: bool = False,
+            process_limit: int = -1
     ):
-        # Asynchronous initialization.
+        """
+        Synchronous interface that runs async code in a separate thread
+        """
+
+        def run_async_init():
+            # Create a new event loop for this thread
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            try:
+                return loop.run_until_complete(self._initialize_async(
+                    directory_path,
+                    embed_model_name,
+                    chunk_size,
+                    chunk_overlap,
+                    load_from_disk,
+                    resume_progress,
+                    process_limit
+                ))
+            finally:
+                loop.close()
+
+        # Run the async initialization in a separate thread
+        import threading
+        thread = threading.Thread(target=run_async_init)
+        thread.start()
+        thread.join()
+
+    async def _initialize_async(
+            self,
+            directory_path: str,
+            embed_model_name: str,
+            chunk_size: int,
+            chunk_overlap: int,
+            load_from_disk: bool,
+            resume_progress: bool,
+            process_limit: int
+    ):
+        # Asynchronous initialization
         self.current_directory_path = directory_path
         self._initialize_models(embed_model_name, chunk_size, chunk_overlap)
         self.text_splitter: SentenceSplitter = SentenceSplitter(chunk_size=300, chunk_overlap=10)
@@ -72,6 +110,8 @@ class RAGSystem:
             similarity_top_k=3,
             streaming=True
         )
+
+        return self.index  # Return the created/loaded index
 
     def _initialize_models(self, embed_model_name: str, chunk_size: int, chunk_overlap: int):
         self.embed_model = HuggingFaceEmbedding(
@@ -223,7 +263,7 @@ class RAGSystem:
             return existing_index
 
     @traceable(run_type="chain")
-    def retrieve_documents(self, question: str, top_k: int = 3) -> List[NodeWithScore]:
+    def retrieve_documents(self, question: str, top_k: int = 5) -> List[NodeWithScore]:
         # Retrieve documents.
         if not self.index:
             raise ValueError("Index has not been initialized.")
@@ -232,8 +272,7 @@ class RAGSystem:
         return response.source_nodes
 
     @traceable(run_type="chain")
-    def query(self, question: str, top_k: int = 3) -> Dict[str, Any]:
-        # 检索和压缩文档
+    def query(self, question: str, top_k: int = 5) -> Dict[str, Any]:
         retrieved_docs: List[NodeWithScore] = self.retrieve_documents(question, top_k=top_k)
         compressed_docs: List[NodeWithScore] = self.compress_and_filter_documents(retrieved_docs, question)
 
@@ -247,52 +286,12 @@ class RAGSystem:
             context=processed_context
         )
 
-        # 提取<answer>标签之间的内容
         answer_content = raw_answer
         if '<answer>' in raw_answer and '</answer>' in raw_answer:
             answer_content = raw_answer.split('<answer>')[1].split('</answer>')[0].strip()
 
-        # 构建完整的HTML
-        full_html = f"""<!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Answer</title>
-        <style>
-            body {{
-                font-family: Arial, sans-serif;
-                line-height: 1.6;
-                max-width: 800px;
-                margin: 0 auto;
-                padding: 20px;
-            }}
-            .citation-ref {{
-                font-size: 0.8em;
-                vertical-align: super;
-                cursor: pointer;
-                color: #0066cc;
-                text-decoration: none;
-            }}
-            .citation-ref:hover {{
-                text-decoration: underline;
-            }}
-            ul {{
-                padding-left: 20px;
-            }}
-            li {{
-                margin-bottom: 10px;
-            }}
-        </style>
-    </head>
-    <body>
-        <div class="response-container">
-            {answer_content}
-        </div>
-    </body>
-    </html>"""
+        full_html = ANSWER_TEMPLATE.format(answer_content=answer_content)
 
-        # 返回结果
         return {
             "answer": full_html,
         }
@@ -303,13 +302,13 @@ class RAGSystem:
         query_embedding: List[float] = self.embed_model._get_text_embedding(question)
 
         for doc in docs:
-            splitter = SentenceSplitter(chunk_size=100, chunk_overlap=20)
+            splitter = SentenceSplitter(chunk_size=100, chunk_overlap=10)
             split_texts: List[str] = splitter.split_text(doc.node.text)
             embeddings: List[List[float]] = self.embed_model._get_text_embeddings(split_texts)
             similarities: List[float] = cosine_similarity([query_embedding], embeddings)[0]
 
             filtered_texts = [
-                text for text, similarity in zip(split_texts, similarities) if similarity >= 0.83
+                text for text, similarity in zip(split_texts, similarities) if similarity >= 0.85
             ]
             if filtered_texts:
                 combined_text = " ".join(filtered_texts)
@@ -350,7 +349,7 @@ async def main():
     absolute_directory_path: str = os.path.abspath(relative_directory_path)
 
     try:
-        await rag.initialize(directory_path=absolute_directory_path,
+        rag.initialize(directory_path=absolute_directory_path,
                              process_limit=-1,
                              resume_progress=True)
 
