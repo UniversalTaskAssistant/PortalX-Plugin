@@ -42,8 +42,8 @@
 }
 
 .uta-float-button img {
-    width: 60%;
-    height: 60%;
+    width: 50%;
+    height: 50%;
     object-fit: contain;
     transition: all 0.3s ease;
     position: absolute;

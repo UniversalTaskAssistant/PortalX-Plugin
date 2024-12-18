@@ -96,12 +96,17 @@ function setChat(){
 function setInputLoading() {
     const $startChatBtn = $('#startChatBtn');
     const $welcomeMessage = $('.welcome-message');
+    const $inputSection = $('.input-section');
     const $queryInput = $('#queryInput');   
 
     $startChatBtn.on('click', () => {
-        // First, ensure any existing fade animations are complete
+        // Disable the start chat button
+        $startChatBtn.prop('disabled', true);
+        $startChatBtn.text('Loading...');
+
+        // Ensure any existing fade animations are complete
         $welcomeMessage.stop().fadeOut(100, function() {
-            initializingMessage(websiteInfo.hostName, websiteInfo.favicon);
+            showInitializingMessage(websiteInfo.hostName, websiteInfo.favicon);
             
             chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
                 $.ajax({
@@ -116,18 +121,34 @@ function setInputLoading() {
                                 startNewChat(websiteInfo.hostName, websiteInfo.favicon);
                             });
                         } else {
-                            alert('Failed to initialize RAG:', response.message);
+                            showFailureMessage(response.message || 'Failed to initialize chat system');
                         }
                     },
                     error: (xhr, status, error) => {
-                        alert('Error initializing RAG:', error);
+                        showFailureMessage('Unable to connect to the server. Please try again.');
                     }
                 });
             });
         });
     });
+
+    function startNewChat(hostName, hostLogo) {
+        conversationId = generateConversationId();
+        $('.message-container').remove();
+        $welcomeMessage.hide().html(`
+            <div class="align-items-center mb-2">
+                <span class="mb-4 welcome-title-intro">Hello! Ask me anything about</span>
+                <span class="text-muted welcome-title-intro"><img src="${hostLogo}" alt="Logo" class="welcome-icon-intro">${hostName}</span>
+            </div>
+        `).fadeIn(300);
+        $startChatBtn.fadeOut(100, function() {
+            $queryInput.val('');
+            $queryInput.prop('placeholder', 'Type your question here...');
+            $inputSection.fadeIn(300);
+        });
+    }
     
-    function initializingMessage(hostName, hostLogo) {
+    function showInitializingMessage(hostName, hostLogo) {
         conversationId = generateConversationId();
         $('.message-container').remove();
         $welcomeMessage.hide().html(`
@@ -141,18 +162,25 @@ function setInputLoading() {
         $queryInput.prop('placeholder', 'Waiting for initializing...');
     }
 
-    // Start a new chat
-    function startNewChat(hostName, hostLogo) {
-        conversationId = generateConversationId();
-        $('.message-container').remove();
-        $welcomeMessage.hide().html(`
-            <div class="align-items-center mb-2">
-                <span class="mb-4 welcome-title-intro">Hello! Ask me anything about</span>
-                <span class="text-muted welcome-title-intro"><img src="${hostLogo}" alt="Logo" class="welcome-icon-intro">${hostName}</span>
-            </div>
-        `).fadeIn(300);
-        $queryInput.val('');
-        $queryInput.prop('placeholder', 'Type your question here...');
+    function showFailureMessage(message) {
+        $welcomeMessage.stop().fadeOut(100, function() {
+            $welcomeMessage.html(`
+                <div class="align-items-center mb-2">
+                    <span class="mb-4 welcome-title-intro text-danger">
+                        <i class="fas fa-exclamation-circle"></i> Error
+                    </span>
+                    <p class="text-danger">${message}</p>
+                    <button class="btn btn-outline-primary retry-btn">Try Again</button>
+                </div>
+            `).fadeIn(300);
+
+            $('.retry-btn').on('click', function() {
+                $startChatBtn.trigger('click');
+            });
+        });
+        
+        $startChatBtn.prop('disabled', false);
+        $startChatBtn.html('<i class="bi bi-chat-dots-fill me-2"></i>Start Chat with this Website');
     }
 }
 

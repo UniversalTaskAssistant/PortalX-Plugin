@@ -61,6 +61,18 @@ body {
     height: 100%;  /* This will make it take full height of its container */
 }
 
+.btn-outline-primary{
+    border: 1px solid var(--primary-color) !important;
+    background: var(--primary-color) !important;
+    color: white !important;
+    margin-top: 16px;
+    transition: all 0.2s ease;
+}
+
+.btn-outline-primary:hover{
+    transform: translateY(-3px);
+}
+
 /* Overall container */
 .popup-container {
     display: flex;
