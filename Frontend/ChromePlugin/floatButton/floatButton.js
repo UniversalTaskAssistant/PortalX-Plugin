@@ -1,11 +1,8 @@
 $(document).ready(() => {
-    console.log("jQuery Document Ready fired");
     initializeFloatButton();
 });
 
 function initializeFloatButton() {
-    console.log("Initializing float button...");
-
     try {
         let isPopupOpen = false;  // Add this flag to track popup state
 
@@ -54,7 +51,6 @@ function initializeFloatButton() {
             .attr('src', chrome.runtime.getURL('floatButton/popup.html'))
             .hide()
             .appendTo('body');
-        console.log("Popup iframe added to DOM");
 
         // Add click handler for the float button
         $floatButton.on('click', (event) => {
@@ -97,6 +93,6 @@ function initializeFloatButton() {
         });
 
     } catch (error) {
-        console.error("Error initializing float button:", error);
+        console.error("Error initializing UTAWeb float button:", error);
     }
 }

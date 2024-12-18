@@ -2,7 +2,6 @@ let conversationId = generateConversationId();
 let websiteInfo = {}; 
 
 $(document).ready(() => {
-    console.log("Popup Document Ready fired");
     initializePopup();
     setChat();
     setInputLoading();
@@ -17,7 +16,6 @@ function initializePopup() {
     chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
         websiteInfo = getWebsiteInfoFromUrl(tabs[0].url);
         websiteInfo.favicon = tabs[0].favIconUrl;
-        console.log(websiteInfo);
         $('.website-favicon').attr('src', websiteInfo.favicon);
     });
 
@@ -101,28 +99,30 @@ function setInputLoading() {
     const $queryInput = $('#queryInput');   
 
     $startChatBtn.on('click', () => {
-        setInputLoading(true);
-        $welcomeMessage.fadeOut(100, function() {
+        // First, ensure any existing fade animations are complete
+        $welcomeMessage.stop().fadeOut(100, function() {
             initializingMessage(websiteInfo.hostName, websiteInfo.favicon);
-        });
-        
-        chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-            // Initialize RAG for the current website
-            $.ajax({
-                url: 'http://127.0.0.1:7777/initialize_rag',
-                method: 'POST',
-                contentType: 'application/json',
-                data: JSON.stringify({ web_url: websiteInfo.url }),
-                success: (response) => {
-                    if (response.status === 'success') {
-                        startNewChat(websiteInfo.hostName, websiteInfo.favicon);
-                    } else {
-                        alert('Failed to initialize RAG:', response.message);
+            
+            chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+                $.ajax({
+                    url: 'http://127.0.0.1:7777/initialize_rag',
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ web_url: websiteInfo.url }),
+                    success: (response) => {
+                        console.log(response);
+                        if (response.status === 'success') {
+                            $welcomeMessage.stop().fadeOut(100, function() {
+                                startNewChat(websiteInfo.hostName, websiteInfo.favicon);
+                            });
+                        } else {
+                            alert('Failed to initialize RAG:', response.message);
+                        }
+                    },
+                    error: (xhr, status, error) => {
+                        alert('Error initializing RAG:', error);
                     }
-                },
-                error: (xhr, status, error) => {
-                    alert('Error initializing RAG:', error);
-                }
+                });
             });
         });
     });
