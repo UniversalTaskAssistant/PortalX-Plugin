@@ -15,8 +15,9 @@ function initializePopup() {
     // Get current tab's domain and update favicon
     chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
         websiteInfo = getWebsiteInfoFromUrl(tabs[0].url);
-        websiteInfo.favicon = tabs[0].favIconUrl;
-        $('.website-favicon').attr('src', websiteInfo.favicon);
+        websiteInfo.hostLogo = tabs[0].favIconUrl;
+        console.log(websiteInfo);
+        $('.website-favicon').attr('src', websiteInfo.hostLogo);
     });
 
     $newChatBtn.on('click', () => {
@@ -35,6 +36,79 @@ function setChat(){
     const $queryInput = $('#queryInput');
     const $sendButton = $('#sendButton');
 
+    async function sendMessage() {
+        const query = $queryInput.val().trim();
+        if (!query) return;
+
+        // Clear input immediately
+        $queryInput.val('');
+        
+        // Remove welcome message and add user message synchronously
+        $('.welcome-message').hide();
+        addMessage(query, 'user');
+        
+        // Add loading/thinking message after user message
+        const $thinkingContainer = addThinkingMessage();
+
+        try {
+            const response = await $.ajax({
+                url: 'http://localhost:7777/query',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    user_id: 'test1', // You might want to get this from user settings
+                    conversation_id: conversationId,
+                    query: query,
+                    web_url: websiteInfo.url,
+                    host_name: websiteInfo.hostName,
+                    host_logo: websiteInfo.hostLogo
+                })
+            });
+
+            // Remove thinking message
+            $thinkingContainer.remove();
+            
+            // Add response message
+            addMessage(response.answer, 'assistant');
+
+        } catch (error) {
+            // Remove thinking message
+            $thinkingContainer.remove();
+            
+            // Add error message
+            addMessage(`Error: ${error.message}`, 'assistant');
+        }
+    }
+
+    function addThinkingMessage() {
+        const $container = $('<div>', {
+            class: 'message-container assistant-container thinking-message'
+        });
+
+        const $iconDiv = $('<div>', {
+            class: 'assistant-icon'
+        }).append(
+            $('<img>', {
+                src: '../img/logo2.png',
+                alt: 'Assistant'
+            })
+        );
+
+        const $message = $('<div>')
+            .addClass('message assistant')
+            .append(
+                $('<div>', {
+                    class: 'thinking-indicator'
+                }).html('Thinking <span class="dot-1">.</span><span class="dot-2">.</span><span class="dot-3">.</span><span class="dot-4">.</span><span class="dot-5">.</span><span class="dot-6">.</span>')
+            );
+
+        $container.append($iconDiv, $message);
+        $messagesContainer.append($container);
+        $messagesContainer.scrollTop($messagesContainer[0].scrollHeight);
+
+        return $container;
+    }
+
     $sendButton.on('click', sendMessage);
     $queryInput.on('keypress', (e) => {
         if (e.which === 13 && !e.shiftKey) {
@@ -43,27 +117,6 @@ function setChat(){
         }
     });
     
-    // Handle sending messages
-    function sendMessage() {
-        const query = $queryInput.val().trim();
-        if (!query) return;
-
-        // Remove welcome message and add user message after fade completes
-        $('.welcome-message').fadeOut(100, function() {
-            // Add user message
-            addMessage(query, 'user');
-        });
-
-        // Clear input
-        $queryInput.val('');
-
-        // TODO: Send query to backend and handle response
-        // For now, just add a mock response
-        setTimeout(() => {
-            addMessage('This is a mock response. The actual integration with the backend will be implemented later.', 'assistant');
-        }, 1000);
-    }
-
     // Add a message to the chat
     function addMessage(text, type) {
         const $messageContainer = $('<div>', {
@@ -106,7 +159,7 @@ function setInputLoading() {
 
         // Ensure any existing fade animations are complete
         $welcomeMessage.stop().fadeOut(100, function() {
-            showInitializingMessage(websiteInfo.hostName, websiteInfo.favicon);
+            showInitializingMessage(websiteInfo.hostName, websiteInfo.hostLogo);
             
             chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
                 $.ajax({
@@ -118,7 +171,7 @@ function setInputLoading() {
                         console.log(response);
                         if (response.status === 'success') {
                             $welcomeMessage.stop().fadeOut(100, function() {
-                                startNewChat(websiteInfo.hostName, websiteInfo.favicon);
+                                startNewChat(websiteInfo.hostName, websiteInfo.hostLogo);
                             });
                         } else {
                             showFailureMessage(response.message || 'Failed to initialize chat system');
@@ -205,6 +258,6 @@ function getWebsiteInfoFromUrl(url) {
         domainName: domainName, 
         hostName: hostName, 
         subdomain: subdomain,
-        favicon: favicon
+        hostLogo: favicon
     };
 }
