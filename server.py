@@ -54,9 +54,16 @@ def initialize_rag_systems():
     """
     print(request.json)
     data = request.json
-    utaweb.initialize_rag(directory_path=pjoin(utaweb.data_dir, utaweb.get_company_name_from_url(data['web_url'])))
-    print('RAG systems initialized')
-    return jsonify({"status": "success", "message": "RAG systems initialized"})
+    directory_path = pjoin(utaweb.data_dir, utaweb.get_company_name_from_url(data['web_url']))
+    if not os.path.exists(directory_path):
+        return jsonify({"status": "not_found", "message": f"Website {data['web_url']} not found in the database"})
+    try:
+        utaweb.initialize_rag(directory_path=directory_path)
+        print('RAG systems initialized')
+        return jsonify({"status": "success", "message": "RAG systems initialized"})
+    except Exception as e:
+        print(f"Error initializing RAG systems: {e}")
+        return jsonify({"status": "error", "message": "Error initializing RAG systems"})
 
 @app.route('/get_chat_history', methods=['POST'])
 def get_chat_history():

@@ -4,7 +4,7 @@ let websiteInfo = {};
 $(document).ready(() => {
     initializePopup();
     setChat();
-    setInputLoading();
+    setStart();
 });
 
 function initializePopup() {
@@ -146,7 +146,7 @@ function setChat(){
     }
 }
 
-function setInputLoading() {
+function setStart() {
     const $startChatBtn = $('#startChatBtn');
     const $welcomeMessage = $('.welcome-message');
     const $inputSection = $('.input-section');
@@ -173,8 +173,10 @@ function setInputLoading() {
                             $welcomeMessage.stop().fadeOut(100, function() {
                                 startNewChat(websiteInfo.hostName, websiteInfo.hostLogo);
                             });
+                        } else if (response.status === 'not_found') {
+                            showFailureMessage(response.message);
                         } else {
-                            showFailureMessage(response.message || 'Failed to initialize chat system');
+                            showFailureMessage('Failed to initialize chat system');
                         }
                     },
                     error: (xhr, status, error) => {

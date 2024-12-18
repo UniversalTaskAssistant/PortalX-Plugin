@@ -219,6 +219,7 @@ body {
     font-size: 0.85rem;
     color: #495057;
     font-weight: 500;
+    cursor: default;
 }
 
 /* Input section styling */
