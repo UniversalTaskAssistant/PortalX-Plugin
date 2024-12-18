@@ -132,8 +132,8 @@ function setInputLoading() {
         $('.message-container').remove();
         $welcomeMessage.hide().html(`
             <div class="align-items-center mb-2">
-                <h5 class="mb-4 welcome-title-intro">Initializing chating system for</h5>
-                <h5 class="text-muted mb-4 welcome-title-intro"><img src="${hostLogo}" alt="Logo" class="welcome-icon-intro">${hostName}</h5>
+                <span class="mb-4 welcome-title-intro">Initializing chating system for</span>
+                <span class="text-muted mb-4 welcome-title-intro"><img src="${hostLogo}" alt="Logo" class="welcome-icon-intro">${hostName}</span>
                 <h5><span class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></span></h5>
             </div>
         `).fadeIn(300);
@@ -147,8 +147,8 @@ function setInputLoading() {
         $('.message-container').remove();
         $welcomeMessage.hide().html(`
             <div class="align-items-center mb-2">
-                <h5 class="mb-4 welcome-title-intro">Hello! Ask me anything about</h5>
-                <h5 class="text-muted welcome-title-intro"><img src="${hostLogo}" alt="Logo" class="welcome-icon-intro">${hostName}</h5>
+                <span class="mb-4 welcome-title-intro">Hello! Ask me anything about</span>
+                <span class="text-muted welcome-title-intro"><img src="${hostLogo}" alt="Logo" class="welcome-icon-intro">${hostName}</span>
             </div>
         `).fadeIn(300);
         $queryInput.val('');
