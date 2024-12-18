@@ -254,13 +254,57 @@ function setStart() {
                 </div>
             </div>
         `;
-        
         $('#messagesContainer').html(messageHtml);
     }
 }
 
 function setAnalyze() {
     $(document).on('click', '#startAnalyzeBtn', async () => {
+        try {
+            const response = await $.ajax({
+                url: 'http://localhost:7777/crawl',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    domainName: addHttps(websiteInfo.domainName),
+                    hostName: websiteInfo.hostName,
+                    domainLimit: addHttps(websiteInfo.subdomain)
+                })
+            });
+            
+            // If the request is successful, show the analyzing message
+            showAnalyzingMessage();
+            
+        } catch (error) {
+            console.error('Failed to start analysis:', error);
+            showAnalysisFailureMessage('Failed to start website analysis. Please try again.');
+        }
+    });
+
+    function showAnalysisFailureMessage(message) {
+        $('#messagesContainer').html(`
+            <div class="message-container assistant-container">
+                <div class="assistant-icon">
+                    <img src="../img/logo2.png" alt="Assistant">
+                </div>
+                <div class="message assistant">
+                    <div class="align-items-center">
+                        <span class="text-danger">
+                            <i class="fas fa-exclamation-circle"></i> Error
+                        </span>
+                        <p class="text-danger">${message}</p>
+                        <button id="retryAnalyzeBtn" class="btn btn-outline-primary">Try Again</button>
+                    </div>
+                </div>
+            </div>
+        `);
+
+        $('#retryAnalyzeBtn').on('click', function() {
+            $('#startAnalyzeBtn').trigger('click');
+        });
+    }
+
+    function showAnalyzingMessage() {
         // Update the current message to show loading state
         $('#messagesContainer').html(`
             <div class="message-container assistant-container">
@@ -281,7 +325,7 @@ function setAnalyze() {
                                 <img src="${websiteInfo.hostLogo}" alt="Logo">
                                 <span>${websiteInfo.hostName}</span>
                                 <div class="spinner-border spinner-border-sm text-primary" role="status">
-                                   <span class="visually-hidden">Loading...</span>
+                                <span class="visually-hidden">Loading...</span>
                                 </div>
                                 <button class="refresh-btn" title="Refresh website info">
                                     <i class="bi bi-arrow-clockwise"></i>
@@ -306,44 +350,7 @@ function setAnalyze() {
                 </div>
             </div>
         `);
-
-        // try {
-        //     const response = await $.ajax({
-        //         url: 'http://localhost:7777/crawl',
-        //         method: 'POST',
-        //         contentType: 'application/json',
-        //         data: JSON.stringify({
-        //             domainName: websiteInfo.domainName,
-        //             hostName: websiteInfo.hostName,
-        //             domainLimit: websiteInfo.subdomain
-        //         })
-        //     });
-
-        //     if (response.success) {
-        //         // Update the message with success state
-        //         $currentMessage.html(`
-        //             <div class="mb-3">Website analysis completed! You can now start chatting.</div>
-        //             <button id="startChatBtn" class="modal-btn">
-        //                 <i class="bi bi-chat-dots-fill"></i>Start Chat
-        //             </button>
-        //         `);
-        //     } else {
-        //         $currentMessage.html(`
-        //             <div class="text-danger mb-3">Analysis failed: ${response.message}</div>
-        //             <button id="startAnalyzeBtn" class="modal-btn">
-        //                 <i class="bi bi-ui-checks-grid"></i>Retry Analysis
-        //             </button>
-        //         `);
-        //     }
-        // } catch (error) {
-        //     $currentMessage.html(`
-        //         <div class="text-danger mb-3">Error: ${error.message}</div>
-        //         <button id="startAnalyzeBtn" class="modal-btn">
-        //             <i class="bi bi-ui-checks-grid"></i>Retry Analysis
-        //         </button>
-        //     `);
-        // }
-    });
+    }
 }
 
 
