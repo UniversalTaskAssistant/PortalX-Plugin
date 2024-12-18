@@ -16,7 +16,7 @@ from llama_index.core import (
 )
 from llama_index.core.indices.base import BaseIndex
 from llama_index.core.node_parser import SentenceSplitter
-from llama_index.core.schema import NodeWithScore, TextNode, Document
+from llama_index.core.schema import NodeWithScore, Document
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 from llama_index.llms.openai import OpenAI
 from sklearn.metrics.pairwise import cosine_similarity
@@ -111,7 +111,7 @@ class RAGSystem:
             streaming=True
         )
 
-        return self.index  # Return the created/loaded index
+        return self.index
 
     def _initialize_models(self, embed_model_name: str, chunk_size: int, chunk_overlap: int):
         self.embed_model = HuggingFaceEmbedding(

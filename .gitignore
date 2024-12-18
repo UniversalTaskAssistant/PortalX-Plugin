@@ -12,3 +12,4 @@ Output/*
 .ipynb_checkpoints/*
 /Backend/RAG/openaikey.txt
 Output/
+/Backend/RAG/.env
