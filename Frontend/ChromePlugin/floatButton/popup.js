@@ -59,7 +59,7 @@ function setChat(){
                     user_id: 'test1', // You might want to get this from user settings
                     conversation_id: conversationId,
                     query: query,
-                    web_url: websiteInfo.url,
+                    web_url: addHttps(websiteInfo.domainName),
                     host_name: websiteInfo.hostName,
                     host_logo: websiteInfo.hostLogo
                 })
@@ -166,7 +166,7 @@ function setStart() {
                     url: 'http://127.0.0.1:7777/initialize_rag',
                     method: 'POST',
                     contentType: 'application/json',
-                    data: JSON.stringify({ web_url: websiteInfo.url }),
+                    data: JSON.stringify({ web_url: addHttps(websiteInfo.domainName) }),
                     success: (response) => {
                         console.log(response);
                         if (response.status === 'success') {
@@ -174,7 +174,8 @@ function setStart() {
                                 startNewChat(websiteInfo.hostName, websiteInfo.hostLogo);
                             });
                         } else if (response.status === 'not_found') {
-                            showFailureMessage(response.message);
+                            $startChatBtn.text('Website not analyzed yet');
+                            showAnalyzingMessage();
                         } else {
                             showFailureMessage('Failed to initialize chat system');
                         }
@@ -237,6 +238,26 @@ function setStart() {
         $startChatBtn.prop('disabled', false);
         $startChatBtn.html('<i class="bi bi-chat-dots-fill me-2"></i>Start Chat with this Website');
     }
+
+    function showAnalyzingMessage() {
+        const messageHtml = `
+            <div class="message-container assistant-container">
+                <div class="assistant-icon">
+                    <img src="../img/logo2.png" alt="Assistant">
+                </div>
+                <div class="message assistant">
+                    This website hasn't been analyzed yet. Would you like me to analyze it for you?
+                    <div style="margin-top: 12px;">
+                        <button id="startAnalyzeBtn" class="modal-btn">
+                            <i class="bi bi-ui-checks-grid"></i>Analyze Website
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        $('#messagesContainer').html(messageHtml);
+    }
 }
 
 function generateConversationId() {
@@ -262,4 +283,12 @@ function getWebsiteInfoFromUrl(url) {
         subdomain: subdomain,
         hostLogo: favicon
     };
+}
+
+function addHttps(url) {
+    if (!url) return '';
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+        return `https://${url}`;
+    }
+    return url;
 }
