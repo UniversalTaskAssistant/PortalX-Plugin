@@ -3,7 +3,8 @@ from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 from llama_index.llms.openai import OpenAI
 import os
 import sys
-from typing import Dict, Any
+import json
+from typing import Dict, List, Any
 
 class RAGSystem:
     def __init__(self):
@@ -26,8 +27,6 @@ class RAGSystem:
         # Create query engine with response synthesis
         self.query_engine = None
 
-
-        
         # Create query engine with response synthesis and custom prompts
         self.system_prompt = """You are a helpful AI website customer assistant that provides clear, structured answers based on website information.
 
@@ -50,6 +49,9 @@ class RAGSystem:
         - Interact with the user in a friendly and engaging manner.
         - Refer "The website" as "I", you are now representing the website.
         """
+
+        # Conversation history with this user
+        self.conversation_history = []
 
     def initialize(self, directory_path: str,
         embed_model_name: str = "BAAI/bge-small-en-v1.5",
@@ -109,6 +111,8 @@ class RAGSystem:
             streaming=True
         )
 
+        self.conversation_history = []
+
     def query(self, question: str) -> Dict[str, Any]:
         """
         Process a query against the document store.
@@ -122,7 +126,10 @@ class RAGSystem:
                     - score (float): Relevance score
                     - text_chunk (str): Preview of source text
         """
+        Settings.llm.system_prompt = self.system_prompt
         response = self.query_engine.query(question)
+        self.conversation_history.append([question, str(response)])
+
         # Format source documents
         sources = []
         for node in response.source_nodes:
@@ -135,6 +142,40 @@ class RAGSystem:
             "answer": str(response),
             "sources": sources
         }
+    
+    def recommend_questions(self, recommended_question_number: int) -> List[str]:
+        """
+        Process a query against the document store.
+        Args:
+            question (str): User's question to be answered
+        Returns:
+            Dict[str, Any]: Dictionary containing:
+                - answer (str): Generated response to the question
+                - sources (list): List of dictionaries containing:
+                    - file (str): Source filename
+                    - score (float): Relevance score
+                    - text_chunk (str): Preview of source text
+        """
+
+        system_prompt_recommend_question = f"""You are a helpful AI website customer assistant that recommends clear questions that the user might be interested, based on your conversation history with the user and website information.
+
+        RESPONSE FORMAT REQUIREMENTS:
+        1. Respond in JSON ONLY with format {{["your_question_1", "your_question_2", ...]}}.
+        
+        GUIDELINES:
+        1. Keep questions short, concise, and well-organized.
+        2. Refer "The website" as "I", you are now representing the website.
+
+        DATA:
+        1. Coversation history: {self.conversation_history}.
+        """
+        Settings.llm.system_prompt = system_prompt_recommend_question
+        question = f"Please recommend {recommended_question_number} clear questions that the website user with the conversation might be interested."
+
+        response = self.query_engine.query(question)
+        response = str(response).removeprefix("```json").removesuffix("```").strip()
+        
+        return json.loads(response)
 
     @staticmethod
     def format_response(result: Dict[str, Any], show_sources: bool = False) -> str:

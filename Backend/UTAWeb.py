@@ -8,12 +8,14 @@ from scrapy.crawler import CrawlerProcess
 class UTAWeb:
     _rag_systems = {}  # Dictionary to store RAG systems by company_name in memory
 
-    def __init__(self, initializing=False, data_dir=None):
+    def __init__(self, initializing=False, data_dir=None, recommended_question_number="three"):
         self.crawler_process = None  # Temporary crawler process worker without storing in memory
         self.data_dir = data_dir if data_dir is not None else "./Backend/Output/websites"
         if initializing:
             self.initialize_crawler()
             self.initialize_rag()
+
+        self.recommended_question_number = recommended_question_number
 
     """
     **********************
@@ -118,6 +120,12 @@ class UTAWeb:
         company_name = self.get_company_name_from_url(web_url) if company_name is None else company_name
         rag_system = self.initialize_rag(directory_path=pjoin(self.data_dir, company_name))
         print(f'Welcome to the {web_url}!')
+
+        recommended_questions = rag_system.recommend_questions(self.recommended_question_number)
+        print("----------")
+        print(f"Recommended initrial questions: {recommended_questions}\n")
+        print("----------")
+
         while True:
             print("\n\n*************************\n")
             question = input("\nEnter your question:\n")
@@ -125,6 +133,10 @@ class UTAWeb:
                 break
             result = rag_system.query(question)
             print(rag_system.format_response(result))
+            recommended_questions = rag_system.recommend_questions(self.recommended_question_number)
+            print("----------")
+            print(f"Recommended conversational questions: {recommended_questions}\n")
+            print("----------")
 
 
 if __name__ == "__main__":
@@ -142,6 +154,6 @@ if __name__ == "__main__":
     # utaweb.crawl_web(web_url=web_url, company_name=company_name, domain_limit=domain_limit, exclude_domains=None)
     # utaweb.query_web(query="Explain the MINT study program?", web_url=web_url)
     # utaweb.query_web(query="How many Nobel awardees graduated from TUM?", web_url=web_url)
-    utaweb.query_web(query="Can you explain to me who is Donald Trump?", web_url=web_url)
-    # utaweb.query_web_test(web_url=web_url, company_name=company_name)
+    # utaweb.query_web(query="Can you explain to me who is Donald Trump?", web_url=web_url)
+    utaweb.query_web_test(web_url=web_url, company_name=company_name)
 
