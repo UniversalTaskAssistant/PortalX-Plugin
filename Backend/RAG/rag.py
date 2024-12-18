@@ -306,13 +306,13 @@ class RAGSystem:
 
 async def main():
     # Main function to test RAG system locally.
-    rag: RAGSystem = RAGSystem(max_concurrent_tasks=3)
-    relative_directory_path: str = "../Output/websites/signavio"
+    rag: RAGSystem = RAGSystem(max_concurrent_tasks=5)
+    relative_directory_path: str = "../Output/websites/tum-en"
     absolute_directory_path: str = os.path.abspath(relative_directory_path)
 
     try:
         await rag.initialize(directory_path=absolute_directory_path,
-                             process_limit=15,
+                             process_limit=-1,
                              resume_progress=True)
 
         print("Welcome!")
