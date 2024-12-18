@@ -262,9 +262,9 @@ class UTASpider(scrapy.Spider):
 
 
 if __name__ == "__main__":
-    web_urls = 'https://www.vishay.com'
-    company_name = 'vishay'
-    domain_limit = 'https://www.vishay.com' # None or specific domain, such as 'www.bmw.com/en-au'
+    web_urls = 'https://www.tum.de/en/'
+    company_name = 'tum'
+    domain_limit = 'https://www.tum.de/en/' # None or specific domain, such as 'www.bmw.com/en-au'
 
     # Configure and start the crawler
     process = CrawlerProcess({
