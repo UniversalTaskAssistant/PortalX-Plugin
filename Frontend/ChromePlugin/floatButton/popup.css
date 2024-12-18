@@ -48,6 +48,19 @@ body {
     color: transparent !important;
 }
 
+.text-muted{
+    color: #6c757d !important;
+}
+
+.align-items-center {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    height: 100%;  /* This will make it take full height of its container */
+}
+
 /* Overall container */
 .popup-container {
     display: flex;
@@ -139,6 +152,27 @@ body {
     color: #2c3e50;
     margin-bottom: 1.5rem;
     font-size: 1.1rem;
+}
+
+.welcome-title-intro {
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 1.5rem;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.welcome-icon-intro {
+    width: 40px;
+    height: 40px;
+    padding: 3px;
+    background: white;
+    border-radius: 50%;
+    box-shadow: 0 4px 20px rgba(202, 107, 229, 0.15);
+    object-fit: contain;
+    flex-shrink: 0;  /* Prevent the image from shrinking */
 }
 
 .features-grid {
@@ -376,5 +410,5 @@ body {
 
 /* Add padding for the start chat button container */
 .start-chat-btn-container {
-    padding: 0 16px 16px;
+    padding: 0 36px 16px;
 }
