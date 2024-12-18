@@ -268,7 +268,7 @@ function setAnalyze() {
                     <img src="../img/logo2.png" alt="Assistant">
                 </div>
                 <div class="message assistant">
-                    <div class="analysis container">
+                    <div class="analysis-container">
                         <div class="mb-3">
                             Starting website analysis
                             <div class="thinking-indicator mt-1">
@@ -280,6 +280,12 @@ function setAnalyze() {
                             <div class="website-info mb-3">
                                 <img src="${websiteInfo.hostLogo}" alt="Logo">
                                 <span>${websiteInfo.hostName}</span>
+                                <div class="spinner-border spinner-border-sm text-primary" role="status">
+                                   <span class="visually-hidden">Loading...</span>
+                                </div>
+                                <button class="refresh-btn" title="Refresh website info">
+                                    <i class="bi bi-arrow-clockwise"></i>
+                                </button>
                             </div>
                             <div class="stats-grid">
                                 <div class="stat-item">

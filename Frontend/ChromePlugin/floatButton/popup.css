@@ -461,6 +461,8 @@ body {
     border-bottom: 1px solid #f0f0f0;
     font-weight: 500;
     color: #2c3e50;
+    justify-content: space-between;
+    width: 100%;
 }
 
 .website-info img {
@@ -482,10 +484,11 @@ body {
     padding: 12px;
     text-align: center;
     transition: all 0.2s ease;
+    cursor: default;
 }
 
 .stat-item:hover {
-    background: #f0f0f0;
+    background: #f0f0f0d0;
 }
 
 .stat-value {
@@ -498,5 +501,21 @@ body {
 .stat-label {
     font-size: 12px;
     color: #6c757d;
+}
+
+.refresh-btn {
+    background: none;
+    border: none;
+    padding: 4px 8px 0;
+    margin-left: auto;
+    cursor: pointer;
+    color: var(--primary-color);
+    transition: transform 0.2s;
+    font-size: 16px;
+}
+
+.refresh-btn:hover {
+    color: var(--primary-dark);
+    transform: translateY(-3px);
 }
 
