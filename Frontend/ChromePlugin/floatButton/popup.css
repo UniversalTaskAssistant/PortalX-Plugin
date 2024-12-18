@@ -444,3 +444,59 @@ body {
 .start-chat-btn-container {
     padding: 0 36px 16px;
 }
+
+/* Analysis Stats Styling */
+.analysis-stats {
+    background: white;
+    border-radius: 12px;
+    padding: 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.website-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #f0f0f0;
+    font-weight: 500;
+    color: #2c3e50;
+}
+
+.website-info img {
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin: 16px 0 0;
+}
+
+.stat-item {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 12px;
+    text-align: center;
+    transition: all 0.2s ease;
+}
+
+.stat-item:hover {
+    background: #f0f0f0;
+}
+
+.stat-value {
+    font-size: 18px;
+    font-weight: 600;
+    color: #3498db;
+    margin-bottom: 4px;
+}
+
+.stat-label {
+    font-size: 12px;
+    color: #6c757d;
+}
+

@@ -5,6 +5,7 @@ $(document).ready(() => {
     initializePopup();
     setChat();
     setStart();
+    setAnalyze();
 });
 
 function initializePopup() {
@@ -16,7 +17,6 @@ function initializePopup() {
     chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
         websiteInfo = getWebsiteInfoFromUrl(tabs[0].url);
         websiteInfo.hostLogo = tabs[0].favIconUrl;
-        console.log(websiteInfo);
         $('.website-favicon').attr('src', websiteInfo.hostLogo);
     });
 
@@ -168,7 +168,6 @@ function setStart() {
                     contentType: 'application/json',
                     data: JSON.stringify({ web_url: addHttps(websiteInfo.domainName) }),
                     success: (response) => {
-                        console.log(response);
                         if (response.status === 'success') {
                             $welcomeMessage.stop().fadeOut(100, function() {
                                 startNewChat(websiteInfo.hostName, websiteInfo.hostLogo);
@@ -260,6 +259,90 @@ function setStart() {
     }
 }
 
+function setAnalyze() {
+    $(document).on('click', '#startAnalyzeBtn', async () => {
+        // Update the current message to show loading state
+        $('#messagesContainer').html(`
+            <div class="message-container assistant-container">
+                <div class="assistant-icon">
+                    <img src="../img/logo2.png" alt="Assistant">
+                </div>
+                <div class="message assistant">
+                    <div class="analysis container">
+                        <div class="mb-3">
+                            Starting website analysis
+                            <div class="thinking-indicator mt-1">
+                                <span class="dot-1">.</span><span class="dot-2">.</span><span class="dot-3">.</span>
+                                <span class="dot-4">.</span><span class="dot-5">.</span><span class="dot-6">.</span>
+                            </div>
+                        </div>
+                        <div class="analysis-stats">
+                            <div class="website-info mb-3">
+                                <img src="${websiteInfo.hostLogo}" alt="Logo">
+                                <span>${websiteInfo.hostName}</span>
+                            </div>
+                            <div class="stats-grid">
+                                <div class="stat-item">
+                                    <div class="stat-value pages-count">0</div>
+                                    <div class="stat-label">Pages</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-value domains-count">0</div>
+                                    <div class="stat-label">Domains</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-value failed-urls-count">0</div>
+                                    <div class="stat-label">Fails</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>  
+                </div>
+            </div>
+        `);
+
+        // try {
+        //     const response = await $.ajax({
+        //         url: 'http://localhost:7777/crawl',
+        //         method: 'POST',
+        //         contentType: 'application/json',
+        //         data: JSON.stringify({
+        //             domainName: websiteInfo.domainName,
+        //             hostName: websiteInfo.hostName,
+        //             domainLimit: websiteInfo.subdomain
+        //         })
+        //     });
+
+        //     if (response.success) {
+        //         // Update the message with success state
+        //         $currentMessage.html(`
+        //             <div class="mb-3">Website analysis completed! You can now start chatting.</div>
+        //             <button id="startChatBtn" class="modal-btn">
+        //                 <i class="bi bi-chat-dots-fill"></i>Start Chat
+        //             </button>
+        //         `);
+        //     } else {
+        //         $currentMessage.html(`
+        //             <div class="text-danger mb-3">Analysis failed: ${response.message}</div>
+        //             <button id="startAnalyzeBtn" class="modal-btn">
+        //                 <i class="bi bi-ui-checks-grid"></i>Retry Analysis
+        //             </button>
+        //         `);
+        //     }
+        // } catch (error) {
+        //     $currentMessage.html(`
+        //         <div class="text-danger mb-3">Error: ${error.message}</div>
+        //         <button id="startAnalyzeBtn" class="modal-btn">
+        //             <i class="bi bi-ui-checks-grid"></i>Retry Analysis
+        //         </button>
+        //     `);
+        // }
+    });
+}
+
+
+// ******* Helper Functions ******
+// Generate a unique conversation id
 function generateConversationId() {
     return `conv-${Math.random().toString(36).substring(2, 10)}`;
 }
