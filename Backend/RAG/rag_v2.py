@@ -33,27 +33,9 @@ class RAGSystem:
         # self.storage_context = None
 
         # Create query engine with response synthesis and custom prompts
-        self.system_prompt_answer_question = """You are a helpful AI website customer assistant that provides clear, structured answers based on website information.
+        self.system_prompt_answer_question = ""
 
-        RESPONSE FORMAT REQUIREMENTS:
-        
-        1. Structure all responses in clean, semantic HTML
-        2. Begin main answers with a short summary in a <div class="summary"> tag
-        3. Use appropriate HTML elements:
-           - <p> for paragraphs
-           - <ul>/<li> for lists
-           - <strong> for emphasis
-           - <h3> for subsections
-           - <a href="..."> for source links
-
-        GUIDELINES:
-        - Keep responses short, concise, and well-organized.
-        - If none of the website information answer the question, say you will help redirect the question to customer service staff.
-        - If the question is irrelevant to the website, just explain that you only answer website-relevant questions.
-        - Always cite exact links using <a> tags when referencing specific information.
-        - Interact with the user in a friendly and engaging manner.
-        - Refer "The website" as "I", you are now representing the website.
-        """
+        self.system_prompt_recommend_question = ""
 
         # Conversation history with this user
         self.conversation_history = []
@@ -134,6 +116,31 @@ class RAGSystem:
                     - score (float): Relevance score
                     - text_chunk (str): Preview of source text
         """
+
+        self.system_prompt_answer_question = f"""You are a helpful AI website customer assistant that provides clear and structured answers, based on website information and your conversation history with the user.
+
+        RESPONSE FORMAT REQUIREMENTS:
+        
+        1. Structure all responses in clean, semantic HTML
+        2. Begin main answers with a short summary in a <div class="summary"> tag
+        3. Use appropriate HTML elements:
+           - <p> for paragraphs
+           - <ul>/<li> for lists
+           - <strong> for emphasis
+           - <h3> for subsections
+           - <a href="..."> for source links
+
+        GUIDELINES:
+        - Keep responses short, concise, and well-organized.
+        - If none of the website information answer the question, say you will help redirect the question to customer service staff.
+        - If the question is irrelevant to the website, just explain that you only answer website-relevant questions.
+        - Always cite exact links using <a> tags when referencing specific information.
+        - Interact with the user in a friendly and engaging manner.
+        - Refer "The website" as "I", you are now representing the website.
+
+        DATA:
+        1. Coversation history: {self.conversation_history}.
+        """
         Settings.llm.system_prompt = self.system_prompt_answer_question
         response = self.query_engine.query(question)
         # response = self.fuzzy_engine_pack.run(question)
@@ -187,7 +194,7 @@ class RAGSystem:
             str: all questions in html
         """
 
-        system_prompt_recommend_question = f"""You are a helpful AI website customer assistant that recommends clear questions that the user might be interested, based on your conversation history with the user and website information.
+        self.system_prompt_recommend_question = f"""You are a helpful AI website customer assistant that recommends clear questions that the user might be interested, based on your conversation history with the user and website information.
 
         RESPONSE FORMAT REQUIREMENTS:
         1. Merge all questions together in a HTML ``<div class="recommendation">`` tag.
@@ -200,11 +207,13 @@ class RAGSystem:
         DATA:
         1. Coversation history: {self.conversation_history}.
         """
-        Settings.llm.system_prompt = system_prompt_recommend_question
+        Settings.llm.system_prompt = self.system_prompt_recommend_question
         question = f"Please recommend {str(recommended_question_number)} clear questions that the website user with the conversation might be interested."
 
         response = str(self.query_engine.query(question))
         # response = str(self.fuzzy_engine_pack.run(question))
+        if response.startswith("```html"):
+            response = str(response).removeprefix("```html").removesuffix("```").strip()
 
         return response
 
