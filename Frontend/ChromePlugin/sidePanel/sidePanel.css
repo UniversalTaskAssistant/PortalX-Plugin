@@ -1275,3 +1275,42 @@ textarea:focus {
     color: orangered !important;
     display: none;
 }
+
+/* Recommendation Questions Styling */
+.recommendation {
+    margin-top: 40px;
+}
+
+.message .recommendation {
+    margin-top: 20px;
+}
+
+.recommendation-item {
+    padding: 14px 20px;
+    margin: 30px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: var(--bs-body-color);
+    font-size: 0.95rem;
+    background: floralwhite;
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    /* border: 1px solid rgba(0, 0, 0, 0.007); */
+    text-align: center;
+}
+
+.recommendation-item:hover {
+    transform: translateY(-3px);
+    transition: all 0.2s ease-in-out !important;
+    /* border: 1px solid #cb6be521; */
+    box-shadow: rgba(202, 107, 229, 0.15) 0px 7px 29px 0px;
+}
+
+.message .recommendation-item {
+    padding: 6px 14px;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    margin: 15px 0;
+    text-align: left;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.16);
+}

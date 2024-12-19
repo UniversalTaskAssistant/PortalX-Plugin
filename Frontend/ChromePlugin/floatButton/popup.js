@@ -35,7 +35,6 @@ function setChat(){
     const $messagesContainer = $('#messagesContainer');
     const $queryInput = $('#queryInput');
     const $sendButton = $('#sendButton');
-    const $recomQuestion = $('.recommendation-item');
 
     $sendButton.on('click', sendMessage);
     $queryInput.on('keypress', (e) => {

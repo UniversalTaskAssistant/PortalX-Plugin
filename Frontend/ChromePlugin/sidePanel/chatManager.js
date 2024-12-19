@@ -83,6 +83,12 @@ export class ChatManager {
             // Initialize RAG for the selected chat and display it
             this.startRagChatForCurrentWebsite(false, selectedChat);
         });
+
+        $(document).on('click', '.recommendation-item', (e) => {
+            const question = $(e.target).text();
+            this.$queryInput.val(question);
+            this.$queryButton.click();
+        });
     }
 
     // *******************************
@@ -220,6 +226,7 @@ export class ChatManager {
                     this.setQueryButtonLoading(false);
                     if (newChat) {
                         this.startNewChat(this.currentChatWebsite.name, this.currentChatWebsite.logo);
+                        this.showRecommendedQuestions(response.recommended_questions);
                     }
                     else if (selectedChat) {
                         // Display the selected chat
@@ -311,5 +318,17 @@ export class ChatManager {
 
     clearQueryInput() {
         this.$queryInput.val('');
+    }
+
+    showRecommendedQuestions(questions) {
+        /*
+        questions:
+        <div class="recommendation">
+            <p class="recommendation-item">What should I bring to my first appointment?</p>
+            <p class="recommendation-item">How can I book an appointment online?</p>
+            <p class="recommendation-item">Where are your clinic locations?</p>
+        </div>
+        */
+        this.$welcomeMessage.append(questions);
     }
 }
