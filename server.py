@@ -24,6 +24,11 @@ CORS(app, resources={
 # Global variable declaration
 utaweb = None
 
+"""
+**********************
+*** Data Retrieval ***
+**********************
+"""
 @app.route('/get_all_websites_info', methods=['GET'])
 def get_all_websites_info():
     """
@@ -90,6 +95,11 @@ def get_chat_history():
     chat_history.sort(key=lambda x: x['timestamp'], reverse=True)
     return jsonify(chat_history)
 
+"""
+***************************
+*** Crawling & Analysis ***
+***************************
+"""
 def crawl_process(web_url, domain_limit):
     """
     Crawl a website
@@ -131,7 +141,11 @@ def crawl():
     process.start()
     return jsonify({"status": "success", "message": "Crawling started in background"})
 
-
+"""
+*******************
+*** RAG Systems ***
+*******************
+"""
 @app.route('/initialize_rag', methods=['POST'])
 def initialize_rag_systems():
     """

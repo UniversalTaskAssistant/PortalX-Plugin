@@ -169,7 +169,7 @@ body {
 .welcome-title-intro {
     font-weight: 500;
     color: #2c3e50;
-    margin-bottom: 2rem;
+    margin-bottom: 0.5rem;
     font-size: 1.1rem;
     display: flex;
     align-items: center;
@@ -518,3 +518,57 @@ body {
     transform: translateY(-3px);
 }
 
+/* Recommendation Questions Styling */
+.recommendation {
+    margin: 0;
+}
+
+.recommendation-item {
+    padding: 6px 13px;
+    margin: 20px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: black;
+    font-size: 0.85rem;
+    background: linear-gradient(145deg, #ffffff, #f8f9fa);
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    border: 1px solid rgba(0, 0, 0, 0.007);
+    text-align: left;
+}
+
+.recommendation-item:hover {
+    transform: translateY(-3px);
+    transition: all 0.2s ease-in-out !important;
+    border: 1px solid #cb6be521;
+    box-shadow: rgba(202, 107, 229, 0.15) 0px 7px 29px 0px;
+}
+
+.message .recommendation-item {
+    padding: 6px 14px;
+    border-radius: 10px;
+    font-size: 0.8rem;
+    margin: 12px 0;
+}
+
+.bar-btn{    
+    padding: 0.5rem 1.25rem;
+    margin: 0 3px 0 0;
+    transition: all 0.3s ease;
+    border: none;
+    color: white;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius:40px;
+    font-weight: 500;
+    font-size: 14px;
+    background: var(--primary-gradient);
+}
+
+.bar-btn:hover {
+    transform: translateY(-2px);
+    border: none;
+    box-shadow: 0 4px 12px rgba(202, 107, 229, 0.15);
+}

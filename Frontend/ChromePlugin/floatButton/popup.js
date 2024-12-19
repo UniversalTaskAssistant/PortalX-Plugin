@@ -35,6 +35,22 @@ function setChat(){
     const $messagesContainer = $('#messagesContainer');
     const $queryInput = $('#queryInput');
     const $sendButton = $('#sendButton');
+    const $recomQuestion = $('.recommendation-item');
+
+    $sendButton.on('click', sendMessage);
+    $queryInput.on('keypress', (e) => {
+        if (e.which === 13 && !e.shiftKey) {
+            e.preventDefault();
+            sendMessage();
+        }
+    });
+
+    $(document).on('click', '.recommendation-item', (e) => {
+        const question = $(e.target).text();
+        $queryInput.val(question);
+        sendMessage();
+    });
+
 
     async function sendMessage() {
         const query = $queryInput.val().trim();
@@ -108,14 +124,6 @@ function setChat(){
 
         return $container;
     }
-
-    $sendButton.on('click', sendMessage);
-    $queryInput.on('keypress', (e) => {
-        if (e.which === 13 && !e.shiftKey) {
-            e.preventDefault();
-            sendMessage();
-        }
-    });
     
     // Add a message to the chat
     function addMessage(text, type) {
@@ -171,6 +179,7 @@ function setStart() {
                         if (response.status === 'success') {
                             $welcomeMessage.stop().fadeOut(100, function() {
                                 startNewChat(websiteInfo.hostName, websiteInfo.hostLogo);
+                                showRecommendedQuestions(response.recommended_questions);
                             });
                         } else if (response.status === 'not_found') {
                             $startChatBtn.text('Website not analyzed yet');
@@ -255,6 +264,18 @@ function setStart() {
                 </div>
             </div>
         `);
+    }
+
+    function showRecommendedQuestions(questions) {
+        /*
+        questions:
+        <div class="recommendation">
+            <p class="recommendation-item">What should I bring to my first appointment?</p>
+            <p class="recommendation-item">How can I book an appointment online?</p>
+            <p class="recommendation-item">Where are your clinic locations?</p>
+        </div>
+        */
+        $welcomeMessage.append(questions);
     }
 }
 
