@@ -63,7 +63,7 @@ def get_website_info():
             website_data = json.load(f)
             return jsonify({"status": "success", "data": website_data})
     except FileNotFoundError:
-        return jsonify({"status": "not_found", "message": f"Website {web_url} not found in the database"})
+        return jsonify({"status": "not_found", "message": f"Website {domain_name} not found in the database"})
     except Exception as e:
         print(f"Error reading website file {file_path}: {e}")
         return jsonify({"status": "error", "message": f"Error reading website information: {str(e)}"})

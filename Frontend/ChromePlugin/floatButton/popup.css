@@ -6,20 +6,20 @@
 }
 
 /* Scope scrollbar to our specific elements */
-#messagesContainer::-webkit-scrollbar {
+::-webkit-scrollbar {
     width: 6px;
 }
 
-#messagesContainer::-webkit-scrollbar-track {
+::-webkit-scrollbar-track {
     background: #f1f1f1;
 }
 
-#messagesContainer::-webkit-scrollbar-thumb {
+::-webkit-scrollbar-thumb {
     background: rgba(0, 0, 0, 0.2);
     border-radius: 3px;
 }
 
-#messagesContainer::-webkit-scrollbar-thumb:hover {
+::-webkit-scrollbar-thumb:hover {
     background: rgba(0, 0, 0, 0.3);
 }
 
@@ -242,7 +242,6 @@ body {
     border: 1px solid rgba(0, 0, 0, 0.1);
     border-radius: 8px;
     padding: 12px;
-    padding-right: 80px;
     padding-bottom: 40px;
     resize: none;
     font-size: 14px;
