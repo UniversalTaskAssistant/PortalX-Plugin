@@ -24,8 +24,8 @@ CORS(app, resources={
 # Global variable declaration
 utaweb = None
 
-@app.route('/get_websites', methods=['GET'])
-def get_websites():
+@app.route('/get_all_websites_info', methods=['GET'])
+def get_all_websites_info():
     """
     Get list of all crawled websites
     Return:
@@ -43,6 +43,33 @@ def get_websites():
     # Sort by crawl time, newest first
     websites.sort(key=lambda x: x['crawl_time'], reverse=True)
     return jsonify(websites)
+
+@app.route('/get_website_info', methods=['POST'])
+def get_website_info():
+    """
+    Get information for a specific website
+    Args:
+        web_url: URL of the website to get info for
+    Return:
+        website_info: Website information or error message
+    """
+    data = request.json
+    domain_name = data.get('domainName')
+    company_name = utaweb.get_company_name_from_url(domain_name)
+    file_path = f'Output/websites/{company_name}/website_info.json'
+    
+    print(data)
+
+    try:
+        with open(file_path, 'r') as f:
+            website_data = json.load(f)
+            return jsonify({"status": "success", "data": website_data})
+    except FileNotFoundError:
+        return jsonify({"status": "not_found", "message": f"Website {web_url} not found in the database"})
+    except Exception as e:
+        print(f"Error reading website file {file_path}: {e}")
+        return jsonify({"status": "error", "message": f"Error reading website information: {str(e)}"})
+
 
 @app.route('/initialize_rag', methods=['POST'])
 def initialize_rag_systems():

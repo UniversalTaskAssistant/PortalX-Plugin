@@ -281,6 +281,33 @@ function setAnalyze() {
         }
     });
 
+    $(document).on('click', '.refresh-btn', async () => {
+        try {
+            const response = await $.ajax({
+                url: 'http://localhost:7777/get_website_info',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    domainName: addHttps(websiteInfo.domainName)
+                })
+            });
+
+            console.log(response);
+
+            if (response.status === 'success') {
+                const websiteData = response.data;
+                // Update stats using the same format as websiteManager
+                $('.pages-count').text(websiteData.visited_urls.length);
+                $('.domains-count').text(Object.keys(websiteData.domain_urls).length);
+                $('.failed-urls-count').text(websiteData.failed_urls?.length || 0);
+            } else {
+                console.error('Failed to get website info:', response.message);
+            }
+        } catch (error) {
+            console.error('Error fetching website info:', error);
+        }
+    });
+
     function showAnalysisFailureMessage(message) {
         $('#messagesContainer').html(`
             <div class="message-container assistant-container">

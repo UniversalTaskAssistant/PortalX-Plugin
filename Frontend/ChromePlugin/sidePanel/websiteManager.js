@@ -214,7 +214,7 @@ export class WebsiteManager {
     async loadAllWebsitesHistory() {
         try {
             const websites = await $.ajax({
-                url: 'http://localhost:7777/get_websites',
+                url: 'http://localhost:7777/get_all_websites_info',
                 method: 'GET'
             });
             // Clear and update the websites data
