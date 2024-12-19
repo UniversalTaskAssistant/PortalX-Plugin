@@ -123,7 +123,7 @@ class UTAWeb:
 
         recommended_questions = rag_system.recommend_questions(self.recommended_question_number)
         print("----------")
-        print(f"Recommended initrial questions: {recommended_questions}")
+        print(f"Recommended initial questions: {recommended_questions}")
         print("----------")
 
         while True:
@@ -132,6 +132,7 @@ class UTAWeb:
             if question == "quit":
                 break
             result = rag_system.answer_question(question)
+            print(result['sources'])
             print(rag_system.format_response(result))
             recommended_questions = rag_system.recommend_questions(self.recommended_question_number)
             print("----------")
