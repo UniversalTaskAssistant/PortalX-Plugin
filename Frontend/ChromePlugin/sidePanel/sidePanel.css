@@ -1307,10 +1307,11 @@ textarea:focus {
 }
 
 .message .recommendation-item {
-    padding: 6px 14px;
+    padding: 10px 14px;
     border-radius: 10px;
     font-size: 0.9rem;
-    margin: 15px 0;
+    margin: 18px 0;
     text-align: left;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.16);
+    background: white;
 }
