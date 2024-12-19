@@ -190,7 +190,8 @@ class RAGSystem:
         system_prompt_recommend_question = f"""You are a helpful AI website customer assistant that recommends clear questions that the user might be interested, based on your conversation history with the user and website information.
 
         RESPONSE FORMAT REQUIREMENTS:
-        1. Respond in JSON ONLY with format {{["your_question_1", "your_question_2", ...]}}.
+        1. Merge all questions together in a HTML ``<div class="recommendation">`` tag.
+        2. Use HTML tag ``<span class="recommendation-item">`` for each question.
         
         GUIDELINES:
         1. Keep questions short, concise, and well-organized.
@@ -204,10 +205,8 @@ class RAGSystem:
 
         response = str(self.query_engine.query(question))
         # response = str(self.fuzzy_engine_pack.run(question))
-        if response.startswith("```json"):
-            response = str(response).removeprefix("```json").removesuffix("```").strip()
 
-        return json.loads(response)
+        return response
 
     @staticmethod
     def format_response(result: Dict[str, Any], show_sources: bool = False) -> str:
