@@ -180,7 +180,7 @@ class RAGSystem:
     
     def recommend_questions(self, recommended_question_number: int) -> List[str]:
         """
-        Process a query against the document store.
+        Recommend initial and conversational questions.
         Args:
             question (str): User's question to be answered
         Returns:
@@ -205,7 +205,7 @@ class RAGSystem:
         1. Coversation history: {self.conversation_history}.
         """
         Settings.llm.system_prompt = system_prompt_recommend_question
-        question = f"Please recommend {recommended_question_number} clear questions that the website user with the conversation might be interested."
+        question = f"Please recommend {str(recommended_question_number)} clear questions that the website user with the conversation might be interested."
 
         response = str(self.query_engine.query(question))
         # response = str(self.fuzzy_engine_pack.run(question))

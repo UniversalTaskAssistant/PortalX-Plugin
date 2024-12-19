@@ -8,7 +8,7 @@ from scrapy.crawler import CrawlerProcess
 class UTAWeb:
     _rag_systems = {}  # Dictionary to store RAG systems by company_name in memory
 
-    def __init__(self, initializing=False, data_dir=None, recommended_question_number="three"):
+    def __init__(self, initializing=False, data_dir=None, recommended_question_number=3):
         self.crawler_process = None  # Temporary crawler process worker without storing in memory
         self.data_dir = data_dir if data_dir is not None else "./Backend/Output/websites"
         if initializing:
