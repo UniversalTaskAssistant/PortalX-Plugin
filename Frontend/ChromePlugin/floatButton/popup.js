@@ -218,20 +218,18 @@ function setStart() {
     }
 
     function showFailureMessage(message) {
-        $welcomeMessage.stop().fadeOut(100, function() {
-            $welcomeMessage.html(`
-                <div class="align-items-center mb-2">
-                    <span class="mb-4 welcome-title-intro text-danger">
-                        <i class="fas fa-exclamation-circle"></i> Error
-                    </span>
-                    <p class="text-danger">${message}</p>
-                    <button class="btn btn-outline-primary retry-btn">Try Again</button>
-                </div>
-            `).fadeIn(300);
+        $welcomeMessage.hide().html(`
+            <div class="align-items-center mb-2">
+                <span class="mb-4 welcome-title-intro text-danger">
+                    <i class="fas fa-exclamation-circle"></i> Error
+                </span>
+                <p class="text-danger">${message}</p>
+                <button class="btn btn-outline-primary retry-btn">Try Again</button>
+            </div>
+        `).fadeIn(300);
 
-            $('.retry-btn').on('click', function() {
-                $startChatBtn.trigger('click');
-            });
+        $('.retry-btn').on('click', function() {
+            $startChatBtn.trigger('click');
         });
         
         $startChatBtn.prop('disabled', false);
@@ -239,7 +237,10 @@ function setStart() {
     }
 
     function showAnalyzingMessage() {
-        const messageHtml = `
+        $welcomeMessage.hide();
+        $('.message-container').remove();
+
+        $('#messagesContainer').append(`
             <div class="message-container assistant-container">
                 <div class="assistant-icon">
                     <img src="../img/logo2.png" alt="Assistant">
@@ -253,8 +254,7 @@ function setStart() {
                     </div>
                 </div>
             </div>
-        `;
-        $('#messagesContainer').html(messageHtml);
+        `);
     }
 }
 
@@ -319,7 +319,10 @@ function setAnalyze() {
     });
 
     function showAnalysisFailureMessage(message) {
-        $('#messagesContainer').html(`
+        $('.welcome-message').hide();
+        $('.message-container').remove();
+
+        $('#messagesContainer').append(`
             <div class="message-container assistant-container">
                 <div class="assistant-icon">
                     <img src="../img/logo2.png" alt="Assistant">
@@ -342,8 +345,11 @@ function setAnalyze() {
     }
 
     function showAnalyzingMessage() {
+        $('.welcome-message').hide();
+        $('.message-container').remove();
+
         // Update the current message to show loading state
-        $('#messagesContainer').html(`
+        $('#messagesContainer').append(`
             <div class="message-container assistant-container">
                 <div class="assistant-icon">
                     <img src="../img/logo2.png" alt="Assistant">
