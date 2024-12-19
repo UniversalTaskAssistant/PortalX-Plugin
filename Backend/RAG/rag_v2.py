@@ -178,18 +178,13 @@ class RAGSystem:
             "sources": sources
         }
     
-    def recommend_questions(self, recommended_question_number: int) -> List[str]:
+    def recommend_questions(self, recommended_question_number: int) -> str:
         """
         Recommend initial and conversational questions.
         Args:
-            question (str): User's question to be answered
+            recommended_question_number (int): number of recommended questions
         Returns:
-            Dict[str, Any]: Dictionary containing:
-                - answer (str): Generated response to the question
-                - sources (list): List of dictionaries containing:
-                    - file (str): Source filename
-                    - score (float): Relevance score
-                    - text_chunk (str): Preview of source text
+            str: all questions in html
         """
 
         system_prompt_recommend_question = f"""You are a helpful AI website customer assistant that recommends clear questions that the user might be interested, based on your conversation history with the user and website information.
