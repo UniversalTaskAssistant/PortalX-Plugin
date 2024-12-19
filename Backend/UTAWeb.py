@@ -3,7 +3,7 @@ import os
 from os.path import join as pjoin
 from Crawler.crawler import UTASpider
 from scrapy.crawler import CrawlerProcess
-from RAG.rag import RAGSystem
+from RAG.rag_re import RAGSystem
 
 
 class UTAWeb:
