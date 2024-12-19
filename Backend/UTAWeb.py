@@ -115,7 +115,7 @@ class UTAWeb:
             web_url (str): URL of the website being queried (for display purposes)
             company_name (str): Name of company to load documents from
         Returns:
-            str: Formatted response from RAG system
+            str: Combined response for the query and 3 more related questions in HTML format
         """
         company_name = self.get_company_name_from_url(web_url) if company_name is None else company_name
         rag_system = self.initialize_rag(directory_path=pjoin(self.data_dir, company_name))

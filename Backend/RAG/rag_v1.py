@@ -159,7 +159,7 @@ class RAGSystem:
 
         RESPONSE FORMAT REQUIREMENTS:
         1. Merge all questions together in a HTML ``<div class="recommendation">`` tag.
-        2. Use HTML tag ``<span class="recommendation-item">`` for each question.
+        2. Use HTML tag ``<p class="recommendation-item">`` for each question.
         
         GUIDELINES:
         1. Keep questions short, concise, and well-organized.

@@ -68,28 +68,6 @@ def get_website_info():
         print(f"Error reading website file {file_path}: {e}")
         return jsonify({"status": "error", "message": f"Error reading website information: {str(e)}"})
 
-
-@app.route('/initialize_rag', methods=['POST'])
-def initialize_rag_systems():
-    """
-    Initialize RAG systems for a company
-    Return:
-        status: success or error
-        message: message to display
-    """
-    print(request.json)
-    data = request.json
-    directory_path = pjoin(utaweb.data_dir, utaweb.get_company_name_from_url(data['web_url']))
-    if not os.path.exists(directory_path):
-        return jsonify({"status": "not_found", "message": f"Website {data['web_url']} not found in the database"})
-    try:
-        utaweb.initialize_rag(directory_path=directory_path)
-        print('RAG systems initialized')
-        return jsonify({"status": "success", "message": "RAG systems initialized"})
-    except Exception as e:
-        print(f"Error initializing RAG systems: {e}")
-        return jsonify({"status": "error", "message": "Error initializing RAG systems"})
-
 @app.route('/get_chat_history', methods=['POST'])
 def get_chat_history():
     """
@@ -153,6 +131,29 @@ def crawl():
     process.start()
     return jsonify({"status": "success", "message": "Crawling started in background"})
 
+
+@app.route('/initialize_rag', methods=['POST'])
+def initialize_rag_systems():
+    """
+    Initialize RAG systems for a company
+    Return:
+        status: success or error
+        message: message to display
+    """
+    print(request.json)
+    data = request.json
+    directory_path = pjoin(utaweb.data_dir, utaweb.get_company_name_from_url(data['web_url']))
+    if not os.path.exists(directory_path):
+        return jsonify({"status": "not_found", "message": f"Website {data['web_url']} not found in the database"})
+    try:
+        utaweb.initialize_rag(directory_path=directory_path)
+        recommended_questions = utaweb.recommend_questions(web_url=data['web_url'])
+        print(f'RAG systems initialized for {data["web_url"]}')
+        return jsonify({"status": "success", "message": "RAG systems initialized", "recommended_questions": recommended_questions})
+    except Exception as e:
+        print(f"Error initializing RAG systems: {e}")
+        return jsonify({"status": "error", "message": "Error initializing RAG systems"})
+
 @app.route('/query', methods=['POST'])
 def query():
     """
@@ -162,7 +163,7 @@ def query():
     """
     print(request.json)
     data = request.json
-    result = utaweb.query_web(query=data['query'], web_url=data['web_url'])
+    result = utaweb.query(query=data['query'], web_url=data['web_url'])
     # Init user for saving conversations
     user = User(user_id=data['user_id'])
     # Save conversation
