@@ -8,14 +8,12 @@ from scrapy.crawler import CrawlerProcess
 class UTAWeb:
     _rag_systems = {}  # Dictionary to store RAG systems by company_name in memory
 
-    def __init__(self, initializing=False, data_dir=None, recommended_question_number=3):
+    def __init__(self, initializing=False, data_dir=None):
         self.crawler_process = None  # Temporary crawler process worker without storing in memory
-        self.data_dir = data_dir if data_dir is not None else "./Backend/Output/websites"
+        self.data_dir = data_dir if data_dir is not None else "./Output/websites"
         if initializing:
             self.initialize_crawler()
             self.initialize_rag()
-
-        self.recommended_question_number = recommended_question_number
 
     """
     **********************
@@ -40,16 +38,16 @@ class UTAWeb:
         company_name = directory_path.replace('\\', '/').split('/')[-1] if directory_path else None
         if company_name not in self._rag_systems:
             print(f"Initializing RAG System for {company_name}...")
-            from RAG.rag_v2 import RAGSystem
+            from RAG.rag_v1 import RAGSystem
             self._rag_systems[company_name] = RAGSystem()
             if directory_path:
                 self._rag_systems[company_name].initialize(directory_path=directory_path)
         return self._rag_systems[company_name]
 
     """
-    **********************
-    *** Main Functions ***
-    **********************
+    ************************
+    *** Crawl & Analysis ***
+    ************************
     """
     @staticmethod
     def get_company_name_from_url(web_url: str):
@@ -91,7 +89,25 @@ class UTAWeb:
             self.crawler_process.start()
             return 'Success'
 
-    def query_web(self, query: str, web_url: str, company_name=None):
+    """
+    *************
+    *** Query ***
+    *************
+    """
+    def recommend_questions(self, web_url: str, company_name=None):
+        """
+        Recommend questions for the user to ask.
+        Args:
+            web_url (str): URL of the website being queried (for display purposes)
+            company_name (str): Name of company to load documents from
+        Returns:
+            list[str]: List of recommended questions
+        """
+        company_name = self.get_company_name_from_url(web_url) if company_name is None else company_name
+        rag_system = self.initialize_rag(directory_path=pjoin(self.data_dir, company_name))
+        return rag_system.recommend_questions()
+
+    def query(self, query: str, web_url: str, company_name=None):
         """
         Query RAG system with a question and return formatted response.
         Args:
@@ -103,12 +119,17 @@ class UTAWeb:
         """
         company_name = self.get_company_name_from_url(web_url) if company_name is None else company_name
         rag_system = self.initialize_rag(directory_path=pjoin(self.data_dir, company_name))
-        result = rag_system.query(query)
-        formatted_response = rag_system.format_response(result)
-        print(formatted_response)
-        return formatted_response
+        # Query question first
+        query_result = rag_system.answer_question(query)
+        query_result = rag_system.format_response(query_result)
+        # Recommend 3 more related questions
+        recommend_result = rag_system.recommend_questions()
+        # Combine results
+        combined_result = query_result + "\n\n" + recommend_result
+        print(combined_result)
+        return combined_result
 
-    def query_web_test(self, web_url: str, company_name=None):
+    def query_test(self, web_url: str, company_name=None):
         """
         Initialize RAG system and start interactive query loop.
         Args:
@@ -121,7 +142,7 @@ class UTAWeb:
         rag_system = self.initialize_rag(directory_path=pjoin(self.data_dir, company_name))
         print(f'Welcome to the {web_url}!')
 
-        recommended_questions = rag_system.recommend_questions(self.recommended_question_number)
+        recommended_questions = rag_system.recommend_questions()
         print("----------")
         print(f"Recommended initial questions: {recommended_questions}")
         print("----------")
@@ -134,9 +155,9 @@ class UTAWeb:
             result = rag_system.answer_question(question)
             print(result['sources'])
             print(rag_system.format_response(result))
-            recommended_questions = rag_system.recommend_questions(self.recommended_question_number)
+            recommended_questions = rag_system.recommend_questions()
             print("----------")
-            print(f"Recommended conversational questions: {recommended_questions}")
+            print(recommended_questions)
             print("----------")
 
 
@@ -153,8 +174,7 @@ if __name__ == "__main__":
     # exclude_domains = ['www.signavio.com/de', 'www.signavio.com/es', 'www.signavio.com/fr', 'www.signavio.com/it', 'www.signavio.com/ja', 'www.signavio.com/ko', 'www.signavio.com/pt-br']
 
     # utaweb.crawl_web(web_url=web_url, company_name=company_name, domain_limit=domain_limit, exclude_domains=None)
-    # utaweb.query_web(query="Explain the MINT study program?", web_url=web_url)
-    # utaweb.query_web(query="How many Nobel awardees graduated from TUM?", web_url=web_url)
-    # utaweb.query_web(query="Can you explain to me who is Donald Trump?", web_url=web_url)
-    utaweb.query_web_test(web_url=web_url, company_name=company_name)
-
+    utaweb.query(query="Explain the MINT study program?", web_url=web_url)
+    # utaweb.query(query="How many Nobel awardees graduated from TUM?", web_url=web_url)
+    # utaweb.query(query="Can you explain to me who is Donald Trump?", web_url=web_url)
+    # utaweb.query_test(web_url=web_url, company_name=company_name)
