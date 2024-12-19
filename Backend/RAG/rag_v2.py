@@ -28,9 +28,9 @@ class RAGSystem:
         # Create query engine with response synthesis
         self.query_engine = None
         # Create fuzzy citation query engine
-        self.fuzzy_engine_pack = None
+        # self.fuzzy_engine_pack = None
 
-        self.storage_context = None
+        # self.storage_context = None
 
         # Create query engine with response synthesis and custom prompts
         self.system_prompt_answer_question = """You are a helpful AI website customer assistant that provides clear, structured answers based on website information.
@@ -116,8 +116,8 @@ class RAGSystem:
             streaming=True
         )
 
-        FuzzyCitationEnginePack = download_llama_pack("FuzzyCitationEnginePack", "./fuzzy_pack")
-        self.fuzzy_engine_pack = FuzzyCitationEnginePack(self.query_engine, threshold=75)
+        # FuzzyCitationEnginePack = download_llama_pack("FuzzyCitationEnginePack", "./fuzzy_pack")
+        # self.fuzzy_engine_pack = FuzzyCitationEnginePack(self.query_engine, threshold=10)
 
         self.conversation_history = []
 
@@ -155,8 +155,7 @@ class RAGSystem:
         #     node_start_char_idx = node.start_char_idx
         #     node_end_char_idx = node.end_char_idx
 
-        #     # using the node start and end char idx, we can offset the
-        #     # citation chunk to locate the citation
+        #     # using the node start and end char idx, we can offset the citation chunk to locate the citation
         #     document_start_char_idx = start_char_idx + node_start_char_idx
         #     document_end_char_idx = document_start_char_idx + (end_char_idx - start_char_idx)
         #     documents = self.storage_context.docstore.get_all_documents()
