@@ -58,8 +58,6 @@ def get_website_info():
     company_name = utaweb.get_company_name_from_url(domain_name)
     file_path = f'Output/websites/{company_name}/website_info.json'
     
-    print(data)
-
     try:
         with open(file_path, 'r') as f:
             website_data = json.load(f)

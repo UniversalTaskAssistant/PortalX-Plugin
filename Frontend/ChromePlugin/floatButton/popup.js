@@ -235,7 +235,7 @@ function setStart() {
         });
         
         $startChatBtn.prop('disabled', false);
-        $startChatBtn.html('<i class="bi bi-chat-dots-fill me-2"></i>Start Chat with this Website');
+        $startChatBtn.html('<i class="bi bi-chat-dots-fill me-2"></i>Start chat with this website');
     }
 
     function showAnalyzingMessage() {
@@ -274,6 +274,7 @@ function setAnalyze() {
             
             // If the request is successful, show the analyzing message
             showAnalyzingMessage();
+            $('#startChatBtn').text('Analyze a few pages and you can start chatting');
             
         } catch (error) {
             console.error('Failed to start analysis:', error);
@@ -300,6 +301,15 @@ function setAnalyze() {
                 $('.pages-count').text(websiteData.visited_urls.length);
                 $('.domains-count').text(Object.keys(websiteData.domain_urls).length);
                 $('.failed-urls-count').text(websiteData.failed_urls?.length || 0);
+
+                // Enable chat button if more than 10 pages analyzed
+                if (websiteData.visited_urls.length >= 10) {
+                    $('#startChatBtn')
+                        .prop('disabled', false)
+                        .html('<i class="bi bi-chat-dots-fill me-2"></i>Start chat with this website')
+                        .removeClass('btn-secondary')
+                        .addClass('btn-primary');
+                }
             } else {
                 console.error('Failed to get website info:', response.message);
             }
