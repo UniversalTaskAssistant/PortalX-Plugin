@@ -673,3 +673,24 @@ body {
     padding: 0.25rem 0.75rem;
     margin-left: 8px;
 }
+
+/* Analysis Status Styles */
+.analysis-status {
+    display: inline-block;
+    font-size: 12px;
+    padding: 4px 8px;
+    border-radius: 8px;
+    position: relative;
+    top: -2px;
+    margin-left: 3px;
+}
+
+.status-completed {
+    background-color: #e7f5ed;
+    color: #0d6832;
+}
+
+.status-in-progress {
+    background-color: #fff4e5;
+    color: #945800;
+}

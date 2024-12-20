@@ -449,6 +449,20 @@ function setAnalyze() {
             <img src="${faviconUrl}" alt="">
             <span>${websiteAnalysisInfo.company_name}</span>
         `);
+
+        // Update analysis status
+        if (websiteAnalysisInfo.crawl_finished) {
+            $modal.find('.analysis-status')
+                .text('Completed')
+                .removeClass('status-in-progress')
+                .addClass('status-completed');
+        } else {
+            $modal.find('.analysis-status')
+                .text('In Progress')
+                .removeClass('status-completed')
+                .addClass('status-in-progress');
+        }
+
         
         $modal.find('.pages-count').text(websiteAnalysisInfo.visited_urls.length);
         $modal.find('.domains-count').text(Object.keys(websiteAnalysisInfo.domain_urls).length);

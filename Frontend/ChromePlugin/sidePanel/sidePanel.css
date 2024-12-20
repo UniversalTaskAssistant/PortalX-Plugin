@@ -1189,11 +1189,15 @@ textarea:focus {
 }
 
 .website-status-bg-success{
-    background: limegreen;
+    background-color: #e7f5ed;
+    color: #0d6832;
+    width: 80px;
 }
 
 .website-status-bg-warning{
-    background: orange;
+    background-color: #fff4e5;
+    color: #945800;
+    width: 80px;
 }
 
 .thinking-indicator {
