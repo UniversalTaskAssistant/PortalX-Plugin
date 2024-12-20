@@ -463,7 +463,7 @@ function setAnalyze() {
                 .addClass('status-in-progress');
         }
 
-        
+        $modal.find('.update-time').text('Last Update ' + websiteAnalysisInfo.crawl_time);
         $modal.find('.pages-count').text(websiteAnalysisInfo.visited_urls.length);
         $modal.find('.domains-count').text(Object.keys(websiteAnalysisInfo.domain_urls).length);
         // $modal.find('.failed-urls-count').text(websiteAnalysisInfo.failed_urls?.length || 0);
