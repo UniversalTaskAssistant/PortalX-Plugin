@@ -58,7 +58,7 @@
                     <div class="chat-actions">
                         <div class="action-buttons">
                             <div class="left-buttons">
-                                <button id="analysisLoadingBtn" class="btn-icon loading-indicator" title="Analysis in progress">
+                                <button id="analysisLoadingBtn" class="btn-icon loading-indicator check-analysis" title="Analysis in progress">
                                     <i class="bi bi-arrow-repeat gradient-bkg-text"></i>
                                 </button>
                             </div>
@@ -73,6 +73,65 @@
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Website Details Modal -->
+    <div class="modal fade" id="websiteDetailsModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Analysis Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body webside-analysis-info">
+                    <h6 class="company-name mb-4"></h6>
+                    <!-- <div class="url-section mb-3">
+                        <small class="text-muted d-block mb-1">Site Domain</small>
+                        <a href="#" class="domain-url" target="_blank"></a> -->
+                        <!-- <small class="text-muted d-block mt-3 mb-1">Subdomain Limit</small>
+                        <a href="#" class="subdomain-limit"></a> -->
+                    <!-- </div> -->
+                    <div class="mb-4">
+                        <small class="text-muted d-block mb-2">Website Analysis</small>
+                        <div class="stats-section">
+                            <div class="row g-3">
+                                <div class="col-4">
+                                    <div class="stat-item">
+                                        <span class="stat-value pages-count">0</span>
+                                        <small class="text-muted d-block">Pages</small>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="stat-item">
+                                        <span class="stat-value domains-count">0</span>
+                                        <small class="text-muted d-block">Domains</small>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="stat-item">
+                                        <span class="stat-value failed-urls-count">0</span>
+                                        <small class="text-muted d-block">Fails</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="domains-section mb-4">
+                        <small class="text-muted d-block mb-2">Domains Coverage</small>
+                        <div class="domains-list"></div>
+                    </div>
+                    <!-- <div class="failed-urls-section">
+                        <small class="text-muted d-block mb-2">Failed URLs</small>
+                        <div class="failed-urls-list"></div>
+                    </div> -->
+                </div>
+                <!-- <div class="modal-footer">
+                    <button type="button" class="btn btn-primary w-100 start-chat-btn modal-btn" data-bs-dismiss="modal">
+                        <i class="bi bi-chat-dots-fill me-2" style="vertical-align: 0px;"></i>Start Chat with this Website
+                    </button>
+                </div> -->
             </div>
         </div>
     </div>

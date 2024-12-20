@@ -318,7 +318,7 @@ export class WebsiteManager {
 
     // *******************
     // ****** Modal ******
-    // Format the timestamp
+    // Update the website info into modal
     updateWebInfoModal(event) {
         const url = $(event.currentTarget).attr('data-url');
         const websiteData = this.getWebsiteData(url);

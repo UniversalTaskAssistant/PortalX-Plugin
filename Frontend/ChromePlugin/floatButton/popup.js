@@ -338,6 +338,28 @@ function setAnalyze() {
         }
     });
 
+    $(document).on('click', '.check-analysis', async () => {
+        try {
+            const response = await $.ajax({
+                url: 'http://localhost:7777/get_website_info',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    domainName: addHttps(websiteInfo.domainName)
+                })
+            });
+            console.log(response);
+            if (response.status === 'success') {
+                const websiteData = response.data;
+                setWebsiteAnalysisModal(websiteData);
+            } else {
+                console.error('Failed to get website info:', response.message);
+            }
+        } catch (error) {
+            console.error('Error fetching website info:', error);
+        }
+    });
+
     function showAnalysisFailureMessage(message) {
         $('.welcome-message').hide();
         $('.message-container').remove();
@@ -413,6 +435,44 @@ function setAnalyze() {
                 </div>
             </div>
         `);
+    }
+
+    function setWebsiteAnalysisModal(websiteAnalysisInfo) {
+        // Skip if no data
+        if (!websiteAnalysisInfo) return;
+
+        const $modal = $('#websiteDetailsModal');
+        
+        // Update modal content
+        const faviconUrl = websiteInfo.hostLogo;
+        $modal.find('.company-name').html(`
+            <img src="${faviconUrl}" alt="">
+            <span>${websiteAnalysisInfo.company_name}</span>
+        `);
+        
+        $modal.find('.pages-count').text(websiteAnalysisInfo.visited_urls.length);
+        $modal.find('.domains-count').text(Object.keys(websiteAnalysisInfo.domain_urls).length);
+        // $modal.find('.failed-urls-count').text(websiteAnalysisInfo.failed_urls?.length || 0);
+        // $modal.find('.subdomain-limit').text(websiteAnalysisInfo.domain_limit || 'None');
+        
+        // Update domains list
+        updateModalDomainsList($modal, websiteAnalysisInfo);
+        // Show modal using Bootstrap
+        const modal = new bootstrap.Modal($modal);
+        modal.show();
+    }
+
+    // Helper function to update domains list
+    function updateModalDomainsList($modal, websiteData) {
+        const $domainsList = $modal.find('.domains-list').empty();
+        Object.entries(websiteData.domain_urls).forEach(([domain, count]) => {
+            $domainsList.append(`
+                <div class="domain-item">
+                    <span class="domain-name">${domain}</span>
+                    <span class="domain-count badge">${count} pages</span>
+                </div>
+            `);
+        });
     }
 }
 
