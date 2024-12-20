@@ -629,6 +629,24 @@ body {
     border-radius: 4px;
 }
 
+.company-info {
+    margin-bottom: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.update-time {
+    font-size: 12px;
+    color: #6c757d;
+    position: relative;
+    top: 1px;
+}
+
+.update-time::before {
+    content: none;
+}
+
 .domain-url {
     color: #3498db;
     text-decoration: none;
@@ -695,22 +713,4 @@ body {
 .status-in-progress {
     background-color: #fff4e5;
     color: #945800;
-}
-
-.company-info {
-    margin-bottom: 15px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.update-time {
-    font-size: 12px;
-    color: #6c757d;
-    position: relative;
-    top: 1px;
-}
-
-.update-time::before {
-    content: none;
 }

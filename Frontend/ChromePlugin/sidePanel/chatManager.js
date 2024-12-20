@@ -173,7 +173,7 @@ export class ChatManager {
         this.$welcomeMessage.hide().html(`
             <div class="align-items-center mb-2">
                 <h5 class="mb-4">Hello! Ask me anything about</h5>
-                <h5 class="text-muted"><img src="${hostLogo}" alt="Logo" class="me-2" style="width: 20px; height: 20px;">${hostName}</h5>
+                <h5><img src="${hostLogo}" alt="Logo" class="me-2" style="width: 20px; height: 20px;">${hostName}</h5>
             </div>
         `).fadeIn(300);
         this.$queryInput.val('');
@@ -198,7 +198,7 @@ export class ChatManager {
         this.$welcomeMessage.hide().html(`
             <div class="align-items-center mb-2">
                 <h5 class="mb-4">Initializing chating system for</h5>
-                <h5 class="text-muted mb-4"><img src="${hostLogo}" alt="Logo" class="me-2" style="width: 20px; height: 20px;">${hostName}</h5>
+                <h5 class="mb-4"><img src="${hostLogo}" alt="Logo" class="me-2" style="width: 20px; height: 20px;">${hostName}</h5>
                 <h5><span class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></span></h5>
             </div>
         `).fadeIn(300);
