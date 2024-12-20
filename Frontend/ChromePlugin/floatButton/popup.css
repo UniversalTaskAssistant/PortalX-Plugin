@@ -265,11 +265,12 @@ body {
     display: flex;
     gap: 8px;
     z-index: 1;
+    width: 96%;
 }
 
 .btn-icon {
     width: 32px;
-    height: 32px;
+    height: 26px;
     border-radius: 50%;
     border: none;
     background: transparent;
@@ -285,6 +286,47 @@ body {
 .btn-icon:hover {
     color: #ca6be5;
     background: rgba(202, 107, 229, 0.1);
+}
+
+/* Add this after the .btn-icon styles */
+.loading-indicator {
+    color: #6c757d;
+}
+
+.loading-indicator i {
+    animation: spin 1.5s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Optional: Add a subtle hover effect */
+.loading-indicator:hover {
+    color: var(--primary-color);
+    background: rgba(202, 107, 229, 0.1);
+}
+
+.action-buttons {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.left-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+.right-buttons {
+    display: flex;
+    gap: 8px;
 }
 
 /* Update message styling */
