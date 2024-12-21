@@ -147,7 +147,7 @@ def crawl():
 *******************
 """
 @app.route('/initialize_rag', methods=['POST'])
-def initialize_rag_systems():
+def initialize_rag_system():
     """
     Initialize RAG systems for a company
     Return:
@@ -160,10 +160,14 @@ def initialize_rag_systems():
     if not os.path.exists(directory_path):
         return jsonify({"status": "not_found", "message": f"Website {data['web_url']} not found in the database"})
     try:
+        # 1. Initialize RAG system
         utaweb.initialize_rag(directory_path=directory_path)
+        # 2. Recommend questions
         recommended_questions = utaweb.recommend_questions(web_url=data['web_url'])
+        # 3. Get website info
+        website_info = json.load(open(pjoin(directory_path, 'website_info.json'), 'r'))
         print(f'RAG systems initialized for {data["web_url"]}')
-        return jsonify({"status": "success", "message": "RAG systems initialized", "recommended_questions": recommended_questions})
+        return jsonify({"status": "success", "message": "RAG systems initialized", "recommended_questions": recommended_questions, "website_analysis_info": website_info})
     except Exception as e:
         print(f"Error initializing RAG systems: {e}")
         return jsonify({"status": "error", "message": "Error initializing RAG systems"})

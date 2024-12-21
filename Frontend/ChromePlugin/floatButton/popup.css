@@ -714,3 +714,28 @@ body {
     background-color: #fff4e5;
     color: #945800;
 }
+
+#reinitializeRagBtn {
+    width: 150px;
+    margin-right: 0;
+}
+
+.new-page-number {
+    padding: 6px 12px;
+    background-color: #f8f9fa;
+    border-radius: 4px;
+    font-size: 14px;
+    color: #6c757d;
+    margin: 0;
+}
+
+.new-page-number .number {
+    color: #3498db;
+    font-weight: 600;
+}
+
+.modal-footer {
+    gap: 10px;
+    justify-content: space-between;
+    align-items: center;
+}

@@ -1,5 +1,15 @@
 let conversationId = generateConversationId();
 let websiteInfo = {}; 
+/* {
+    url: url, 
+    title: title, 
+    domainName: domainName, 
+    hostName: hostName, 
+    subdomain: subdomain,
+    hostLogo: favicon,
+    currentPage: currentPage // current loading page number
+}
+*/
 
 $(document).ready(() => {
     initializePopup();
@@ -179,6 +189,7 @@ function setStart() {
                             $welcomeMessage.stop().fadeOut(100, function() {
                                 startNewChat(websiteInfo.hostName, websiteInfo.hostLogo);
                                 showRecommendedQuestions(response.recommended_questions);
+                                websiteInfo.currentPage = response.website_analysis_info.visited_urls.length;
                             });
                         } else if (response.status === 'not_found') {
                             $startChatBtn.text('Website not analyzed yet');
@@ -461,6 +472,9 @@ function setAnalyze() {
                 .text('In Progress')
                 .removeClass('status-completed')
                 .addClass('status-in-progress');
+            // Show the number of new pages
+            $modal.find('.new-page-number .number').text(websiteAnalysisInfo.visited_urls.length - websiteInfo.currentPage);
+            $modal.find('.modal-footer').show();
         }
 
         $modal.find('.update-time').text('Last Update ' + websiteAnalysisInfo.crawl_time);
