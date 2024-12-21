@@ -156,12 +156,13 @@ def initialize_rag_system():
     """
     print(request.json)
     data = request.json
+    load_from_disk = data['load_from_disk'] if 'load_from_disk' in data else True
     directory_path = pjoin(utaweb.data_dir, utaweb.get_company_name_from_url(data['web_url']))
     if not os.path.exists(directory_path):
         return jsonify({"status": "not_found", "message": f"Website {data['web_url']} not found in the database"})
     try:
         # 1. Initialize RAG system
-        utaweb.initialize_rag(directory_path=directory_path)
+        utaweb.initialize_rag(directory_path=directory_path, load_from_disk=load_from_disk)
         # 2. Recommend questions
         recommended_questions = utaweb.recommend_questions(web_url=data['web_url'])
         # 3. Get website info

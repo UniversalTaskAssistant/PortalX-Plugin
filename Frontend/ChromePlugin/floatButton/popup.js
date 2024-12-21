@@ -167,9 +167,18 @@ function setStart() {
     const $startChatBtn = $('#startChatBtn');
     const $welcomeMessage = $('.welcome-message');
     const $inputSection = $('.input-section');
-    const $queryInput = $('#queryInput');   
+    const $queryInput = $('#queryInput');  
+    const $reinitializeRagBtn = $('#reinitializeRagBtn');
 
     $startChatBtn.on('click', () => {
+        initializeRag(false);
+    });
+
+    $reinitializeRagBtn.on('click', () => {
+        initializeRag(true);
+    });
+
+    function initializeRag(reEmbed=false) {
         // Disable the start chat button
         $startChatBtn.prop('disabled', true);
         $startChatBtn.text('Loading...');
@@ -183,7 +192,10 @@ function setStart() {
                     url: 'http://127.0.0.1:7777/initialize_rag',
                     method: 'POST',
                     contentType: 'application/json',
-                    data: JSON.stringify({ web_url: addHttps(websiteInfo.domainName) }),
+                    data: JSON.stringify({ 
+                        web_url: addHttps(websiteInfo.domainName), 
+                        load_from_disk: ! reEmbed 
+                    }),
                     success: (response) => {
                         if (response.status === 'success') {
                             $welcomeMessage.stop().fadeOut(100, function() {
@@ -204,7 +216,7 @@ function setStart() {
                 });
             });
         });
-    });
+    }
 
     function startNewChat(hostName, hostLogo) {
         conversationId = generateConversationId();

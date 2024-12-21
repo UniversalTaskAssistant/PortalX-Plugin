@@ -33,15 +33,15 @@ class UTAWeb:
                 'DOWNLOAD_TIMEOUT': 10
             })
 
-    def initialize_rag(self, directory_path: str=None):
-        # Initialize RAG System for specific company if not exists
+    def initialize_rag(self, directory_path: str=None, load_from_disk: bool=True):
+        # Initialize RAG System for specific company if not exists or force re-embedding
         company_name = directory_path.replace('\\', '/').split('/')[-1] if directory_path else None
-        if company_name not in self._rag_systems:
+        if company_name not in self._rag_systems or not load_from_disk:
             print(f"Initializing RAG System for {company_name}...")
             from RAG.rag_v1 import RAGSystem
             self._rag_systems[company_name] = RAGSystem()
             if directory_path:
-                self._rag_systems[company_name].initialize(directory_path=directory_path)
+                self._rag_systems[company_name].initialize(directory_path=directory_path, load_from_disk=load_from_disk)
         return self._rag_systems[company_name]
 
     """
@@ -107,18 +107,19 @@ class UTAWeb:
         rag_system = self.initialize_rag(directory_path=pjoin(self.data_dir, company_name))
         return rag_system.recommend_questions()
 
-    def query(self, query: str, web_url: str, company_name=None):
+    def query(self, query: str, web_url: str, company_name=None, load_from_disk: bool=True):
         """
         Query RAG system with a question and return formatted response.
         Args:
             query (str): Question to query RAG system with
             web_url (str): URL of the website being queried (for display purposes)
             company_name (str): Name of company to load documents from
+            load_from_disk (bool): Whether to load existing embeddings from disk, False to re-embedding
         Returns:
             str: Combined response for the query and 3 more related questions in HTML format
         """
         company_name = self.get_company_name_from_url(web_url) if company_name is None else company_name
-        rag_system = self.initialize_rag(directory_path=pjoin(self.data_dir, company_name))
+        rag_system = self.initialize_rag(directory_path=pjoin(self.data_dir, company_name), load_from_disk=load_from_disk)
         # Query question first
         query_result = rag_system.answer_question(query)
         query_result = rag_system.format_response(query_result)
