@@ -326,13 +326,27 @@ export class WebsiteManager {
         if (!websiteData) return;
         const $modal = $('#websiteDetailsModal');
         
-        // Update modal content
+        // Update modal title
         const faviconUrl = this.getFaviconUrl(websiteData.start_urls[0]);
         $modal.find('.company-name').html(`
             <img src="${faviconUrl}" alt="">
             <span>${websiteData.company_name}</span>
         `);
+
+        // Update analysis status
+        if (websiteData.crawl_finished) {
+            $modal.find('.analysis-status')
+                .text('Completed')
+                .removeClass('website-status-bg-warning')
+                .addClass('website-status-bg-success');
+        } else {
+            $modal.find('.analysis-status')
+                .text('In Progress')
+                .removeClass('website-status-bg-success')
+                .addClass('website-status-bg-warning');
+        }
         
+        // Update modal content
         $modal.find('.domain-url')
             .text(websiteData.start_urls[0])
             .attr('href', websiteData.start_urls[0]);

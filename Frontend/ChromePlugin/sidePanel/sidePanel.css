@@ -670,6 +670,19 @@ textarea:focus {
     color: #0d6efd;
 }
 
+/* Analysis Status Styles */
+.analysis-status {
+    display: inline-block;
+    font-size: 12px;
+    padding: 4px 8px;
+    border-radius: 8px;
+    position: relative;
+    top: -2px;
+    margin-left: 5px;
+    text-align: center;
+    width: auto !important;
+}
+
 /* Website Info Sections */
 .website-info .company-name {
     font-size: 1.25rem;
