@@ -1024,6 +1024,30 @@ textarea:focus {
     box-shadow: 0 8px 14px rgba(202, 107, 229, 0.15);
 }
 
+.analysis-status-indicator {
+    display: none;
+}
+
+.loading-indicator {
+    color: #6c757d;
+    margin-top: -2px;
+}
+
+.loading-indicator i {
+    animation: spin 1.5s linear infinite;
+    display: inline-block;
+    transform-origin: center;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
 /* Other Website Input */
 #otherWebsiteInput{
     padding-right: 40px;

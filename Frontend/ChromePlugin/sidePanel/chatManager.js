@@ -182,17 +182,15 @@ export class ChatManager {
 
     // Update the selected website tab
     updateSelectedWebsiteBar(hostName, hostLogo, domainUrl) {
-        const $selectedWebsite = $('.selected-website');
-        $selectedWebsite.empty();
-        $selectedWebsite.attr('data-url', domainUrl);
-        $selectedWebsite.append(`
-            <h6 class="text-muted"><img src="${hostLogo}" alt="Logo" class="me-2" style="width: 20px; height: 20px;">${hostName}</h6>
+        $('.selected-website').attr('data-url', domainUrl);
+        $('.selected-website-title').html(`
+            <img src="${hostLogo}" alt="Logo" class="me-2" style="width: 20px; height: 20px;">${hostName}
         `);
-        $('#changeWebsiteBtn').text('Change');
     }
 
     // Initialize chat message for the selected website
     initializingMessage(hostName, hostLogo) {
+        $('.analysis-status-indicator').hide();
         this.conversationId = this.generateConversationId();
         $('.message-container').remove();
         this.$welcomeMessage.hide().html(`
@@ -225,6 +223,7 @@ export class ChatManager {
                 if (response.status === 'success') {
                     this.setQueryButtonLoading(false);
                     if (newChat) {
+                        this.updateByAnalysisStatus(response.website_analysis_info.crawl_finished)
                         this.startNewChat(this.currentChatWebsite.name, this.currentChatWebsite.logo);
                         this.showRecommendedQuestions(response.recommended_questions);
                     }
@@ -330,5 +329,21 @@ export class ChatManager {
         </div>
         */
         this.$welcomeMessage.append(questions);
+    }
+
+    updateByAnalysisStatus(crawlFinished) {
+        const $indicator = $('.analysis-status-indicator');
+        $indicator.fadeIn(200);
+
+        if (crawlFinished) {
+            $indicator.removeClass('loading-indicator');
+            $indicator.attr('title', 'Analysis complete');
+            $indicator.html('<i class="bi bi-check-circle-fill gradient-bkg-text"></i>');
+    
+        } else {
+            $indicator.addClass('loading-indicator');
+            $indicator.attr('title', 'Analysis in progress');
+            $indicator.html('<i class="bi bi-arrow-repeat gradient-bkg-text"></i>');
+        }
     }
 }

@@ -555,7 +555,7 @@ function updateByAnalysisStatus(newPageNumber) {
     if (websiteInfo.anlysisFinished) {  
         // update input section
         $analysisLoadingBtn.removeClass('loading-indicator');
-        $analysisLoadingBtn.html('<i class="bi bi-bookmark-check-fill gradient-bkg-text"></i>');
+        $analysisLoadingBtn.html('<i class="bi bi-check-circle-fill gradient-bkg-text"></i>');
 
         // update modal
         $modal.find('.analysis-status')
