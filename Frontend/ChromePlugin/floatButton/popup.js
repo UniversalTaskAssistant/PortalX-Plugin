@@ -7,7 +7,10 @@ let websiteInfo = {};
     hostName: hostName, 
     subdomain: subdomain,
     hostLogo: favicon,
+
+    // Analysis info loaded from server
     currentPage: currentPage // current loading page number
+    anlysisFinished: anlysisFinished // whether analysis is finished
 }
 */
 
@@ -199,9 +202,12 @@ function setStart() {
                     success: (response) => {
                         if (response.status === 'success') {
                             $welcomeMessage.stop().fadeOut(100, function() {
+                                websiteInfo.currentPage = response.website_analysis_info.visited_urls.length;
+                                websiteInfo.anlysisFinished = response.website_analysis_info.crawl_finished;
+
+                                updateByAnalysisStatus();
                                 startNewChat(websiteInfo.hostName, websiteInfo.hostLogo);
                                 showRecommendedQuestions(response.recommended_questions);
-                                websiteInfo.currentPage = response.website_analysis_info.visited_urls.length;
                             });
                         } else if (response.status === 'not_found') {
                             $startChatBtn.text('Website not analyzed yet');
@@ -474,20 +480,8 @@ function setAnalyze() {
         `);
 
         // Update analysis status
-        if (websiteAnalysisInfo.crawl_finished) {
-            $modal.find('.analysis-status')
-                .text('Completed')
-                .removeClass('status-in-progress')
-                .addClass('status-completed');
-        } else {
-            $modal.find('.analysis-status')
-                .text('In Progress')
-                .removeClass('status-completed')
-                .addClass('status-in-progress');
-            // Show the number of new pages
-            $modal.find('.new-page-number .number').text(websiteAnalysisInfo.visited_urls.length - websiteInfo.currentPage);
-            $modal.find('.modal-footer').show();
-        }
+        const newPageNumber = websiteAnalysisInfo.visited_urls.length - websiteInfo.currentPage;
+        updateByAnalysisStatus(newPageNumber);
 
         $modal.find('.update-time').text('Last Update ' + websiteAnalysisInfo.crawl_time);
         $modal.find('.pages-count').text(websiteAnalysisInfo.visited_urls.length);
@@ -550,4 +544,46 @@ function addHttps(url) {
         return `https://${url}`;
     }
     return url;
+}
+
+function updateByAnalysisStatus(newPageNumber) {
+    const $analysisLoadingBtn = $('#analysisLoadingBtn');
+    const $reinitializeRagBtn = $('#reinitializeRagBtn');
+    const $modal = $('#websiteDetailsModal');
+        
+    // Update input section according to analysis status
+    if (websiteInfo.anlysisFinished) {  
+        // update input section
+        $analysisLoadingBtn.removeClass('loading-indicator');
+        $analysisLoadingBtn.html('<i class="bi bi-bookmark-check-fill gradient-bkg-text"></i>');
+
+        // update modal
+        $modal.find('.analysis-status')
+            .text('Completed')
+            .removeClass('status-in-progress')
+            .addClass('status-completed');
+        // Update footer
+        $modal.find('.reinitialize-rag-footer').hide();
+        $modal.find('#continueChatBtn').show();
+    } else {
+        // update input section
+        $analysisLoadingBtn.addClass('loading-indicator');
+        $analysisLoadingBtn.html('<i class="bi bi-arrow-repeat gradient-bkg-text"></i>');
+
+        // update modal
+        $modal.find('.analysis-status')
+            .text('In Progress')
+            .removeClass('status-completed')
+            .addClass('status-in-progress');
+        // Update footer
+        $modal.find('.new-page-number .number').text(newPageNumber);
+        $modal.find('.reinitialize-rag-footer').show();
+        $modal.find('#continueChatBtn').hide();
+
+        if (newPageNumber > 0) {
+            $reinitializeRagBtn.attr('disabled', false);
+        } else {
+            $reinitializeRagBtn.attr('disabled', true);
+        }
+    }
 }

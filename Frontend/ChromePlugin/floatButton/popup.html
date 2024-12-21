@@ -58,7 +58,7 @@
                     <div class="chat-actions">
                         <div class="action-buttons">
                             <div class="left-buttons">
-                                <button id="analysisLoadingBtn" class="btn-icon loading-indicator check-analysis" title="Analysis in progress">
+                                <button id="analysisLoadingBtn" class="btn-icon loading-indicator check-analysis" title="Check Analysis Status">
                                     <i class="bi bi-arrow-repeat gradient-bkg-text"></i>
                                 </button>
                             </div>
@@ -120,11 +120,14 @@
                         <div class="domains-list"></div>
                     </div>
                 </div>
-                <div class="modal-footer pt-0" style="display: none;">
-                    <span class="new-page-number"><span class="number">0</span> New Pages</span>
-                    <button type="button" id="reinitializeRagBtn" class="btn btn-primary modal-btn" data-bs-dismiss="modal">
-                        <i class="bi bi-arrow-repeat me-2" style="vertical-align: 0px;"></i>Reload Chatbot
-                    </button>
+                <div class="modal-footer pt-0">
+                    <div class="reinitialize-rag-footer">
+                        <span class="new-page-number"><span class="number">0</span> New Pages</span>
+                        <button type="button" id="reinitializeRagBtn" class="btn btn-primary modal-btn" data-bs-dismiss="modal">
+                            <i class="bi bi-arrow-repeat me-2" style="vertical-align: 0px;"></i>Reload Chatbot
+                        </button>
+                    </div>
+                    <button type="button" id="continueChatBtn" class="btn btn-primary modal-btn" data-bs-dismiss="modal"><i class="bi bi-chat-dots-fill me-2"></i>Continue Chat</button>
                 </div>
             </div>
         </div>

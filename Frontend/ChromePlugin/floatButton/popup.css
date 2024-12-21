@@ -284,6 +284,7 @@ body {
 }
 
 .btn-icon:hover {
+    transform: translateY(-2px);
     color: #ca6be5;
     background: rgba(202, 107, 229, 0.1);
 }
@@ -734,8 +735,10 @@ body {
     font-weight: 600;
 }
 
-.modal-footer {
+.reinitialize-rag-footer {
     gap: 10px;
     justify-content: space-between;
     align-items: center;
+    display: flex;
+    width: 100%;
 }
