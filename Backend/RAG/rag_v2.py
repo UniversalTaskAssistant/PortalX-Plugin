@@ -15,7 +15,7 @@ class RAGSystem:
         if 'Backend' in sys.path[-1]:
             self.openai_api_key = open(os.path.join(sys.path[-1], 'RAG/openaikey.txt'), 'r').read().strip()
         else:
-            self.openai_api_key = open('Backend/RAG/openaikey.txt', 'r').read().strip()
+            self.openai_api_key = open('RAG/openaikey.txt', 'r').read().strip()
 
         self.current_directory_path = None  # Path to the currently loaded directory
 
@@ -28,7 +28,7 @@ class RAGSystem:
         # Create query engine with response synthesis
         self.query_engine = None
         # Create fuzzy citation query engine
-        # self.fuzzy_engine_pack = None
+        self.fuzzy_engine_pack = None
 
         # self.storage_context = None
 
@@ -98,8 +98,8 @@ class RAGSystem:
             streaming=True
         )
 
-        # FuzzyCitationEnginePack = download_llama_pack("FuzzyCitationEnginePack", "./fuzzy_pack")
-        # self.fuzzy_engine_pack = FuzzyCitationEnginePack(self.query_engine, threshold=10)
+        FuzzyCitationEnginePack = download_llama_pack("FuzzyCitationEnginePack", "./fuzzy_pack")
+        self.fuzzy_engine_pack = FuzzyCitationEnginePack(self.query_engine, threshold=10)
 
         self.conversation_history = []
 
@@ -142,8 +142,8 @@ class RAGSystem:
         1. Coversation history: {self.conversation_history}.
         """
         Settings.llm.system_prompt = self.system_prompt_answer_question
-        response = self.query_engine.query(question)
-        # response = self.fuzzy_engine_pack.run(question)
+        # response = self.query_engine.query(question)
+        response = self.fuzzy_engine_pack.run(question)
         # print(f"Full answer: {str(response)}")
         self.conversation_history.append([question, str(response)])
 
@@ -185,7 +185,7 @@ class RAGSystem:
             "sources": sources
         }
     
-    def recommend_questions(self, recommended_question_number: int) -> str:
+    def recommend_questions(self, recommended_question_number: int=3) -> str:
         """
         Recommend initial and conversational questions.
         Args:
@@ -210,8 +210,8 @@ class RAGSystem:
         Settings.llm.system_prompt = self.system_prompt_recommend_question
         question = f"Please recommend {str(recommended_question_number)} clear questions that the website user with the conversation might be interested."
 
-        response = str(self.query_engine.query(question))
-        # response = str(self.fuzzy_engine_pack.run(question))
+        # response = str(self.query_engine.query(question))
+        response = str(self.fuzzy_engine_pack.run(question))
         if response.startswith("```html"):
             response = str(response).removeprefix("```html").removesuffix("```").strip()
 
