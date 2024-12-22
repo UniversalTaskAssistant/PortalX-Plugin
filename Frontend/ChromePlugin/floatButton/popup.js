@@ -42,6 +42,12 @@ function initializePopup() {
         // Send message to parent window to minimize
         window.parent.postMessage('minimize', '*');
     });
+
+    // Initialize all tooltips
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
 }
 
 function setChat(){
@@ -441,7 +447,10 @@ function setAnalyze() {
                                 <div class="spinner-border spinner-border-sm text-primary" role="status">
                                 <span class="visually-hidden">Loading...</span>
                                 </div>
-                                <button class="refresh-btn" title="Refresh website info">
+                                <button class="refresh-btn" 
+                                    data-bs-toggle="tooltip" 
+                                    data-bs-placement="top" 
+                                    title="Refresh analysis info">
                                     <i class="bi bi-arrow-clockwise"></i>
                                 </button>
                             </div>
@@ -464,6 +473,12 @@ function setAnalyze() {
                 </div>
             </div>
         `);
+
+        // Initialize tooltip for the newly added refresh button
+        const refreshBtn = document.querySelector('.refresh-btn');
+        if (refreshBtn) {
+            new bootstrap.Tooltip(refreshBtn);
+        }
     }
 
     function setWebsiteAnalysisModal(websiteAnalysisInfo) {
