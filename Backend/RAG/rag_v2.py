@@ -154,23 +154,24 @@ class RAGSystem:
         #     print("\nRelevant Node Chunk:\n", node_chunk)
         #     print("----------------")
 
-        # for chunk_info in response.metadata.values():
-        #     start_char_idx = chunk_info["start_char_idx"]
-        #     end_char_idx = chunk_info["end_char_idx"]
+        for chunk_info in response.metadata.values():
+            start_char_idx = chunk_info["start_char_idx"]
+            end_char_idx = chunk_info["end_char_idx"]
 
-        #     node = chunk_info["node"]
-        #     node_start_char_idx = node.start_char_idx
-        #     node_end_char_idx = node.end_char_idx
+            node = chunk_info["node"]
+            node_start_char_idx = node.start_char_idx
+            node_end_char_idx = node.end_char_idx
 
-        #     # using the node start and end char idx, we can offset the citation chunk to locate the citation
-        #     document_start_char_idx = start_char_idx + node_start_char_idx
-        #     document_end_char_idx = document_start_char_idx + (end_char_idx - start_char_idx)
-        #     documents = self.storage_context.docstore.get_all_documents()
-        #     text = documents[0].text[document_start_char_idx:document_end_char_idx]
+            # using the node start and end char idx, we can offset the citation chunk to locate the citation
+            document_start_char_idx = start_char_idx + node_start_char_idx
+            document_end_char_idx = document_start_char_idx + (end_char_idx - start_char_idx)
+            # documents = self.storage_context.docstore.get_all_documents()
+            documents = list(self.storage_context.docstore.docs.values())
+            text = documents[0].text[document_start_char_idx:document_end_char_idx]
 
-        #     print(text)
-        #     print(node.metadata)
-        #     print("----------------")
+            print(text)
+            print(node.metadata)
+            print("----------------")
 
         # Format source documents
         sources = []
