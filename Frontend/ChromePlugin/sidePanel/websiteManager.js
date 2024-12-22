@@ -347,6 +347,7 @@ export class WebsiteManager {
         }
         
         // Update modal content
+        $modal.find('.update-time').text('Last Update ' + websiteData.crawl_time);
         $modal.find('.domain-url')
             .text(websiteData.start_urls[0])
             .attr('href', websiteData.start_urls[0]);
