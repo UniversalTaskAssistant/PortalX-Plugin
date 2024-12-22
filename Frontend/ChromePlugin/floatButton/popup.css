@@ -435,6 +435,15 @@ body {
     }
 }
 
+.retry-btn {
+    width: 110px !important;
+    margin-top: 20px !important;
+}
+
+.retry-btn:hover {
+    color: white !important;
+}
+
 /* Prevent text selection on buttons */
 .btn-icon, .minimize-btn {
     user-select: none;

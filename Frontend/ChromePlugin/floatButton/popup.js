@@ -267,7 +267,7 @@ function setStart() {
                     <i class="fas fa-exclamation-circle"></i> Error
                 </span>
                 <p class="text-danger">${message}</p>
-                <button class="btn btn-outline-primary retry-btn">Try Again</button>
+                <button class="btn modal-btn retry-btn">Try Again</button>
             </div>
         `).fadeIn(300);
 
@@ -275,7 +275,7 @@ function setStart() {
             $startChatBtn.trigger('click');
         });
         
-        $startChatBtn.prop('disabled', false);
+        $startChatBtn.prop('disabled', true);
         $startChatBtn.html('<i class="bi bi-chat-dots-fill me-2"></i>Start chat with this website');
     }
 
