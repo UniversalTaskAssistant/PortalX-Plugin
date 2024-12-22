@@ -38,7 +38,7 @@ class UTAWeb:
         company_name = directory_path.replace('\\', '/').split('/')[-1] if directory_path else None
         if company_name not in self._rag_systems or not load_from_disk:
             print(f"Initializing RAG System for {company_name}...")
-            from RAG.rag_v2 import RAGSystem
+            from RAG.rag_v1 import RAGSystem
             self._rag_systems[company_name] = RAGSystem()
             if directory_path:
                 self._rag_systems[company_name].initialize(directory_path=directory_path, load_from_disk=load_from_disk)

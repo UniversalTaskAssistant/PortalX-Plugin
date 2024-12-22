@@ -338,11 +338,20 @@ export class ChatManager {
         if (crawlFinished) {
             $indicator.removeClass('loading-indicator');
             $indicator.attr('title', 'Analysis complete');
+            // Update tooltip content
+            const tooltip = bootstrap.Tooltip.getInstance($indicator[0]);
+            if (tooltip) {
+                tooltip.setContent({ '.tooltip-inner': 'Analysis complete' });
+            }
             $indicator.html('<i class="bi bi-check-circle-fill gradient-bkg-text"></i>');
-    
         } else {
             $indicator.addClass('loading-indicator');
             $indicator.attr('title', 'Analysis in progress');
+            // Update tooltip content
+            const tooltip = bootstrap.Tooltip.getInstance($indicator[0]);
+            if (tooltip) {
+                tooltip.setContent({ '.tooltip-inner': 'Analysis in progress' });
+            }
             $indicator.html('<i class="bi bi-arrow-repeat gradient-bkg-text"></i>');
         }
     }
