@@ -72,8 +72,8 @@ class RAGSystem:
         if load_from_disk and os.path.exists(f"{directory_path}/embedding"):
             print("Loading saved index from disk...")
             from llama_index.core import StorageContext, load_index_from_storage
-            self.storage_context = StorageContext.from_defaults(persist_dir=f"{directory_path}/embedding")
-            self.index = load_index_from_storage(self.storage_context)
+            storage_context = StorageContext.from_defaults(persist_dir=f"{directory_path}/embedding")
+            self.index = load_index_from_storage(storage_context)
         else:
             # Load documents and create new index
             print("Creating new index...")
@@ -99,7 +99,7 @@ class RAGSystem:
         )
 
         FuzzyCitationEnginePack = download_llama_pack("FuzzyCitationEnginePack", "./fuzzy_pack")
-        self.fuzzy_engine_pack = FuzzyCitationEnginePack(self.query_engine, threshold=10)
+        self.fuzzy_engine_pack = FuzzyCitationEnginePack(self.query_engine, threshold=60)
 
         self.conversation_history = []
 
@@ -142,8 +142,8 @@ class RAGSystem:
         1. Coversation history: {self.conversation_history}.
         """
         Settings.llm.system_prompt = self.system_prompt_answer_question
-        # response = self.query_engine.query(question)
-        response = self.fuzzy_engine_pack.run(question)
+        response = self.query_engine.query(question)
+        # response = self.fuzzy_engine_pack.run(question)
         # print(f"Full answer: {str(response)}")
         self.conversation_history.append([question, str(response)])
 
@@ -154,24 +154,24 @@ class RAGSystem:
         #     print("\nRelevant Node Chunk:\n", node_chunk)
         #     print("----------------")
 
-        for chunk_info in response.metadata.values():
-            start_char_idx = chunk_info["start_char_idx"]
-            end_char_idx = chunk_info["end_char_idx"]
+        # for chunk_info in response.metadata.values():
+        #     start_char_idx = chunk_info["start_char_idx"]
+        #     end_char_idx = chunk_info["end_char_idx"]
 
-            node = chunk_info["node"]
-            node_start_char_idx = node.start_char_idx
-            node_end_char_idx = node.end_char_idx
+        #     node = chunk_info["node"]
+        #     node_start_char_idx = node.start_char_idx
+        #     node_end_char_idx = node.end_char_idx
 
-            # using the node start and end char idx, we can offset the citation chunk to locate the citation
-            document_start_char_idx = start_char_idx + node_start_char_idx
-            document_end_char_idx = document_start_char_idx + (end_char_idx - start_char_idx)
-            # documents = self.storage_context.docstore.get_all_documents()
-            documents = list(self.storage_context.docstore.docs.values())
-            text = documents[0].text[document_start_char_idx:document_end_char_idx]
+        #     # using the node start and end char idx, we can offset the citation chunk to locate the citation
+        #     document_start_char_idx = start_char_idx + node_start_char_idx
+        #     document_end_char_idx = document_start_char_idx + (end_char_idx - start_char_idx)
+        #     # documents = self.storage_context.docstore.get_all_documents()
+        #     # documents = list(self.storage_context.docstore.docs.values())
+        #     text = self.documents[0].text[document_start_char_idx:document_end_char_idx]
 
-            print(text)
-            print(node.metadata)
-            print("----------------")
+        #     print(text)
+        #     print(node.metadata)
+        #     print("----------------")
 
         # Format source documents
         sources = []
@@ -181,6 +181,7 @@ class RAGSystem:
                 'score': round(node.score, 3) if node.score else None,
                 'text_chunk': node.text[:200] + "..."  # Preview of the chunk
             })
+            # print(f"************\nSources: \n{node.metadata.get('file_name', 'Unknown')}\n{node.text[:200] + '...'}\n************\n")
         return {
             "answer": str(response),
             "sources": sources
@@ -211,8 +212,8 @@ class RAGSystem:
         Settings.llm.system_prompt = self.system_prompt_recommend_question
         question = f"Please recommend {str(recommended_question_number)} clear questions that the website user with the conversation might be interested."
 
-        # response = str(self.query_engine.query(question))
-        response = str(self.fuzzy_engine_pack.run(question))
+        response = str(self.query_engine.query(question))
+        # response = str(self.fuzzy_engine_pack.run(question))
         if response.startswith("```html"):
             response = str(response).removeprefix("```html").removesuffix("```").strip()
 
