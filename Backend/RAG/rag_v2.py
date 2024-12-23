@@ -2,6 +2,7 @@ from llama_index.core import VectorStoreIndex, SimpleDirectoryReader, Settings
 from llama_index.core.llama_pack import download_llama_pack
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 from llama_index.llms.openai import OpenAI
+from bs4 import BeautifulSoup
 import os
 import sys
 import json
@@ -182,9 +183,12 @@ class RAGSystem:
                 'text_chunk': node.text[:200] + "..."  # Preview of the chunk
             })
             # print(f"************\nSources: \n{node.metadata.get('file_name', 'Unknown')}\n{node.text[:200] + '...'}\n************\n")
+        
+        plain_answer = str(response)
         return {
-            "answer": str(response),
-            "sources": sources
+            "plain_answer": plain_answer, 
+            "sources": sources,
+            "answer_with_citations": self.add_citations_to_html_answer(plain_answer, sources)
         }
     
     def recommend_questions(self, recommended_question_number: int=3) -> str:
@@ -240,6 +244,24 @@ class RAGSystem:
                 # output += f"\n   Relevance Score: {source['score']}"
                 # output += f"\n   Preview: {source['text_chunk']}\n"
         return output
+    
+    @staticmethod
+    def add_citations_to_html_answer(html_content: str, sources: List[List[str, float, str]]):
+        soup = BeautifulSoup(html_content, 'html.parser')
+
+        for source in sources:
+            citation_html = f'<div class="citation">{source["file"]}</div>'
+            text_chunk = source['text_chunk']
+            matching_element = soup.find(text=lambda text: text and text_chunk in text)
+            
+            if matching_element:
+                content_with_citation = soup.new_tag('div', attrs={'class': 'content-with-citation'})
+                content_with_citation.append(matching_element.extract())
+                citation_soup = BeautifulSoup(citation_html, 'html.parser')
+                content_with_citation.append(citation_soup)
+                matching_element.insert_after(content_with_citation)
+
+        return soup.prettify()
 
 
 if __name__ == "__main__":
