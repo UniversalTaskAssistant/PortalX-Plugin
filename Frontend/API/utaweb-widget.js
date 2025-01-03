@@ -40,8 +40,8 @@
             ]);
 
             // Load widget scripts
-            await loadResource('js', `${config.serverUrl}/Frontend/API/floatButton-widget.js`);
-            await loadResource('js', `${config.serverUrl}/Frontend/API/popup-widget.js`);
+            await loadResource('js', `${config.serverUrl}/Frontend/API/src/floatButton-widget.js`);
+            await loadResource('js', `${config.serverUrl}/Frontend/API/src/popup-widget.js`);
         } catch (error) {
             console.error('Error loading UTAWeb widget:', error);
         }
