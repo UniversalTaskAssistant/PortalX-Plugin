@@ -2,7 +2,6 @@
     // Configuration
     const config = {
         serverUrl: 'http://localhost:7777',
-        assetsUrl: 'http://localhost:7777/ChromePlugin'
     };
 
     // Helper function to get website info from URL
@@ -33,7 +32,8 @@
 
     // Make websiteInfo available globally
     window.UTAWebConfig = {
-        websiteInfo: websiteInfo
+        websiteInfo: websiteInfo,
+        config: config
     };
 
     function loadResource(type, url) {
@@ -58,10 +58,10 @@
     // Load resources in sequence
     async function initializeWidget() {
         try {
-            // Load CSS files from ChromePlugin directory
+            // Load CSS files 
             await Promise.all([
-                loadResource('css', `${config.assetsUrl}/floatButton/floatButton.css`),
-                loadResource('css', `${config.assetsUrl}/floatButton/popup.css`)
+                loadResource('css', `${config.serverUrl}/Frontend/API/src/style/floatButton-widget.css`),
+                loadResource('css', `${config.serverUrl}/Frontend/API/src/style/popup-widget.css`)
             ]);
 
             // Load jQuery and Bootstrap
@@ -70,7 +70,7 @@
                 loadResource('js', 'https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js')
             ]);
 
-            // Load widget scripts from API/src directory
+            // Load widget scripts 
             await loadResource('js', `${config.serverUrl}/Frontend/API/src/floatButton-widget.js`);
             await loadResource('js', `${config.serverUrl}/Frontend/API/src/popup-widget.js`);
         } catch (error) {

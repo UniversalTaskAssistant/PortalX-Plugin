@@ -14,7 +14,7 @@ function initializeFloatButton() {
 
         // Add logo image
         const $defaultLogo = $('<img>')
-            .attr('src', `${serverUrl}/img/logo2.png`)
+            .attr('src', `${serverUrl}/Frontend/API/img/logo2.png`)
             .addClass('uta-default-logo')
             .appendTo($floatButton);
 
@@ -27,7 +27,7 @@ function initializeFloatButton() {
         // Get favicon from the current page
         const currentFavicon = $('link[rel="icon"]').attr('href') || 
                              $('link[rel="shortcut icon"]').attr('href') ||
-                             `${serverUrl}/img/logo2.png`;
+                             `${serverUrl}/Frontend/API/img/logo2.png`;
         if (currentFavicon) {
             $favicon.attr('src', currentFavicon);
         }
