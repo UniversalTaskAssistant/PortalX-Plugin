@@ -1,33 +1,38 @@
 let conversationId = generateConversationId();
-let websiteInfo = {}; 
-/* {
-    url: url, 
-    title: title, 
-    domainName: domainName, 
-    hostName: hostName, 
-    subdomain: subdomain,
-    hostLogo: favicon,
+let websiteInfo = null;
 
-    // Analysis info loaded from server
-    currentPage: currentPage // current loading page number
-    anlysisFinished: anlysisFinished // whether analysis is finished
-}
-*/
+// Listen for website info from parent
+window.addEventListener('message', (event) => {
+    console.log('Received message:', event.data);
+    
+    if (event.data.type === 'websiteInfo') {
+        console.log('Got website info:', event.data.data);
+        websiteInfo = event.data.data;
+        
+        // Initialize after receiving website info
+        initializePopup();
+        setChat();
+        setStart();
+        setAnalyze();
+    }
+});
 
 $(document).ready(() => {
-    initializePopup();
-    setChat();
-    setStart();
-    setAnalyze();
+    console.log('Document ready, waiting for website info...');
+    // Don't initialize until we receive the websiteInfo
 });
 
 function initializePopup() {
+    if (!websiteInfo) {
+        console.error('No website info available');
+        return;
+    }
+
     const $newChatBtn = $('#newChatBtn');
     const $minimizeBtn = $('.minimize-btn');
     const $welcomeMessage = $('.welcome-message');
 
-    // Get website info from parent window's config
-    websiteInfo = window.parent.UTAWebConfig.websiteInfo;
+    // Use websiteInfo that was received via postMessage
     $('.website-favicon').attr('src', websiteInfo.hostLogo);
 
     $newChatBtn.on('click', () => {

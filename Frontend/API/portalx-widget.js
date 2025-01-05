@@ -70,7 +70,7 @@
                 loadResource('js', 'https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js')
             ]);
 
-            // Load widget scripts 
+            // Create and load float button widget
             await loadResource('js', `${config.serverUrl}/Frontend/API/src/floatButton-widget.js`);
         } catch (error) {
             console.error('Error loading UTAWeb widget:', error);
