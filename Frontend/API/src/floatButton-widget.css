@@ -1,0 +1,78 @@
+/* Iframe container */
+.uta-popup-iframe {
+    position: fixed;
+    bottom: 130px;
+    right: 40px;
+    width: 460px;
+    height: 620px;
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 4px 25px rgba(0, 0, 0, 0.1);
+    z-index: 2147483646;
+    background-color: white;
+    transform-origin: bottom right;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+    opacity: 0;
+    transform: scale(0.3);
+}
+
+.uta-popup-iframe.show {
+    opacity: 1;
+    transform: scale(1);
+}
+
+/* Float Button styles with uta- prefix */
+.uta-float-button {
+    position: fixed;
+    bottom: 60px;
+    right: 40px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: white;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 25px rgba(202, 107, 229, 0.2);
+    z-index: 2147483647;
+    transition: all 0.3s ease;
+    padding: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.uta-float-button img {
+    width: 50%;
+    height: 50%;
+    object-fit: contain;
+    transition: all 0.3s ease;
+    position: absolute;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    top: 50%;
+    opacity: 1;
+}
+
+.uta-float-button .uta-default-logo {
+    transform: translate(-50%, -50%);  /* Initial state */
+}
+
+.uta-float-button .uta-default-logo.slide-out {
+    transform: translate(-50%, 50%);   /* Slide down */
+    opacity: 0;
+}
+
+.uta-float-button .uta-favicon-logo {
+    transform: translate(-50%, -150%); /* Start from top */
+    opacity: 0;
+}
+
+.uta-float-button .uta-favicon-logo.slide-in {
+    transform: translate(-50%, -50%);  /* Slide to center */
+    opacity: 1;
+}
+
+.uta-float-button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 30px rgba(202, 107, 229, 0.3);
+}

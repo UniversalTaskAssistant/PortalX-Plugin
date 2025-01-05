@@ -49,7 +49,7 @@ function initializeFloatButton() {
         // Create popup
         const $popup = $('<iframe>')
             .addClass('uta-popup-iframe')
-            .attr('src', `${serverUrl}/ChromePlugin/floatButton/popup.html`)
+            .attr('src', `${serverUrl}/Frontend/API/src/popup-widget.html`)
             .hide()
             .appendTo('body');
 

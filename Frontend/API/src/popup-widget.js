@@ -26,12 +26,9 @@ function initializePopup() {
     const $minimizeBtn = $('.minimize-btn');
     const $welcomeMessage = $('.welcome-message');
 
-    // Get current tab's domain and update favicon
-    chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-        websiteInfo = getWebsiteInfoFromUrl(tabs[0].url);
-        websiteInfo.hostLogo = tabs[0].favIconUrl;
-        $('.website-favicon').attr('src', websiteInfo.hostLogo);
-    });
+    // Get website info from parent window's config
+    websiteInfo = window.parent.UTAWebConfig.websiteInfo;
+    $('.website-favicon').attr('src', websiteInfo.hostLogo);
 
     $newChatBtn.on('click', () => {
         $('.message-container').remove();
@@ -196,36 +193,34 @@ function setStart() {
         $welcomeMessage.stop().fadeOut(100, function() {
             showInitializingMessage(websiteInfo.hostName, websiteInfo.hostLogo);
             
-            chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-                $.ajax({
-                    url: 'http://127.0.0.1:7777/initialize_rag',
-                    method: 'POST',
-                    contentType: 'application/json',
-                    data: JSON.stringify({ 
-                        web_url: addHttps(websiteInfo.domainName), 
-                        load_from_disk: ! reEmbed 
-                    }),
-                    success: (response) => {
-                        if (response.status === 'success') {
-                            $welcomeMessage.stop().fadeOut(100, function() {
-                                websiteInfo.currentPage = response.website_analysis_info.visited_urls.length;
-                                websiteInfo.anlysisFinished = response.website_analysis_info.crawl_finished;
+            $.ajax({
+                url: 'http://127.0.0.1:7777/initialize_rag',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ 
+                    web_url: addHttps(websiteInfo.domainName), 
+                    load_from_disk: !reEmbed 
+                }),
+                success: (response) => {
+                    if (response.status === 'success') {
+                        $welcomeMessage.stop().fadeOut(100, function() {
+                            websiteInfo.currentPage = response.website_analysis_info.visited_urls.length;
+                            websiteInfo.anlysisFinished = response.website_analysis_info.crawl_finished;
 
-                                updateByAnalysisStatus();
-                                startNewChat(websiteInfo.hostName, websiteInfo.hostLogo);
-                                showRecommendedQuestions(response.recommended_questions);
-                            });
-                        } else if (response.status === 'not_found') {
-                            $startChatBtn.text('Website not analyzed yet');
-                            showAnalyzingMessage();
-                        } else {
-                            showFailureMessage('Failed to initialize chat system');
-                        }
-                    },
-                    error: (xhr, status, error) => {
-                        showFailureMessage('Unable to connect to the server. Please try again.');
+                            updateByAnalysisStatus();
+                            startNewChat(websiteInfo.hostName, websiteInfo.hostLogo);
+                            showRecommendedQuestions(response.recommended_questions);
+                        });
+                    } else if (response.status === 'not_found') {
+                        $startChatBtn.text('Website not analyzed yet');
+                        showAnalyzingMessage();
+                    } else {
+                        showFailureMessage('Failed to initialize chat system');
                     }
-                });
+                },
+                error: (xhr, status, error) => {
+                    showFailureMessage('Unable to connect to the server. Please try again.');
+                }
             });
         });
     }
@@ -530,27 +525,6 @@ function setAnalyze() {
 // Generate a unique conversation id
 function generateConversationId() {
     return `conv-${Math.random().toString(36).substring(2, 10)}`;
-}
-
-// Get the website info from the url
-function getWebsiteInfoFromUrl(url) {
-    const urlObj = new URL(url);
-    const title = urlObj.hostname;
-    const domainName = urlObj.hostname;
-    const hostName = domainName.replace('www.', '').split('.')[0];
-    const subdomain = urlObj.pathname.split('/')[1] ?
-        `${domainName}/${urlObj.pathname.split('/')[1]}/` :
-        domainName + '/';
-    const favicon = `https://www.google.com/s2/favicons?domain=${domainName}`;
-        
-    return {
-        url: url, 
-        title: title, 
-        domainName: domainName, 
-        hostName: hostName, 
-        subdomain: subdomain,
-        hostLogo: favicon
-    };
 }
 
 function addHttps(url) {

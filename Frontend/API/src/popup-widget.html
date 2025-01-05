@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>UTAWeb Assistant</title>
+    <link rel="stylesheet" type="text/css" href="../lib/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.2/font/bootstrap-icons.css">
+    <link rel="stylesheet" type="text/css" href="popup-widget.css">
+    <script src="../lib/jquery-3.7.1.min.js"></script>
+    <script src="../lib/bootstrap.bundle.min.js"></script>
+<body>
+    <div class="popup-container">
+        <!-- Chat Area -->
+        <div id="chatArea">
+            <div class="chat-header">
+                <img src="../img/logo2.png" alt="Logo" class="chat-logo">
+                <span class="chat-title">UTAWeb Assistant for <img src="https://www.google.com/s2/favicons?domain=CURRENT_DOMAIN" class="website-favicon" alt="Website Icon"></span>
+                <button class="minimize-btn"><i class="bi bi-x"></i></button>
+            </div>
+            
+            <!-- Messages Container -->
+            <div id="messagesContainer">
+                <!-- Welcome message -->
+                <div class="welcome-message">
+                    <div class="welcome-icon">
+                        <img src="../img/logo2.png" alt="Logo" class="welcome-logo">
+                    </div>
+                    <h5 class="welcome-title">Ask anything about this website</h5>
+                    <div class="features-grid">
+                        <div class="feature-item">
+                            <i class="bi bi-search gradient-bkg-text"></i>
+                            <span>Smart Search</span>
+                        </div>
+                        <div class="feature-item">
+                            <i class="bi bi-chat-dots gradient-bkg-text"></i>
+                            <span>Interactive Chat</span>
+                        </div>
+                        <div class="feature-item">
+                            <i class="bi bi-lightning gradient-bkg-text"></i>
+                            <span>Quick Answers</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Start Chat Button -->
+            <div class="start-chat-btn-container">
+                <button id="startChatBtn" class="btn btn-primary w-100 modal-btn">
+                    <i class="bi bi-chat-dots-fill me-2"></i>Start chat with this website
+                </button>
+            </div>
+
+            <!-- Input Area -->
+            <div class="input-section">
+                <div class="query-section">
+                    <textarea id="queryInput" class="form-control" rows="3" placeholder="Ask a question..."></textarea>
+                    <div class="chat-actions">
+                        <div class="action-buttons">
+                            <div class="left-buttons">
+                                <button id="analysisLoadingBtn" 
+                                    class="btn-icon loading-indicator check-analysis" 
+                                    data-bs-toggle="tooltip" 
+                                    data-bs-placement="top" 
+                                    title="Check Analysis Status">
+                                    <i class="bi bi-arrow-repeat gradient-bkg-text"></i>
+                                </button>
+                            </div>
+                            <div class="right-buttons">
+                                <button id="newChatBtn" 
+                                    class="btn-icon" 
+                                    data-bs-toggle="tooltip" 
+                                    data-bs-placement="top" 
+                                    title="New Chat">
+                                    <i class="bi bi-plus-circle gradient-bkg-text"></i>
+                                </button>
+                                <button id="sendButton" 
+                                    class="btn-icon" 
+                                    data-bs-toggle="tooltip" 
+                                    data-bs-placement="top" 
+                                    title="Send">
+                                    <i class="bi bi-send-fill gradient-bkg-text"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Website Details Modal -->
+    <div class="modal fade" id="websiteDetailsModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Analysis Details <span class="analysis-status"></span></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body webside-analysis-info pb-1">
+                    <div class="company-info d-flex">
+                        <span class="company-name"></span>
+                        <span class="update-time"></span>
+                    </div>
+                    <div class="mb-4">
+                        <small class="text-muted d-block mb-2">Website Analysis</small>
+                        <div class="stats-section">
+                            <div class="row g-3">
+                                <div class="col-4">
+                                    <div class="stat-item">
+                                        <span class="stat-value pages-count">0</span>
+                                        <small class="text-muted d-block">Pages</small>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="stat-item">
+                                        <span class="stat-value domains-count">0</span>
+                                        <small class="text-muted d-block">Domains</small>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="stat-item">
+                                        <span class="stat-value failed-urls-count">0</span>
+                                        <small class="text-muted d-block">Fails</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="domains-section mb-4">
+                        <small class="text-muted d-block mb-2">Domains Coverage</small>
+                        <div class="domains-list"></div>
+                    </div>
+                </div>
+                <div class="modal-footer pt-0">
+                    <div class="reinitialize-rag-footer">
+                        <span class="new-page-number"><span class="number">0</span> New Pages</span>
+                        <button type="button" id="reinitializeRagBtn" class="btn btn-primary modal-btn" data-bs-dismiss="modal">
+                            <i class="bi bi-arrow-repeat me-2" style="vertical-align: 0px;"></i>Reload Chatbot
+                        </button>
+                    </div>
+                    <button type="button" id="continueChatBtn" class="btn btn-primary modal-btn" data-bs-dismiss="modal"><i class="bi bi-chat-dots-fill me-2"></i>Continue Chat</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html> 
