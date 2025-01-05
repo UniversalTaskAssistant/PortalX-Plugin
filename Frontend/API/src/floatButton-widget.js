@@ -5,55 +5,31 @@ $(document).ready(() => {
 function initializeFloatButton() {
     try {
         let isPopupOpen = false;
-        const serverUrl = 'http://localhost:7777';
+        const websiteInfo = window.parent.UTAWebConfig.websiteInfo;  // Get websiteInfo
+        console.log('FloatButton: Got websiteInfo', websiteInfo);    // Debug log
 
+        // ****** Float Button ******
         // Create float button
         const $floatButton = $('<button>')
             .addClass('uta-float-button')
             .appendTo('body');
 
-        // Add logo image
-        const $defaultLogo = $('<img>')
-            .attr('src', `${serverUrl}/Frontend/API/img/logo2.png`)
-            .addClass('uta-default-logo')
-            .appendTo($floatButton);
-
-        // Add favicon image (initially hidden)
-        const $favicon = $('<img>')
-            .addClass('uta-favicon-logo')
-            .hide()
-            .appendTo($floatButton);
-
-        // Get favicon from the current page
-        const currentFavicon = $('link[rel="icon"]').attr('href') || 
-                             $('link[rel="shortcut icon"]').attr('href') ||
-                             `${serverUrl}/Frontend/API/img/logo2.png`;
-        if (currentFavicon) {
-            $favicon.attr('src', currentFavicon);
-        }
-
+        // Float button hover effect
         $floatButton
-            .on('mouseenter', () => {
-                if (!isPopupOpen) {
-                    $defaultLogo.addClass('slide-out');
-                    $favicon.show().addClass('slide-in');
-                }
-            })
-            .on('mouseleave', () => {
-                if (!isPopupOpen) {
-                    $defaultLogo.removeClass('slide-out');
-                    $favicon.removeClass('slide-in').hide();
-                }
-            });
+        .on('mouseenter', () => {
+            if (!isPopupOpen) {
+                $defaultLogo.addClass('slide-out');
+                $favicon.show().addClass('slide-in');
+            }
+        })
+        .on('mouseleave', () => {
+            if (!isPopupOpen) {
+                $defaultLogo.removeClass('slide-out');
+                $favicon.removeClass('slide-in').hide();
+            }
+        });
 
-        // Create popup
-        const $popup = $('<iframe>')
-            .addClass('uta-popup-iframe')
-            .attr('src', `${serverUrl}/Frontend/API/src/popup-widget.html`)
-            .hide()
-            .appendTo('body');
-
-        // Add click handler for the float button
+        // Float button click effect
         $floatButton.on('click', (event) => {
             event.stopPropagation();
             if ($popup.is(':hidden')) {
@@ -69,6 +45,43 @@ function initializeFloatButton() {
                 $defaultLogo.removeClass('slide-out');
                 $favicon.removeClass('slide-in').hide();
             }
+        });
+
+        // ****** Logo and Favicon ******
+        // Add logo image
+        const $defaultLogo = $('<img>')
+            .attr('src', `${window.parent.UTAWebConfig.config.serverUrl}/Frontend/API/img/logo2.png`)
+            .addClass('uta-default-logo')
+            .appendTo($floatButton);
+
+        // Add favicon image (initially hidden)
+        const $favicon = $('<img>')
+            .addClass('uta-favicon-logo')
+            .hide()
+            .appendTo($floatButton);
+
+        // Get favicon from the current page
+        const currentFavicon = $('link[rel="icon"]').attr('href') || 
+                             $('link[rel="shortcut icon"]').attr('href') ||
+                             `${window.parent.UTAWebConfig.config.serverUrl}/Frontend/API/img/logo2.png`;
+        if (currentFavicon) {
+            $favicon.attr('src', currentFavicon);
+        }
+
+        // ****** Popup Page ******
+        // Create popup
+        const $popup = $('<iframe>')
+            .addClass('uta-popup-iframe')
+            .attr('src', `${window.parent.UTAWebConfig.config.serverUrl}/Frontend/API/src/popup-widget.html`)
+            .hide()
+            .appendTo('body');
+
+        // Send website info after iframe loads
+        $popup.on('load', () => {
+            $popup[0].contentWindow.postMessage({
+                type: 'websiteInfo',
+                data: websiteInfo
+            }, '*');
         });
 
         // Close popup when clicking outside
