@@ -139,12 +139,12 @@ if __name__ == "__main__":
     # domain_limit = 'https://www.signavio.com/' # None or specific domain, such as 'www.bmw.com/en-au'
     # exclude_domains = ['www.signavio.com/de', 'www.signavio.com/es', 'www.signavio.com/fr', 'www.signavio.com/it', 'www.signavio.com/ja', 'www.signavio.com/ko', 'www.signavio.com/pt-br']
 
-    web_url = 'https://www.tum.de/'
-    company_name = 'tum'
-    domain_limit = 'https://www.tum.de/' # None or specific domain, such as 'www.bmw.com/en-au'
-    exclude_domains = ['www.signavio.com/de', 'www.signavio.com/es', 'www.signavio.com/fr', 'www.signavio.com/it', 'www.signavio.com/ja', 'www.signavio.com/ko', 'www.signavio.com/pt-br']
+    web_url = 'https://www.cit.tum.de/en/cit/home/'
+    company_name = 'tum-cit'
+    domain_limit = 'https://www.cit.tum.de/en' # None or specific domain, such as 'www.bmw.com/en-au'
+    # exclude_domains = ['www.signavio.com/de', 'www.signavio.com/es', 'www.signavio.com/fr', 'www.signavio.com/it', 'www.signavio.com/ja', 'www.signavio.com/ko', 'www.signavio.com/pt-br']
 
     # utaweb.crawl_web(web_url=web_url, company_name=company_name, domain_limit=domain_limit, exclude_domains=None)
-    utaweb.query_web(query="What are the general steps for applying to a Bachelor's program at TUM?", web_url=web_url,company_name='tum-en')
+    utaweb.query_web(query="Are there any specific deadlines for Bachelor of information engineering applications at TUM?", web_url=web_url,company_name='tum-cit')
     # utaweb.query_web_test(web_url=web_url, company_name=company_name)
 

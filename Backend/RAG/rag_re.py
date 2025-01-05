@@ -133,7 +133,7 @@ class RAGSystem:
 async def main():
     # Main function to test RAG system locally.
     rag: RAGSystem = RAGSystem(max_concurrent_tasks=5)
-    relative_directory_path: str = "../Output/websites/tum-en"
+    relative_directory_path: str = "../Output/websites/tum-cit"
     absolute_directory_path: str = os.path.abspath(relative_directory_path)
 
     try:
