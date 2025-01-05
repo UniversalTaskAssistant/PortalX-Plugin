@@ -5,7 +5,7 @@ $(document).ready(() => {
 function initializeFloatButton() {
     try {
         let isPopupOpen = false;
-        const websiteInfo = window.parent.UTAWebConfig.websiteInfo;  // Get websiteInfo
+        const websiteInfo = window.parent.PortalXConfig.websiteInfo;  // Get websiteInfo
         console.log('FloatButton: Got websiteInfo', websiteInfo);    // Debug log
 
         // ****** Float Button ******
@@ -50,7 +50,7 @@ function initializeFloatButton() {
         // ****** Logo and Favicon ******
         // Add logo image
         const $defaultLogo = $('<img>')
-            .attr('src', `${window.parent.UTAWebConfig.config.serverUrl}/Frontend/API/img/logo2.png`)
+            .attr('src', `${window.parent.PortalXConfig.config.serverUrl}/Frontend/API/img/logo2.png`)
             .addClass('uta-default-logo')
             .appendTo($floatButton);
 
@@ -63,7 +63,7 @@ function initializeFloatButton() {
         // Get favicon from the current page
         const currentFavicon = $('link[rel="icon"]').attr('href') || 
                              $('link[rel="shortcut icon"]').attr('href') ||
-                             `${window.parent.UTAWebConfig.config.serverUrl}/Frontend/API/img/logo2.png`;
+                             `${window.parent.PortalXConfig.config.serverUrl}/Frontend/API/img/logo2.png`;
         if (currentFavicon) {
             $favicon.attr('src', currentFavicon);
         }
@@ -72,7 +72,7 @@ function initializeFloatButton() {
         // Create popup
         const $popup = $('<iframe>')
             .addClass('uta-popup-iframe')
-            .attr('src', `${window.parent.UTAWebConfig.config.serverUrl}/Frontend/API/src/popup-widget.html`)
+            .attr('src', `${window.parent.PortalXConfig.config.serverUrl}/Frontend/API/src/popup-widget.html`)
             .hide()
             .appendTo('body');
 
@@ -107,6 +107,6 @@ function initializeFloatButton() {
         });
 
     } catch (error) {
-        console.error("Error initializing UTAWeb float button:", error);
+        console.error("Error initializing PortalX float button:", error);
     }
 }

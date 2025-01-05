@@ -31,7 +31,7 @@
     const websiteInfo = getWebsiteInfoFromUrl(websiteUrl);
 
     // Make websiteInfo available globally
-    window.UTAWebConfig = {
+    window.PortalXConfig = {
         websiteInfo: websiteInfo,
         config: config
     };
@@ -73,7 +73,7 @@
             // Create and load float button widget
             await loadResource('js', `${config.serverUrl}/Frontend/API/src/floatButton-widget.js`);
         } catch (error) {
-            console.error('Error loading UTAWeb widget:', error);
+            console.error('Error loading PortalX widget:', error);
         }
     }
 
