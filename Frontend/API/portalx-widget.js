@@ -1,86 +1,108 @@
 (function() {
-    // Configuration
-    const config = {
-        serverUrl: 'http://localhost:7777',
-    };
+    class PortalXWidget {
+        constructor() {
+            this.config = {
+                serverUrl: 'http://localhost:7777'
+            };
+            this.init();
+        }
 
-    // Helper function to get website info from URL
-    function getWebsiteInfoFromUrl(url) {
-        const urlObj = new URL(url);
-        const title = urlObj.hostname;
-        const domainName = urlObj.hostname;
-        const hostName = domainName.replace('www.', '').split('.')[0];
-        const subdomain = urlObj.pathname.split('/')[1] ?
-            `${domainName}/${urlObj.pathname.split('/')[1]}/` :
-            domainName + '/';
-        const favicon = `https://www.google.com/s2/favicons?domain=${domainName}`;
-            
-        return {
-            url: url, 
-            title: title, 
-            domainName: domainName, 
-            hostName: hostName, 
-            subdomain: subdomain,
-            hostLogo: favicon
-        };
-    }
+        init() {
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', () => this.initializeWidget());
+            } else {
+                this.initializeWidget();
+            }
+            this.setupWebsiteInfo();
+        }
 
-    // Get website info from script tag
-    const scriptTag = document.currentScript;
-    const websiteUrl = scriptTag.getAttribute('data-website');
-    const websiteInfo = getWebsiteInfoFromUrl(websiteUrl);
+        setupWebsiteInfo() {
+            const scriptTag = document.currentScript;
+            const websiteUrl = scriptTag.getAttribute('data-website');
+            const websiteInfo = this.getWebsiteInfoFromUrl(websiteUrl);
+            // Make configuration available globally
+            window.PortalXConfig = {
+                websiteInfo,
+                config: this.config
+            };
+        }
 
-    // Make websiteInfo available globally
-    window.PortalXConfig = {
-        websiteInfo: websiteInfo,
-        config: config
-    };
+        getWebsiteInfoFromUrl(url) {
+            const urlObj = new URL(url);
+            const domainName = urlObj.hostname;
+            return {
+                url,
+                title: domainName,
+                domainName,
+                hostName: domainName.replace('www.', '').split('.')[0],
+                subdomain: this.getSubdomain(urlObj, domainName),
+                hostLogo: `https://www.google.com/s2/favicons?domain=${domainName}`
+            };
+        }
 
-    function loadResource(type, url) {
-        return new Promise((resolve, reject) => {
+        getSubdomain(urlObj, domainName) {
+            return urlObj.pathname.split('/')[1] 
+                ? `${domainName}/${urlObj.pathname.split('/')[1]}/`
+                : `${domainName}/`;
+        }
+
+        loadResource(type, url) {
+            return new Promise((resolve, reject) => {
+                const element = this.createElement(type, url);
+                element.onload = resolve;
+                element.onerror = reject;
+                this.appendElement(type, element);
+            });
+        }
+
+        createElement(type, url) {
             if (type === 'css') {
                 const link = document.createElement('link');
                 link.rel = 'stylesheet';
                 link.href = url;
-                link.onload = resolve;
-                link.onerror = reject;
-                document.head.appendChild(link);
+                return link;
             } else if (type === 'js') {
                 const script = document.createElement('script');
                 script.src = url;
-                script.onload = resolve;
-                script.onerror = reject;
-                document.body.appendChild(script);
+                return script;
             }
-        });
-    }
+        }
 
-    // Load resources in sequence
-    async function initializeWidget() {
-        try {
-            // Load CSS files 
-            await Promise.all([
-                loadResource('css', `${config.serverUrl}/Frontend/API/src/style/floatButton-widget.css`),
-                loadResource('css', `${config.serverUrl}/Frontend/API/src/style/popup-widget.css`)
-            ]);
+        appendElement(type, element) {
+            if (type === 'css') {
+                document.head.appendChild(element);
+            } else if (type === 'js') {
+                document.body.appendChild(element);
+            }
+        }
 
-            // Load jQuery and Bootstrap
-            await Promise.all([
-                loadResource('js', 'https://code.jquery.com/jquery-3.7.1.min.js'),
-                loadResource('js', 'https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js')
-            ]);
+        async initializeWidget() {
+            await this.loadDependencies();
+        }
 
-            // Create and load float button widget
-            await loadResource('js', `${config.serverUrl}/Frontend/API/src/floatButton-widget.js`);
-        } catch (error) {
-            console.error('Error loading PortalX widget:', error);
+        async loadDependencies() {
+            const { serverUrl } = this.config;
+            try {
+                // Load CSS files in parallel
+                await Promise.all([
+                    this.loadResource('css', `${serverUrl}/Frontend/API/src/style/floatButton-widget.css`),
+                    this.loadResource('css', `${serverUrl}/Frontend/API/src/style/popup-widget.css`)
+                ]);
+
+                // Load JS dependencies in parallel
+                await Promise.all([
+                    this.loadResource('js', 'https://code.jquery.com/jquery-3.7.1.min.js'),
+                    this.loadResource('js', 'https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js')
+                ]);
+
+                // Load and show up float button widget
+                await this.loadResource('js', `${serverUrl}/Frontend/API/src/floatButton-widget.js`);
+            } catch (error) {
+                console.error('Error loading PortalX widget:', error);
+            }
         }
     }
 
-    // Initialize widget when DOM is ready
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initializeWidget);
-    } else {
-        initializeWidget();
-    }
+    // Initialize the widget
+    new PortalXWidget();
 })(); 
