@@ -8,6 +8,7 @@ function initializeFloatButton() {
         const websiteInfo = window.parent.PortalXConfig.websiteInfo;  // Get websiteInfo
         console.log('FloatButton: Got websiteInfo', websiteInfo);    // Debug log
 
+
         // ****** Float Button ******
         // Create float button
         const $floatButton = $('<button>')
@@ -47,26 +48,21 @@ function initializeFloatButton() {
             }
         });
 
+
         // ****** Logo and Favicon ******
-        // Add logo image
+        // Add PortalX logo image
         const $defaultLogo = $('<img>')
             .attr('src', `${window.parent.PortalXConfig.config.serverUrl}/Frontend/API/img/logo2.png`)
             .addClass('uta-default-logo')
             .appendTo($floatButton);
 
-        // Add favicon image (initially hidden)
+        // Add client logo image 
         const $favicon = $('<img>')
             .addClass('uta-favicon-logo')
             .hide()
-            .appendTo($floatButton);
+            .appendTo($floatButton)
+            .attr('src', window.parent.PortalXConfig.websiteInfo.hostLogo);
 
-        // Get favicon from the current page
-        const currentFavicon = $('link[rel="icon"]').attr('href') || 
-                             $('link[rel="shortcut icon"]').attr('href') ||
-                             `${window.parent.PortalXConfig.config.serverUrl}/Frontend/API/img/logo2.png`;
-        if (currentFavicon) {
-            $favicon.attr('src', currentFavicon);
-        }
 
         // ****** Popup Page ******
         // Create popup

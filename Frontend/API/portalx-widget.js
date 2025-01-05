@@ -36,7 +36,7 @@
                 domainName,
                 hostName: domainName.replace('www.', '').split('.')[0],
                 subdomain: this.getSubdomain(urlObj, domainName),
-                hostLogo: `https://www.google.com/s2/favicons?domain=${domainName}`
+                hostLogo: `https://www.google.com/s2/favicons?domain=${domainName}&sz=64`
             };
         }
 
