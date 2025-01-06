@@ -3,6 +3,7 @@
         constructor() {
             this.config = {
                 serverUrl: 'http://localhost:7777'
+                // serverUrl: 'http://45.77.164.47:7777'
             };
             this.init();
         }
