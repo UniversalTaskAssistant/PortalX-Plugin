@@ -6,7 +6,7 @@ function initializeFloatButton() {
     try {
         let isPopupOpen = false;
         const websiteInfo = window.parent.PortalXConfig.websiteInfo;  // Get websiteInfo
-        console.log('FloatButton: Got websiteInfo', websiteInfo);    // Debug log
+        console.log('PortalX: FloatButton loaded', websiteInfo);    // Debug log
 
 
         // ****** Float Button ******
@@ -72,11 +72,15 @@ function initializeFloatButton() {
             .hide()
             .appendTo('body');
 
-        // Send website info after iframe loads
+        // Send both websiteInfo and serverUrl
         $popup.on('load', () => {
+            console.log('PortalX: Iframe loaded');
             $popup[0].contentWindow.postMessage({
                 type: 'websiteInfo',
-                data: websiteInfo
+                data: {
+                    websiteInfo: websiteInfo,
+                    serverUrl: window.parent.PortalXConfig.config.serverUrl
+                }
             }, '*');
         });
 
