@@ -236,4 +236,4 @@ if __name__ == '__main__':
     utaweb = UTAWeb(initializing=False, data_dir="./Output/websites")
     
     print("Starting server...")
-    app.run(host='127.0.0.1', port=7777, debug=True) 
+    app.run(host='0.0.0.0', port=7777, debug=True) 
