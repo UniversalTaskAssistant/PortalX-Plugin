@@ -1,11 +1,14 @@
 import { ChatManager } from './chatManager.js';
 import { WebsiteManager } from './websiteManager.js';
 
+// Add server URL constant at the top
+const serverUrl = 'http://localhost:7777';
+
 $(document).ready(function() {
-    // Initialize WebsiteManager
-    const websiteManager = new WebsiteManager();
-    // Initialize ChatManager
-    const chatManager = new ChatManager();
+    // Initialize WebsiteManager with serverUrl
+    const websiteManager = new WebsiteManager(serverUrl);
+    // Initialize ChatManager with serverUrl
+    const chatManager = new ChatManager(serverUrl);
     // Initialize tooltips
     initTooltips();
 
@@ -25,7 +28,7 @@ $(document).ready(function() {
         });
     }
 
-    // Add handler for the start crawl button
+    // Website Analysis
     $('#startCrawlBtn').on('click', async function() {
         const addHttps = (url) => {
             if (!url) return '';
@@ -59,7 +62,7 @@ $(document).ready(function() {
         }
     });
 
-    // Add the query button click handler
+    // Chatting
     $('#queryButton').on('click', async function() {
         const query = chatManager.getQueryInput();
         if (!query) {
@@ -73,7 +76,7 @@ $(document).ready(function() {
             chatManager.addThinkingMessage();
             
             const response = await $.ajax({
-                url: 'http://localhost:7777/query',
+                url: `${serverUrl}/query`,
                 method: 'POST',
                 contentType: 'application/json',
                 data: JSON.stringify({

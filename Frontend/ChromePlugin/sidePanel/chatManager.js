@@ -1,5 +1,7 @@
 export class ChatManager {
-    constructor() {
+    constructor(serverUrl) {
+        this.serverUrl = serverUrl;
+        
         this.$responseDiv = $('#response');
         this.$queryButton = $('#queryButton');
         this.$queryInput = $('#queryInput');
@@ -215,7 +217,7 @@ export class ChatManager {
 
         // Initialize RAG before starting the chat
         $.ajax({
-            url: 'http://127.0.0.1:7777/initialize_rag',
+            url: `${this.serverUrl}/initialize_rag`,
             method: 'POST',
             contentType: 'application/json',
             data: JSON.stringify({ web_url: this.currentChatWebsite.domainUrl }),
@@ -252,7 +254,7 @@ export class ChatManager {
     // Load all chat history for a user
     async loadAllChatHistory(userId) {
         try {
-            const response = await fetch('http://127.0.0.1:7777/get_chat_history', {
+            const response = await fetch(`${this.serverUrl}/get_chat_history`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'

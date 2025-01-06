@@ -1,5 +1,7 @@
 export class WebsiteManager {
-    constructor() {
+    constructor(serverUrl) {
+        this.serverUrl = serverUrl;
+        
         this.currentWebsiteInfo = {
             url: '',
             title: '',
@@ -192,7 +194,7 @@ export class WebsiteManager {
     async startCrawl(domainName, hostName, domainLimit) {
         try {
             const response = await $.ajax({
-                url: 'http://localhost:7777/crawl',
+                url: `${this.serverUrl}/crawl`,
                 method: 'POST',
                 contentType: 'application/json',
                 data: JSON.stringify({
@@ -214,7 +216,7 @@ export class WebsiteManager {
     async loadAllWebsitesHistory() {
         try {
             const websites = await $.ajax({
-                url: 'http://localhost:7777/get_all_websites_info',
+                url: `${this.serverUrl}/get_all_websites_info`,
                 method: 'GET'
             });
             // Clear and update the websites data
