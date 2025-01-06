@@ -1,4 +1,5 @@
 let conversationId = generateConversationId();
+let serverUrl = 'http://localhost:7777';
 let websiteInfo = {}; 
 /* {
     url: url, 
@@ -86,7 +87,7 @@ function setChat(){
 
         try {
             const response = await $.ajax({
-                url: 'http://localhost:7777/query',
+                url: `${serverUrl}/query`,
                 method: 'POST',
                 contentType: 'application/json',
                 data: JSON.stringify({
@@ -198,7 +199,7 @@ function setStart() {
             
             chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
                 $.ajax({
-                    url: 'http://127.0.0.1:7777/initialize_rag',
+                    url: `${serverUrl}/initialize_rag`,
                     method: 'POST',
                     contentType: 'application/json',
                     data: JSON.stringify({ 
@@ -317,7 +318,7 @@ function setAnalyze() {
     $(document).on('click', '#startAnalyzeBtn', async () => {
         try {
             const response = await $.ajax({
-                url: 'http://localhost:7777/crawl',
+                url: `${serverUrl}/crawl`,
                 method: 'POST',
                 contentType: 'application/json',
                 data: JSON.stringify({
@@ -340,7 +341,7 @@ function setAnalyze() {
     $(document).on('click', '.refresh-btn', async () => {
         try {
             const response = await $.ajax({
-                url: 'http://localhost:7777/get_website_info',
+                url: `${serverUrl}/get_website_info`,
                 method: 'POST',
                 contentType: 'application/json',
                 data: JSON.stringify({
@@ -376,7 +377,7 @@ function setAnalyze() {
     $(document).on('click', '.check-analysis', async () => {
         try {
             const response = await $.ajax({
-                url: 'http://localhost:7777/get_website_info',
+                url: `${serverUrl}/get_website_info`,
                 method: 'POST',
                 contentType: 'application/json',
                 data: JSON.stringify({
