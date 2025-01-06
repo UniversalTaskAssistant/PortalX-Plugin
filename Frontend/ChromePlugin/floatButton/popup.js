@@ -1,5 +1,8 @@
-let conversationId = generateConversationId();
+// Add server URL constant at the top
 let serverUrl = 'http://localhost:7777';
+// let serverUrl = 'http://45.77.164.47:7777';
+
+let conversationId = generateConversationId();
 let websiteInfo = {}; 
 /* {
     url: url, 

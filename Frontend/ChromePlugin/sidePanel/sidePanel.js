@@ -2,7 +2,8 @@ import { ChatManager } from './chatManager.js';
 import { WebsiteManager } from './websiteManager.js';
 
 // Add server URL constant at the top
-const serverUrl = 'http://localhost:7777';
+let serverUrl = 'http://localhost:7777';
+// let serverUrl = 'http://45.77.164.47:7777';
 
 $(document).ready(function() {
     // Initialize WebsiteManager with serverUrl
