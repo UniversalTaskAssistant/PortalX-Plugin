@@ -1,5 +1,5 @@
 /* Iframe container */
-.uta-popup-iframe {
+.portalx-popup-iframe {
     position: fixed;
     bottom: 130px;
     right: 40px;
@@ -16,13 +16,13 @@
     transform: scale(0.3);
 }
 
-.uta-popup-iframe.show {
+.portalx-popup-iframe.show {
     opacity: 1;
     transform: scale(1);
 }
 
-/* Float Button styles with uta- prefix */
-.uta-float-button {
+/* Float Button styles with portalx- prefix */
+.portalx-float-button {
     position: fixed;
     bottom: 60px;
     right: 40px;
@@ -41,7 +41,7 @@
     justify-content: center;
 }
 
-.uta-float-button img {
+.portalx-float-button img {
     width: 50%;
     height: 50%;
     object-fit: contain;
@@ -53,26 +53,26 @@
     opacity: 1;
 }
 
-.uta-float-button .uta-default-logo {
+.portalx-float-button .portalx-default-logo {
     transform: translate(-50%, -50%);  /* Initial state */
 }
 
-.uta-float-button .uta-default-logo.slide-out {
+.portalx-float-button .portalx-default-logo.slide-out {
     transform: translate(-50%, 50%);   /* Slide down */
     opacity: 0;
 }
 
-.uta-float-button .uta-favicon-logo {
+.portalx-float-button .portalx-favicon-logo {
     transform: translate(-50%, -150%); /* Start from top */
     opacity: 0;
 }
 
-.uta-float-button .uta-favicon-logo.slide-in {
+.portalx-float-button .portalx-favicon-logo.slide-in {
     transform: translate(-50%, -50%);  /* Slide to center */
     opacity: 1;
 }
 
-.uta-float-button:hover {
+.portalx-float-button:hover {
     transform: translateY(-3px);
     box-shadow: 0 6px 30px rgba(202, 107, 229, 0.3);
 }
