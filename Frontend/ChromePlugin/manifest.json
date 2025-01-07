@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "UTA - Website Tailored Assistant",
+  "name": "PortalX - Generative Web Assistant",
   "version": "1.0",
-  "description": "Web assistant for querying website content using UTAWeb",
+  "description": "Generative User Portal for Easy Web Exploration",
   "permissions": ["activeTab", "scripting", "sidePanel", "tabs"],
   "side_panel": {
     "default_path": "sidePanel/sidePanel.html"
