@@ -12,7 +12,7 @@ function initializeFloatButton() {
         // ****** Float Button ******
         // Create float button
         const $floatButton = $('<button>')
-            .addClass('uta-float-button')
+            .addClass('portalx-float-button')
             .appendTo('body');
 
         // Float button hover effect
@@ -53,12 +53,12 @@ function initializeFloatButton() {
         // Add PortalX logo image
         const $defaultLogo = $('<img>')
             .attr('src', `${window.parent.PortalXConfig.config.serverUrl}/Frontend/API/img/logo2.png`)
-            .addClass('uta-default-logo')
+            .addClass('portalx-default-logo')
             .appendTo($floatButton);
 
         // Add client logo image 
         const $favicon = $('<img>')
-            .addClass('uta-favicon-logo')
+            .addClass('portalx-favicon-logo')
             .hide()
             .appendTo($floatButton)
             .attr('src', window.parent.PortalXConfig.websiteInfo.hostLogo);
@@ -67,7 +67,7 @@ function initializeFloatButton() {
         // ****** Popup Page ******
         // Create popup
         const $popup = $('<iframe>')
-            .addClass('uta-popup-iframe')
+            .addClass('portalx-popup-iframe')
             .attr('src', `${window.parent.PortalXConfig.config.serverUrl}/Frontend/API/src/popup-widget.html`)
             .hide()
             .appendTo('body');
@@ -86,7 +86,7 @@ function initializeFloatButton() {
 
         // Close popup when clicking outside
         $(document).on('click', (event) => {
-            if (!$(event.target).closest('.uta-popup-iframe, .uta-float-button').length) {
+            if (!$(event.target).closest('.portalx-popup-iframe, .portalx-float-button').length) {
                 isPopupOpen = false;
                 $popup.removeClass('show');
                 setTimeout(() => $popup.hide(), 300);
