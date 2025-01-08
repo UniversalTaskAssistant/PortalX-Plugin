@@ -1,7 +1,6 @@
-// Add server URL constant at the top
-let serverUrl = 'http://localhost:7777';
-// let serverUrl = 'http://45.77.164.47:7777';
+import { SERVER_CONFIG } from '../serverConfig.js';
 
+let serverUrl = SERVER_CONFIG.URL;
 let conversationId = generateConversationId();
 let websiteInfo = {}; 
 /* {
