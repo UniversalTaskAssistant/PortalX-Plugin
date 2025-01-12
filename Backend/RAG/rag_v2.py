@@ -83,7 +83,8 @@ class RAGSystem:
                 directory_path,
                 recursive=True,
                 exclude_hidden=True,
-                filename_as_id=True
+                filename_as_id=True,
+                file_filter=image_filter
             ).load_data()
             self.index = VectorStoreIndex.from_documents(
                 self.documents,
@@ -231,6 +232,12 @@ class RAGSystem:
             references_content += '</div>\n'
             output += references_content
         return output
+    
+    @staticmethod
+    def image_filter(file_path):
+        ignored_extensions = {'.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp', '.ico'}
+        _, ext = os.path.splitext(file_path)
+        return ext.lower() not in ignored_extensions
     
 
 if __name__ == "__main__":
