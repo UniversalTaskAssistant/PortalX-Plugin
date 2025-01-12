@@ -154,8 +154,8 @@ class UTAWeb:
             if question == "quit":
                 break
             result = rag_system.answer_question(question)
-            print(result['sources'])
             print(rag_system.format_response(result))
+            # print(result['references'])
             recommended_questions = rag_system.recommend_questions()
             print("----------")
             print(recommended_questions)

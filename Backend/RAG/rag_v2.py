@@ -154,22 +154,21 @@ class RAGSystem:
         self.conversation_history.append([question, str(response)])
 
         # Format source documents
-        citations = []
+        references = []
         for node in response.source_nodes:
-            citations.append({
+            references.append({
                 'file': node.metadata.get('file_name', 'Unknown'),
-                'score': round(node.score, 3) if node.score else None,
-                'text_chunk': node.text[:200] + "..."  # Preview of the chunk
+                # 'score': round(node.score, 3) if node.score else None,
+                # 'text_chunk': node.text[:200] + "..."  # Preview of the chunk
             })
         
         answer_with_citations = str(response)
-        print(f"###############\n{answer_with_citations}\n###############\n")
+        # print(f"###############\n{answer_with_citations}\n###############\n")
+        # print(f"###############\n{references}\n###############\n")
         return {
-            "citations": citations,
+            "references": references,
             "answer_with_citations": answer_with_citations
         }
-    
-
     
 
     def recommend_questions(self, recommended_question_number: int=3) -> str:
@@ -204,7 +203,7 @@ class RAGSystem:
         return response
 
     @staticmethod
-    def format_response(result: Dict[str, Any], show_sources: bool = False) -> str:
+    def format_response(result: Dict[str, Any], show_sources: bool = True) -> str:
         """
         Format the query response into a readable string.
         Args:
@@ -214,15 +213,15 @@ class RAGSystem:
             str: Formatted string containing answer and optional source information
         """
         # Remove code block markers and HTML tags from the answer
-        output = result['plain_answer']
+        output = result['answer_with_citations']
         output = output.replace('```html', '').replace('```', '')
         
         if show_sources:
-            output += "Sources:\n"
-            for idx, source in enumerate(result['sources'], 1):
-                output += f"\n{idx}. {source['file']}"
-                # output += f"\n   Relevance Score: {source['score']}"
-                # output += f"\n   Preview: {source['text_chunk']}\n"
+            output += "References:\n"
+            for idx, reference in enumerate(result['references'], 1):
+                output += f"\n{idx}. {reference['file']}"
+                # output += f"\n   Relevance Score: {reference['score']}"
+                # output += f"\n   Preview: {reference['text_chunk']}\n"
         return output
     
 
