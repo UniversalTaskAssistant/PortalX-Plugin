@@ -227,6 +227,8 @@ class RAGSystem:
                 references_content += f'<p>{reference["file"]}</p>\n'
                 # references_content += f'<p class="relevance-score">Relevance Score: {reference["score"]}</p>\n'
                 references_content += f'<p class="preview">{reference["text_chunk"]}</p>\n'
+                references_content += f'<img>favicon.ico</img>\n'
+                references_content += f'<img>preview_img</img>\n'
                 references_content += '</li>\n'
             references_content += '</ul>\n'
             references_content += '</div>\n'
