@@ -166,7 +166,7 @@ if __name__ == "__main__":
     utaweb = UTAWeb()
 
     web_url = 'https://www.tum.de/en/'
-    company_name = 'old_tum'
+    company_name = 'tum'
     domain_limit = 'https://www.tum.de/en/' # None or specific domain, such as 'www.bmw.com/en-au'
 
     # web_url = 'https://www.signavio.com/'

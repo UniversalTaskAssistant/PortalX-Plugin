@@ -1,4 +1,5 @@
 from llama_index.core import VectorStoreIndex, SimpleDirectoryReader, Settings
+from llama_index.core.query_engine import CitationQueryEngine
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 from llama_index.llms.openai import OpenAI
 from bs4 import BeautifulSoup
@@ -93,77 +94,20 @@ class RAGSystem:
             print("Index saved to disk.")
 
         # Create query engine with response synthesis
-        self.query_engine = self.index.as_query_engine(
-            response_mode="tree_summarize",
+        # self.query_engine = self.index.as_query_engine(
+        #     response_mode="tree_summarize",
+        #     similarity_top_k=3,
+        #     streaming=True
+        # )
+
+        self.query_engine = CitationQueryEngine.from_args(
+            self.index,
             similarity_top_k=3,
-            streaming=True
+            # Here we can control how granular citation sources are, the default is 512
+            citation_chunk_size=512,
         )
 
-        FuzzyCitationEnginePack = download_llama_pack("FuzzyCitationEnginePack", "./fuzzy_pack")
-        self.fuzzy_engine_pack = FuzzyCitationEnginePack(self.query_engine, threshold=60)
-
         self.conversation_history = []
-
-    # def answer_question(self, question: str) -> Dict[str, Any]:
-    #     """
-    #     Process a query against the document store.
-    #     Args:
-    #         question (str): User's question to be answered
-    #     Returns:
-    #         Dict[str, Any]: Dictionary containing:
-    #             - answer (str): Generated response to the question
-    #             - sources (list): List of dictionaries containing:
-    #                 - file (str): Source filename
-    #                 - score (float): Relevance score
-    #                 - text_chunk (str): Preview of source text
-    #     """
-
-    #     self.system_prompt_answer_question = f"""You are a helpful AI website customer assistant that provides clear and structured answers, based on website information and your conversation history with the user.
-
-    #     RESPONSE FORMAT REQUIREMENTS:
-        
-    #     1. Structure all responses in clean, semantic HTML
-    #     2. Begin main answers with a short summary in a <div class="summary"> tag
-    #     3. Use appropriate HTML elements:
-    #        - <p> for paragraphs
-    #        - <ul>/<li> for lists
-    #        - <strong> for emphasis
-    #        - <h3> for subsections
-    #        - <a href="..."> for source links
-
-    #     GUIDELINES:
-    #     - Keep responses short, concise, and well-organized.
-    #     - If none of the website information answer the question, say you will help redirect the question to customer service staff.
-    #     - If the question is irrelevant to the website, just explain that you only answer website-relevant questions.
-    #     - Always cite exact links using <a> tags when referencing specific information.
-    #     - Interact with the user in a friendly and engaging manner.
-    #     - Refer "The website" as "I", you are now representing the website.
-
-    #     DATA:
-    #     1. Coversation history: {self.conversation_history}.
-    #     """
-    #     Settings.llm.system_prompt = self.system_prompt_answer_question
-    #     response = self.query_engine.query(question)
-    #     self.conversation_history.append([question, str(response)])
-
-    #     # Format source documents
-    #     sources = []
-    #     for node in response.source_nodes:
-    #         sources.append({
-    #             'file': node.metadata.get('file_name', 'Unknown'),
-    #             'score': round(node.score, 3) if node.score else None,
-    #             'text_chunk': node.text[:200] + "..."  # Preview of the chunk
-    #         })
-    #         # print(f"************\nSources: \n{node.metadata.get('file_name', 'Unknown')}\n{node.text[:200] + '...'}\n************\n")
-        
-    #     plain_answer = str(response)
-    #     answer_with_citations = self.add_citations_to_html_answer(plain_answer, sources)
-    #     print(f"###############\n{answer_with_citations}###############\n")
-    #     return {
-    #         "plain_answer": plain_answer, 
-    #         "sources": sources,
-    #         "answer_with_citations": answer_with_citations
-    #     }
 
     def answer_question(self, question: str) -> Dict[str, Any]:
         """
@@ -172,27 +116,27 @@ class RAGSystem:
             question (str): User's question to be answered
         Returns:
             Dict[str, Any]: Dictionary containing:
-                - plain_answer (str): Raw generated response
+                - answer (str): Generated response to the question
                 - sources (list): List of dictionaries containing:
                     - file (str): Source filename
                     - score (float): Relevance score
                     - text_chunk (str): Preview of source text
-                - answer_with_citations (str): Formatted HTML response with citations
         """
 
-        # Set up system prompt for LLM
-        self.system_prompt_answer_question = f"""You are a helpful AI website customer assistant that provides clear and structured answers, based on website information and your conversation history with the user.
+        question = f"""You are a helpful AI website customer assistant that provides clear and structured answer for the question, based on website information and your conversation history with the user.
+
+        QUESTION: {question}\n
 
         RESPONSE FORMAT REQUIREMENTS:
         
         1. Structure all responses in clean, semantic HTML
         2. Begin main answers with a short summary in a <div class="summary"> tag
         3. Use appropriate HTML elements:
-        - <p> for paragraphs
-        - <ul>/<li> for lists
-        - <strong> for emphasis
-        - <h3> for subsections
-        - <a href="..."> for source links
+           - <p> for paragraphs
+           - <ul>/<li> for lists
+           - <strong> for emphasis
+           - <h3> for subsections
+           - <a href="..."> for source links
 
         GUIDELINES:
         - Keep responses short, concise, and well-organized.
@@ -203,55 +147,31 @@ class RAGSystem:
         - Refer "The website" as "I", you are now representing the website.
 
         DATA:
-        1. Conversation history: {self.conversation_history}.
+        1. Coversation history: {self.conversation_history}.
         """
-        Settings.llm.system_prompt = self.system_prompt_answer_question
-
-        # Query the engine
+        # Settings.llm.system_prompt = self.system_prompt_answer_question
         response = self.query_engine.query(question)
         self.conversation_history.append([question, str(response)])
 
         # Format source documents
-        sources = []
-        citations_html = ""  # Collect HTML for citations
+        citations = []
         for node in response.source_nodes:
-            file_name = node.metadata.get('file_name', 'Unknown')
-            score = round(node.score, 3) if node.score else None
-            text_chunk = node.text[:200] + "..."  # Preview of the chunk
-            
-            # Append source details to list
-            sources.append({
-                'file': file_name,
-                'score': score,
-                'text_chunk': text_chunk
+            citations.append({
+                'file': node.metadata.get('file_name', 'Unknown'),
+                'score': round(node.score, 3) if node.score else None,
+                'text_chunk': node.text[:200] + "..."  # Preview of the chunk
             })
-
-            # Create citation HTML
-            citations_html += f"""
-            <div class="content-with-citation">
-                <p>{text_chunk}</p>
-                <div class="citation">Source: {file_name}</div>
-            </div>
-            """
-
-        # Format the plain answer and integrate citations
-        plain_answer = str(response)
-        answer_with_citations = f"""
-        <div class="summary">{plain_answer}</div>
-        <div class="citations">
-            {citations_html}
-        </div>
-        """
-        print(f'Content with citations:\n{citations_html}')
-
-        # Return the response
+        
+        answer_with_citations = str(response)
+        print(f"###############\n{answer_with_citations}\n###############\n")
         return {
-            "plain_answer": plain_answer,
-            "sources": sources,
+            "citations": citations,
             "answer_with_citations": answer_with_citations
         }
+    
 
     
+
     def recommend_questions(self, recommended_question_number: int=3) -> str:
         """
         Recommend initial and conversational questions.
@@ -305,48 +225,7 @@ class RAGSystem:
                 # output += f"\n   Preview: {source['text_chunk']}\n"
         return output
     
-    @staticmethod
-    def add_citations_to_html_answer(html_content: str, sources: List[dict]) -> str:
-        """
-        Add citation information to the HTML content by embedding source references.
-        
-        Args:
-            html_content (str): The HTML content where citations need to be added.
-            sources (List[dict]): A list of source dictionaries containing citation details 
-                                like source file, score, and text chunk to match in HTML.
 
-        Returns:
-            str: The HTML content with added citation elements.
-        """
-        soup = BeautifulSoup(html_content, 'html.parser')
-
-        for source in sources:
-            citation_html = f'<div class="citation">Source: {source["file"]} (Score: {source["score"]})</div>'
-            text_chunk = source['text_chunk']
-            
-            # Clean the text_chunk by removing HTML tags and normalizing whitespace
-            clean_text_chunk = ' '.join(re.sub(r'\s+', ' ', text_chunk.replace('\n', ' ').strip()).split())
-
-            # Remove HTML tags from the content and normalize the whitespace
-            clean_html_text = ' '.join(re.sub(r'\s+', ' ', ' '.join(soup.stripped_strings)).split())
-
-            # Check if the cleaned text_chunk exists in the cleaned HTML text
-            if clean_text_chunk in clean_html_text:
-                # Use regex to find a match for the chunk in the HTML content
-                matching_element = soup.find(text=re.compile(re.escape(text_chunk), re.IGNORECASE))
-
-                if matching_element:
-                    content_with_citation = soup.new_tag('div', attrs={'class': 'content-with-citation'})
-                    content_with_citation.append(matching_element.extract())
-
-                    citation_soup = BeautifulSoup(citation_html, 'html.parser')
-                    content_with_citation.append(citation_soup)
-
-                    matching_element.insert_after(content_with_citation)
-            else:
-                print(f"Warning: Could not find a match for '{text_chunk}'.")
-
-        return soup.prettify()
 
 
 if __name__ == "__main__":
