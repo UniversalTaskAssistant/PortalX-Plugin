@@ -1,5 +1,4 @@
 from llama_index.core import VectorStoreIndex, SimpleDirectoryReader, Settings
-from llama_index.core.llama_pack import download_llama_pack
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 from llama_index.llms.openai import OpenAI
 from bs4 import BeautifulSoup
