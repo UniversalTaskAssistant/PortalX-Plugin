@@ -1,7 +1,7 @@
 import os
 from os.path import join as pjoin
 import sys
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 from multiprocessing import Process
 import glob
@@ -16,9 +16,15 @@ from System.user import User
 app = Flask(__name__)
 CORS(app, resources={
     r"/*": {
-        "origins": ["chrome-extension://ocjcneogfgoccopmmjdjhleafgpjfelp"],
+        "origins": [
+            "chrome-extension://ocjcneogfgoccopmmjdjhleafgpjfelp",
+            "http://localhost:*",
+            "http://127.0.0.1:*",
+            "https://*",
+        ],
         "methods": ["GET", "POST"],
-        "allow_headers": ["Content-Type"]
+        "allow_headers": ["Content-Type"],
+        "supports_credentials": True
     }
 })
 # Global variable declaration
@@ -94,6 +100,37 @@ def get_chat_history():
     # Sort by timestamp, newest first
     chat_history.sort(key=lambda x: x['timestamp'], reverse=True)
     return jsonify(chat_history)
+
+"""
+*****************************
+*** Widget Files Fetching ***
+*****************************
+"""
+@app.route('/Frontend/API/<path:filename>')
+def serve_widget_files(filename):
+    """
+    Serve widget files from Frontend/API directory
+    """
+    return send_from_directory(
+        os.path.join(os.path.dirname(os.path.abspath(__file__)), 'Frontend', 'API'),
+        filename
+    )
+
+@app.route('/ChromePlugin/<path:filename>')
+def serve_plugin_files(filename):
+    """Serve files from ChromePlugin directory"""
+    return send_from_directory(
+        os.path.join(os.path.dirname(os.path.abspath(__file__)), 'Frontend', 'ChromePlugin'),
+        filename
+    )
+
+@app.route('/img/<path:filename>')
+def serve_images(filename):
+    """Serve image files"""
+    return send_from_directory(
+        os.path.join(os.path.dirname(os.path.abspath(__file__)), 'Frontend', 'ChromePlugin', 'img'),
+        filename
+    )
 
 """
 ***************************
@@ -199,4 +236,4 @@ if __name__ == '__main__':
     utaweb = UTAWeb(initializing=False, data_dir="./Output/websites")
     
     print("Starting server...")
-    app.run(host='127.0.0.1', port=7777, debug=True) 
+    app.run(host='0.0.0.0', port=7777, debug=True) 

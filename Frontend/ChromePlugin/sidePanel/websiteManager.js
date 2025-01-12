@@ -1,5 +1,7 @@
 export class WebsiteManager {
-    constructor() {
+    constructor(serverUrl) {
+        this.serverUrl = serverUrl;
+        
         this.currentWebsiteInfo = {
             url: '',
             title: '',
@@ -192,7 +194,7 @@ export class WebsiteManager {
     async startCrawl(domainName, hostName, domainLimit) {
         try {
             const response = await $.ajax({
-                url: 'http://localhost:7777/crawl',
+                url: `${this.serverUrl}/crawl`,
                 method: 'POST',
                 contentType: 'application/json',
                 data: JSON.stringify({
@@ -214,7 +216,7 @@ export class WebsiteManager {
     async loadAllWebsitesHistory() {
         try {
             const websites = await $.ajax({
-                url: 'http://localhost:7777/get_all_websites_info',
+                url: `${this.serverUrl}/get_all_websites_info`,
                 method: 'GET'
             });
             // Clear and update the websites data
@@ -326,13 +328,28 @@ export class WebsiteManager {
         if (!websiteData) return;
         const $modal = $('#websiteDetailsModal');
         
-        // Update modal content
+        // Update modal title
         const faviconUrl = this.getFaviconUrl(websiteData.start_urls[0]);
         $modal.find('.company-name').html(`
             <img src="${faviconUrl}" alt="">
             <span>${websiteData.company_name}</span>
         `);
+
+        // Update analysis status
+        if (websiteData.crawl_finished) {
+            $modal.find('.analysis-status')
+                .text('Completed')
+                .removeClass('website-status-bg-warning')
+                .addClass('website-status-bg-success');
+        } else {
+            $modal.find('.analysis-status')
+                .text('In Progress')
+                .removeClass('website-status-bg-success')
+                .addClass('website-status-bg-warning');
+        }
         
+        // Update modal content
+        $modal.find('.update-time').text('Last Update ' + websiteData.crawl_time);
         $modal.find('.domain-url')
             .text(websiteData.start_urls[0])
             .attr('href', websiteData.start_urls[0]);

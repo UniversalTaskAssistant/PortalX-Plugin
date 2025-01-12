@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>UTAWeb Assistant</title>
+    <title>PortalX - Generative Web Assistant</title>
     <link rel="stylesheet" type="text/css" href="../lib/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.2/font/bootstrap-icons.css">
     <link rel="stylesheet" type="text/css" href="sidePanel.css">
@@ -32,7 +32,7 @@
                         <div class="welcome-icon mb-4">
                             <img src="../img/logo2.png" alt="Logo" class="welcome-logo">
                         </div>
-                        <h5 class="welcome-title gradient-bkg-text mb-5">UTAWeb - <span class="strikethrough">Browse</span> Chat Your Site</h5>
+                        <h5 class="welcome-title gradient-bkg-text mb-5">PortalX - Generative Web Assistant</h5>
                         <!-- <p class="welcome-subtitle mb-5">Your AI-powered guide for website exploration</p> -->
                         <div class="features-grid">
                             <div class="feature-item">
@@ -59,7 +59,13 @@
                         <div class="info-bar selected-website-bar mb-3 row g-2 card-box-shadow">
                             <div class="col-9 selected-website mt-0 d-flex align-items-center">
                                 <!-- Website info will be inserted here -->
-                                <h6 class="text-muted mb-0">No website selected</h6>
+                                <h6 class="selected-website-title text-muted mb-0">No website selected</h6>
+                                <span class="analysis-status-indicator loading-indicator ms-2" 
+                                      data-bs-toggle="tooltip" 
+                                      data-bs-placement="top"
+                                      title="Check Analysis Status">
+                                    <i class="bi bi-arrow-repeat gradient-bkg-text"></i>
+                                </span>
                             </div>
                             <div class="col-3 d-flex align-items-center justify-content-end" style="margin: 0;">
                                 <button id="changeWebsiteBtn" class="btn btn-outline-primary bar-btn" 
@@ -108,7 +114,7 @@
                 <div id="website-analysis">
                     <!-- Current Website bar -->
                     <div class="current-website-bar info-bar card-box-shadow">
-                        <h6><i class="bi bi-globe me-2"></i>Current Website <a class="text-muted current-website-domain">www.uta.au</a></h6>
+                        <h6><i class="bi bi-globe me-2"></i>Current Website <a class="text-muted current-website-domain">www.portal.tech</a></h6>
                         <div class="row g-2">
                             <div class="col-9" style="margin: 0;">
                                 <div class="current-website">
@@ -228,12 +234,15 @@
         <div class="modal-dialog modal-dialog-scrollable">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Website Details</h5>
+                    <h5 class="modal-title">Analysis Details <span class="analysis-status"></span></h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <div class="website-info">
-                        <h6 class="company-name mb-3"></h6>
+                        <div class="company-info">
+                            <h6 class="company-name mb-3"></h6>
+                            <span class="update-time"></span>
+                        </div>
                         <div class="url-section mb-3">
                             <small class="text-muted d-block mb-1">Site Domain</small>
                             <a href="#" class="domain-url" target="_blank"></a>

@@ -8,18 +8,18 @@ function initializeFloatButton() {
 
         // Create float button
         const $floatButton = $('<button>')
-            .addClass('uta-float-button')
+            .addClass('portalx-float-button')
             .appendTo('body');
 
         // Add logo image
         const $defaultLogo = $('<img>')
             .attr('src', chrome.runtime.getURL('../img/logo2.png'))
-            .addClass('uta-default-logo')
+            .addClass('portalx-default-logo')
             .appendTo($floatButton);
 
         // Add favicon image (initially hidden)
         const $favicon = $('<img>')
-            .addClass('uta-favicon-logo')
+            .addClass('portalx-favicon-logo')
             .hide()
             .appendTo($floatButton);
 
@@ -47,7 +47,7 @@ function initializeFloatButton() {
 
         // Create popup
         const $popup = $('<iframe>')
-            .addClass('uta-popup-iframe')
+            .addClass('portalx-popup-iframe')
             .attr('src', chrome.runtime.getURL('floatButton/popup.html'))
             .hide()
             .appendTo('body');
@@ -72,7 +72,7 @@ function initializeFloatButton() {
 
         // Close popup when clicking outside
         $(document).on('click', (event) => {
-            if (!$(event.target).closest('.uta-popup-iframe, .uta-float-button').length) {
+            if (!$(event.target).closest('.portalx-popup-iframe, .portalx-float-button').length) {
                 isPopupOpen = false
                 $popup.removeClass('show');
                 setTimeout(() => $popup.hide(), 300);
@@ -93,6 +93,6 @@ function initializeFloatButton() {
         });
 
     } catch (error) {
-        console.error("Error initializing UTAWeb float button:", error);
+        console.error("Error initializing PortalX float button:", error);
     }
 }
