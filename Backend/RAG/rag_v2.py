@@ -159,7 +159,7 @@ class RAGSystem:
             references.append({
                 'file': node.metadata.get('file_name', 'Unknown'),
                 # 'score': round(node.score, 3) if node.score else None,
-                # 'text_chunk': node.text[:200] + "..."  # Preview of the chunk
+                'text_chunk': node.text[:200] + "..."  # Preview of the chunk
             })
         
         answer_with_citations = str(response)
@@ -217,15 +217,21 @@ class RAGSystem:
         output = output.replace('```html', '').replace('```', '')
         
         if show_sources:
-            output += "References:\n"
+            references_content = '<div class="references">\n'
+            references_content += "<p>References:</p>\n"
+            references_content += '<ul class="reference-list">\n'
             for idx, reference in enumerate(result['references'], 1):
-                output += f"\n{idx}. {reference['file']}"
-                # output += f"\n   Relevance Score: {reference['score']}"
-                # output += f"\n   Preview: {reference['text_chunk']}\n"
+                references_content += f'<li class="reference-item">\n'
+                references_content += f'<p>{idx}</p>\n'
+                references_content += f'<p>{reference["file"]}</p>\n'
+                # references_content += f'<p class="relevance-score">Relevance Score: {reference["score"]}</p>\n'
+                references_content += f'<p class="preview">{reference["text_chunk"]}</p>\n'
+                references_content += '</li>\n'
+            references_content += '</ul>\n'
+            references_content += '</div>\n'
+            output += references_content
         return output
     
-
-
 
 if __name__ == "__main__":
     rag = RAGSystem()
