@@ -1,6 +1,5 @@
 from bs4 import BeautifulSoup
 
-
 class HTMLParser:
     def __init__(self):
         # Record header and footer to remove redundancies
@@ -19,7 +18,7 @@ class HTMLParser:
             response (scrapy.Response): The response object containing the webpage
             existing_urls (set): Set of all URLs that have been discovered
         Returns:
-            BeautifulSoup: Cleaned HTML soup object
+            str: Markdown content generated from cleaned HTML
         """
         soup = BeautifulSoup(response.text, 'html.parser')
 
@@ -35,9 +34,9 @@ class HTMLParser:
         # Remove redundant divs
         self.remove_redundant_divs(soup)
 
-        # Add title
-        self.add_title(soup, response.url)
-        return BeautifulSoup(soup.prettify(formatter='html5'), 'html.parser')
+        # Add title and generate markdown content
+        markdown_content = self.generate_markdown(soup, response.url)
+        return markdown_content
 
     def clean_head(self, soup):
         """
@@ -70,17 +69,10 @@ class HTMLParser:
         # Remove unused attributes
         allowed_attrs = ['href', 'src', 'aria-label', 'type']
         for tag in soup.find_all():
-            # Special handling for <i> tags
-            if tag.name == 'i':
-                attrs = dict(tag.attrs)
-                for attr in attrs:
-                    if attr not in allowed_attrs + ['class', 'data-icon']:
-                        del tag[attr]
-            else:
-                attrs = dict(tag.attrs)
-                for attr in attrs:
-                    if attr not in allowed_attrs:
-                        del tag[attr]
+            attrs = dict(tag.attrs)
+            for attr in attrs:
+                if attr not in allowed_attrs:
+                    del tag[attr]
 
     def remove_existing_link_elements(self, soup, existing_urls):
         """
@@ -108,7 +100,7 @@ class HTMLParser:
         """
         # Tags that should be kept even when empty
         preserve_tags = {'hr', 'br', 'img', 'input', 'meta', 'link', 'textarea'}
-        
+
         # Recursively remove empty elements
         while True:
             removed = False
@@ -155,19 +147,35 @@ class HTMLParser:
             if not redundant_found:
                 break
 
-    def add_title(self, soup, page_url):
+    def generate_markdown(self, soup, page_url):
         """
-        Adds a title to the HTML.
+        Converts the cleaned HTML content into structured Markdown format.
+        Args:
+            soup (BeautifulSoup): The cleaned HTML soup object
+            page_url (str): The URL of the page
+        Returns:
+            str: Markdown representation of the HTML content
         """
-        # Add source URL and title stamp at the beginning of body
-        body = soup.find('body')
-        if body:
-            title_text = soup.find('title').string if soup.find('title') else "No title"
-            stamp_html = f'''
-            <div>
-                <h1>Source URL: <a href="{page_url}">{page_url}</a>
-                <br>Title: {title_text}</h1>
-                <hr>
-            </div>
-            '''
-            body.insert(0, BeautifulSoup(stamp_html, 'html.parser'))
+        title = soup.find('title').string if soup.find('title') else "Untitled Page"
+        markdown = f"# {title}\n\n"  # Title as Markdown header
+        markdown += f"Source: [{page_url}]({page_url})\n\n"
+
+        for tag in soup.find_all(['h1', 'h2', 'h3', 'p', 'a', 'ul', 'ol', 'li']):
+            if tag.name == 'h1':
+                markdown += f"# {tag.get_text(strip=True)}\n\n"
+            elif tag.name == 'h2':
+                markdown += f"## {tag.get_text(strip=True)}\n\n"
+            elif tag.name == 'h3':
+                markdown += f"### {tag.get_text(strip=True)}\n\n"
+            elif tag.name == 'p':
+                markdown += f"{tag.get_text(strip=True)}\n\n"
+            elif tag.name == 'a':
+                link_text = tag.get_text(strip=True)
+                href = tag.get('href', '#')
+                markdown += f"[{link_text}]({href})\n\n"
+            elif tag.name in ['ul', 'ol']:
+                for li in tag.find_all('li'):
+                    markdown += f"- {li.get_text(strip=True)}\n"
+                markdown += "\n"
+
+        return markdown

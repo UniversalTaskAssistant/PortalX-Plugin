@@ -4,6 +4,7 @@ from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 from llama_index.llms.openai import OpenAI
 from bs4 import BeautifulSoup
 import os
+import re
 import sys
 import json
 from typing import Dict, List, Any
@@ -185,10 +186,12 @@ class RAGSystem:
             # print(f"************\nSources: \n{node.metadata.get('file_name', 'Unknown')}\n{node.text[:200] + '...'}\n************\n")
         
         plain_answer = str(response)
+        answer_with_citations = self.add_citations_to_html_answer(plain_answer, sources)
+        print(f"###############\n{answer_with_citations}###############\n")
         return {
             "plain_answer": plain_answer, 
             "sources": sources,
-            "answer_with_citations": self.add_citations_to_html_answer(plain_answer, sources)
+            "answer_with_citations": answer_with_citations
         }
     
     def recommend_questions(self, recommended_question_number: int=3) -> str:
@@ -234,7 +237,7 @@ class RAGSystem:
             str: Formatted string containing answer and optional source information
         """
         # Remove code block markers and HTML tags from the answer
-        output = result['answer']
+        output = result['plain_answer']
         output = output.replace('```html', '').replace('```', '')
         
         if show_sources:
@@ -246,20 +249,45 @@ class RAGSystem:
         return output
     
     @staticmethod
-    def add_citations_to_html_answer(html_content: str, sources: List[List[str, float, str]]):
+    def add_citations_to_html_answer(html_content: str, sources: List[dict]) -> str:
+        """
+        Add citation information to the HTML content by embedding source references.
+        
+        Args:
+            html_content (str): The HTML content where citations need to be added.
+            sources (List[dict]): A list of source dictionaries containing citation details 
+                                like source file, score, and text chunk to match in HTML.
+
+        Returns:
+            str: The HTML content with added citation elements.
+        """
         soup = BeautifulSoup(html_content, 'html.parser')
 
         for source in sources:
-            citation_html = f'<div class="citation">{source["file"]}</div>'
+            citation_html = f'<div class="citation">Source: {source["file"]} (Score: {source["score"]})</div>'
             text_chunk = source['text_chunk']
-            matching_element = soup.find(text=lambda text: text and text_chunk in text)
             
-            if matching_element:
-                content_with_citation = soup.new_tag('div', attrs={'class': 'content-with-citation'})
-                content_with_citation.append(matching_element.extract())
-                citation_soup = BeautifulSoup(citation_html, 'html.parser')
-                content_with_citation.append(citation_soup)
-                matching_element.insert_after(content_with_citation)
+            # Clean the text_chunk by removing HTML tags and normalizing whitespace
+            clean_text_chunk = ' '.join(re.sub(r'\s+', ' ', text_chunk.replace('\n', ' ').strip()).split())
+
+            # Remove HTML tags from the content and normalize the whitespace
+            clean_html_text = ' '.join(re.sub(r'\s+', ' ', ' '.join(soup.stripped_strings)).split())
+
+            # Check if the cleaned text_chunk exists in the cleaned HTML text
+            if clean_text_chunk in clean_html_text:
+                # Use regex to find a match for the chunk in the HTML content
+                matching_element = soup.find(text=re.compile(re.escape(text_chunk), re.IGNORECASE))
+
+                if matching_element:
+                    content_with_citation = soup.new_tag('div', attrs={'class': 'content-with-citation'})
+                    content_with_citation.append(matching_element.extract())
+
+                    citation_soup = BeautifulSoup(citation_html, 'html.parser')
+                    content_with_citation.append(citation_soup)
+
+                    matching_element.insert_after(content_with_citation)
+            else:
+                print(f"Warning: Could not find a match for '{text_chunk}'.")
 
         return soup.prettify()
 
