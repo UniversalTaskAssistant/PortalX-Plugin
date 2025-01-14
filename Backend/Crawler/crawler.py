@@ -96,11 +96,12 @@ class UTASpider(scrapy.Spider):
                     yield self.save_favicon(favicon_url, response.url)
 
             # Save the first image on the page
-            image_urls = response.css('img::attr(src)').get()
-            for image_url in image_urls:
-                absolute_image_url = response.urljoin(image_url)
-                print(f'Found image URL: {absolute_image_url}')
+            first_image_url = response.css('img::attr(src)').get()
+            if first_image_url:
+                absolute_image_url = response.urljoin(first_image_url)
+                print(f'Found first image URL: {absolute_image_url}')
                 yield from self.save_image(absolute_image_url, response.url)
+
 
             # Follow links
             all_page_urls = response.css('a::attr(href)').getall()
