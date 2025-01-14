@@ -203,8 +203,7 @@ class RAGSystem:
 
         return response
 
-    @staticmethod
-    def format_response(result: Dict[str, Any], show_sources: bool = True) -> str:
+    def format_response(self, result: Dict[str, Any], show_sources: bool = True) -> str:
         """
         Format the query response into a readable string.
         Args:
@@ -227,8 +226,8 @@ class RAGSystem:
                 references_content += f'<p>{reference["file"]}</p>\n'
                 # references_content += f'<p class="relevance-score">Relevance Score: {reference["score"]}</p>\n'
                 references_content += f'<p class="preview">{reference["text_chunk"]}</p>\n'
-                references_content += f'<img>favicon.ico</img>\n'
-                references_content += f'<img>preview_img</img>\n'
+                references_content += f'<img src="images/favicon.ico">\n'
+                references_content += f'<img src="images/favicon.ico">\n'
                 references_content += '</li>\n'
             references_content += '</ul>\n'
             references_content += '</div>\n'
