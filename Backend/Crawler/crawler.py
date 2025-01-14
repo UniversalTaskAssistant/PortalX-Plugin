@@ -33,6 +33,7 @@ class UTASpider(scrapy.Spider):
         self.company_name = company_name 
         self.domain_limit = domain_limit
         self.exclude_domains = exclude_domains  # List of domains to exclude
+        self.website_info = {}
 
         # Crawling parameters
         self.max_depth = 5
@@ -49,6 +50,9 @@ class UTASpider(scrapy.Spider):
         self.timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
         self.output_dir = pjoin(output_dir, self.company_name)
         os.makedirs(self.output_dir, exist_ok=True)
+        self.image_dir = os.path.abspath(os.path.join(self.output_dir, 'images'))
+        os.makedirs(self.image_dir, exist_ok=True)
+
 
     @classmethod
     def from_crawler(cls, crawler, *args, **kwargs):
@@ -101,10 +105,18 @@ class UTASpider(scrapy.Spider):
                     self.save_favicon(favicon_url, response.url)
 
             # Save the first image of the page
+            # first_image_url = response.css('img::attr(src)').get()
+            # if first_image_url:
+            #     absolute_image_url = response.urljoin(first_image_url)
+            #     self.save_image(absolute_image_url, response.url)
+            html_path = self.save_page_content(response.url, soup)
+
             first_image_url = response.css('img::attr(src)').get()
             if first_image_url:
                 absolute_image_url = response.urljoin(first_image_url)
-                self.save_image(absolute_image_url, response.url)
+                image_path = self.save_image(absolute_image_url, response.url)
+                if html_path and image_path:
+                    self.website_info[html_path] = image_path
 
             all_page_urls = response.css('a::attr(href)').getall()
             self.all_urls.update(all_page_urls)
@@ -175,9 +187,9 @@ class UTASpider(scrapy.Spider):
         """
         try:
             parsed_url = urlparse(image_url)
-            domain = parsed_url.netloc
-            image_dir = os.path.join(self.output_dir, domain, "images")
-            os.makedirs(image_dir, exist_ok=True)
+            # domain = parsed_url.netloc
+            image_dir = self.image_dir
+            # os.makedirs(image_dir, exist_ok=True)
 
             # Create an image name and path
             image_name = os.path.basename(parsed_url.path) or "default_image.jpg"
@@ -188,8 +200,10 @@ class UTASpider(scrapy.Spider):
             with open(image_path, 'wb') as f:
                 f.write(request.body)
             print(f"Saved image to {image_path}")
+            return os.path.relpath(image_path, self.output_dir)
         except Exception as e:
             self.logger.error(f"Error saving image {image_url}: {e}")
+            return None
 
     def _save_image_file(self, response):
         """
@@ -331,6 +345,7 @@ class UTASpider(scrapy.Spider):
         with open(file_path, 'w', encoding='utf-8') as f:
             f.write(str(soup))
         print(f'Saved cleaned HTML to {file_path}')
+        return os.path.relpath(file_path, self.output_dir)
 
     def save_website_info(self):
         """
@@ -344,7 +359,8 @@ class UTASpider(scrapy.Spider):
             'crawl_time': datetime.now().strftime("%Y-%m-%d %H:%M"),
             'crawl_finished': self.crawl_finished,
             'visited_urls': list(self.visited_urls),
-            'failed_urls': list(self.failed_urls)
+            'failed_urls': list(self.failed_urls),
+            'website_mapping': self.website_info
         }
         with open(f'{self.output_dir}/website_info.json', 'w', encoding='utf-8') as f:
             json.dump(data, f, indent=2)
