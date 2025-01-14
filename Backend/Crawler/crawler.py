@@ -95,11 +95,12 @@ class UTASpider(scrapy.Spider):
                 if favicon_url:
                     yield self.save_favicon(favicon_url, response.url)
 
-            # Save the first image
-            first_image_url = response.css('img::attr(src)').get()
-            if first_image_url:
-                absolute_image_url = response.urljoin(first_image_url)
-                yield self.save_image(absolute_image_url, response.url)
+            # Save the first image on the page
+            image_urls = response.css('img::attr(src)').get()
+            for image_url in image_urls:
+                absolute_image_url = response.urljoin(image_url)
+                print(f'Found image URL: {absolute_image_url}')
+                yield from self.save_image(absolute_image_url, response.url)
 
             # Follow links
             all_page_urls = response.css('a::attr(href)').getall()
@@ -114,6 +115,7 @@ class UTASpider(scrapy.Spider):
                         errback=self.handle_error
                     )
 
+            self.save_website_info()
         except Exception as e:
             self.logger.error(f'!!!Error processing {response.url}: {e} !!!')
             self.failed_urls.add((response.url, str(e)))
@@ -162,15 +164,15 @@ class UTASpider(scrapy.Spider):
 
     def save_image(self, image_url, source_url=None):
         """
-        Downloads and saves an image from the given URL.
+        Dispatches a request to download an image.
         """
         try:
             image_name = os.path.basename(urlparse(image_url).path) or "default_image.jpg"
             image_path = os.path.join(self.image_dir, image_name)
             os.makedirs(os.path.dirname(image_path), exist_ok=True)
-            # Dispatch a request to download the image
-            return scrapy.Request(
-                image_url,
+            # Dispatch request to download the image
+            yield scrapy.Request(
+                url=image_url,
                 callback=self._save_image_file,
                 meta={'image_path': image_path}
             )
@@ -179,7 +181,7 @@ class UTASpider(scrapy.Spider):
 
     def _save_image_file(self, response):
         """
-        Saves the image content to a file.
+        Saves the downloaded image content to a file.
         """
         image_path = response.meta['image_path']
         try:
@@ -187,7 +189,7 @@ class UTASpider(scrapy.Spider):
                 f.write(response.body)
             print(f'Saved image to {image_path}')
         except Exception as e:
-            self.logger.error(f"Failed to save image: {e}")
+            self.logger.error(f"Failed to save image to {image_path}: {e}")
 
     def spider_closed(self, spider):
         """

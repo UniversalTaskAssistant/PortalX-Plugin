@@ -31,6 +31,10 @@ class UTAWeb:
                 'CONCURRENT_REQUESTS_PER_DOMAIN': 2,
                 'DOWNLOAD_DELAY': 1,
                 'DOWNLOAD_TIMEOUT': 10
+                # 'ITEM_PIPELINES': {
+                #     'scrapy.pipelines.images.ImagesPipeline': 1, 
+                # },
+                # 'IMAGES_STORE': ''
             })
 
     def initialize_rag(self, directory_path: str=None, load_from_disk: bool=True):
