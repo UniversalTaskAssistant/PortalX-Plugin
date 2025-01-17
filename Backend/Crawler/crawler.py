@@ -50,8 +50,6 @@ class UTASpider(scrapy.Spider):
         self.timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
         self.output_dir = pjoin(output_dir, self.company_name)
         os.makedirs(self.output_dir, exist_ok=True)
-        self.image_dir = os.path.abspath(os.path.join(self.output_dir, 'images'))
-        os.makedirs(self.image_dir, exist_ok=True)
 
 
     @classmethod
@@ -89,19 +87,13 @@ class UTASpider(scrapy.Spider):
             soup = self.html_parser.clean_html(response, self.all_urls)
             html_path = self.save_page_content(response.url, soup)
 
-            # Save favicon
-            if depth == 0:
-                favicon_url = self.extract_favicon_url(response)
-                if favicon_url:
-                    yield self.save_favicon(favicon_url, response.url)
-
-            # Save the first image on the page
-            first_image_url = response.css('img::attr(src)').get()
-            if first_image_url:
-                absolute_image_url = response.urljoin(first_image_url)
-                print(f'Found first image URL: {absolute_image_url}')
-                yield from self.save_image(absolute_image_url, response.url)
-
+            # # Save all images on the page
+            # image_urls = response.css('img::attr(src)').getall()
+            # # for image_url in image_urls:
+            # if len(image_urls) > 0:
+            #     absolute_image_url = response.urljoin(image_urls[0])
+            #     print(f'Found image URL: {absolute_image_url}')
+            #     yield from self.save_image(absolute_image_url, response.url)
 
             # Follow links
             all_page_urls = response.css('a::attr(href)').getall()
@@ -120,77 +112,6 @@ class UTASpider(scrapy.Spider):
         except Exception as e:
             self.logger.error(f'!!!Error processing {response.url}: {e} !!!')
             self.failed_urls.add((response.url, str(e)))
-
-    def extract_favicon_url(self, response):
-        """
-        Extracts the favicon URL from the HTML response.
-        """
-        favicon = response.css('link[rel="icon"]::attr(href)').get() or \
-                response.css('link[rel="shortcut icon"]::attr(href)').get()
-        if favicon:
-            return response.urljoin(favicon)
-        return None
-
-    def save_favicon(self, favicon_url, source_url):
-        """
-        Downloads and saves the favicon.
-        Args:
-            favicon_url (str): URL of the favicon
-            source_url (str): URL of the page where the favicon was found
-        """
-        try:
-            domain = urlparse(source_url).netloc
-            favicon_path = os.path.join(self.output_dir, "images", "favicon.ico")
-            os.makedirs(os.path.dirname(favicon_path), exist_ok=True)
-            # Dispatch a request to download favicon
-            return scrapy.Request(
-                favicon_url,
-                callback=self._save_favicon_file,
-                meta={'favicon_path': favicon_path}
-            )
-        except Exception as e:
-            self.logger.error(f"Error creating request for favicon {favicon_url}: {e}")
-
-    def _save_favicon_file(self, response):
-        """
-        Saves the favicon content to a file.
-        """
-        favicon_path = response.meta['favicon_path']
-        try:
-            with open(favicon_path, 'wb') as f:
-                f.write(response.body)
-            print(f'Saved favicon to {favicon_path}')
-        except Exception as e:
-            self.logger.error(f"Failed to save favicon: {e}")
-
-    def save_image(self, image_url, source_url=None):
-        """
-        Dispatches a request to download an image.
-        """
-        try:
-            image_name = os.path.basename(urlparse(image_url).path) or "default_image.jpg"
-            image_path = os.path.join(self.image_dir, image_name)
-            os.makedirs(os.path.dirname(image_path), exist_ok=True)
-            # Dispatch request to download the image
-            yield scrapy.Request(
-                url=image_url,
-                callback=self._save_image_file,
-                meta={'image_path': image_path}
-            )
-        except Exception as e:
-            self.logger.error(f"Error creating request for image {image_url}: {e}")
-
-    def _save_image_file(self, response):
-        """
-        Saves the downloaded image content to a file.
-        """
-        image_path = response.meta['image_path']
-        try:
-            with open(image_path, 'wb') as f:
-                f.write(response.body)
-            print(f'Saved image to {image_path}')
-        except Exception as e:
-            self.logger.error(f"Failed to save image to {image_path}: {e}")
 
     def spider_closed(self, spider):
         """
@@ -334,8 +255,7 @@ class UTASpider(scrapy.Spider):
             'crawl_time': datetime.now().strftime("%Y-%m-%d %H:%M"),
             'crawl_finished': self.crawl_finished,
             'visited_urls': list(self.visited_urls),
-            'failed_urls': list(self.failed_urls),
-            'website_mapping': {k: v for k, v in self.website_info.items()}
+            'failed_urls': list(self.failed_urls)
         }
         with open(f'{self.output_dir}/website_info.json', 'w', encoding='utf-8') as f:
             json.dump(data, f, indent=2)

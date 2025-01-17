@@ -18,7 +18,7 @@ class HTMLParser:
             response (scrapy.Response): The response object containing the webpage
             existing_urls (set): Set of all URLs that have been discovered
         Returns:
-            str: Markdown content generated from cleaned HTML
+            tuple: Markdown content generated from cleaned HTML and metadata containing image links
         """
         soup = BeautifulSoup(response.text, 'html.parser')
 
@@ -35,8 +35,8 @@ class HTMLParser:
         self.remove_redundant_divs(soup)
 
         # Add title and generate markdown content
-        markdown_content = self.generate_markdown(soup, response.url)
-        return markdown_content
+        markdown_content, metadata = self.generate_markdown(soup, response.url)
+        return markdown_content, metadata
 
     def clean_head(self, soup):
         """
@@ -67,7 +67,7 @@ class HTMLParser:
             tag.decompose()
 
         # Remove unused attributes
-        allowed_attrs = ['href', 'src', 'aria-label', 'type']
+        allowed_attrs = ['href', 'src', 'aria-label', 'type', 'alt']
         for tag in soup.find_all():
             attrs = dict(tag.attrs)
             for attr in attrs:
@@ -149,18 +149,20 @@ class HTMLParser:
 
     def generate_markdown(self, soup, page_url):
         """
-        Converts the cleaned HTML content into structured Markdown format.
+        Converts the cleaned HTML content into structured Markdown format, including image links in metadata.
         Args:
             soup (BeautifulSoup): The cleaned HTML soup object
             page_url (str): The URL of the page
         Returns:
-            str: Markdown representation of the HTML content
+            tuple: Markdown representation of the HTML content and metadata containing image links
         """
         title = soup.find('title').string if soup.find('title') else "Untitled Page"
         markdown = f"# {title}\n\n"  # Title as Markdown header
         markdown += f"Source: [{page_url}]({page_url})\n\n"
 
-        for tag in soup.find_all(['h1', 'h2', 'h3', 'p', 'a', 'ul', 'ol', 'li']):
+        metadata = []  # To store image links and associated metadata
+
+        for tag in soup.find_all(['h1', 'h2', 'h3', 'p', 'a', 'ul', 'ol', 'li', 'img']):
             if tag.name == 'h1':
                 markdown += f"# {tag.get_text(strip=True)}\n\n"
             elif tag.name == 'h2':
@@ -173,9 +175,14 @@ class HTMLParser:
                 link_text = tag.get_text(strip=True)
                 href = tag.get('href', '#')
                 markdown += f"[{link_text}]({href})\n\n"
+            elif tag.name == 'img':
+                src = tag.get('src', '')
+                alt_text = tag.get('alt', 'Image')
+                markdown += f"![{alt_text}]({src})\n\n"
+                metadata.append({"src": src, "alt": alt_text})
             elif tag.name in ['ul', 'ol']:
                 for li in tag.find_all('li'):
                     markdown += f"- {li.get_text(strip=True)}\n"
                 markdown += "\n"
 
-        return markdown
+        return markdown, {"images": metadata}

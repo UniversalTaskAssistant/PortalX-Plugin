@@ -83,8 +83,7 @@ class RAGSystem:
                 directory_path,
                 recursive=True,
                 exclude_hidden=True,
-                filename_as_id=True,
-                file_filter=image_filter
+                filename_as_id=True
             ).load_data()
             self.index = VectorStoreIndex.from_documents(
                 self.documents,
@@ -122,6 +121,7 @@ class RAGSystem:
                     - file (str): Source filename
                     - score (float): Relevance score
                     - text_chunk (str): Preview of source text
+                    - images (list): List of image metadata
         """
 
         question = f"""You are a helpful AI website customer assistant that provides clear and structured answer for the question, based on website information and your conversation history with the user.
@@ -131,13 +131,13 @@ class RAGSystem:
         RESPONSE FORMAT REQUIREMENTS:
         
         1. Structure all responses in clean, semantic HTML
-        2. Begin main answers with a short summary in a <div class="summary"> tag
+        2. Begin main answers with a short summary in a <div class=\"summary\"> tag
         3. Use appropriate HTML elements:
-           - <p> for paragraphs
-           - <ul>/<li> for lists
-           - <strong> for emphasis
-           - <h3> for subsections
-           - <a href="..."> for source links
+        - <p> for paragraphs
+        - <ul>/<li> for lists
+        - <strong> for emphasis
+        - <h3> for subsections
+        - <a href=\"...\"> for source links
 
         GUIDELINES:
         - Keep responses short, concise, and well-organized.
@@ -145,12 +145,11 @@ class RAGSystem:
         - If the question is irrelevant to the website, just explain that you only answer website-relevant questions.
         - Always cite exact links using <a> tags when referencing specific information.
         - Interact with the user in a friendly and engaging manner.
-        - Refer "The website" as "I", you are now representing the website.
+        - Refer \"The website\" as \"I\", you are now representing the website.
 
         DATA:
         1. Coversation history: {self.conversation_history}.
         """
-        # Settings.llm.system_prompt = self.system_prompt_answer_question
         response = self.query_engine.query(question)
         self.conversation_history.append([question, str(response)])
 
@@ -159,18 +158,63 @@ class RAGSystem:
         for node in response.source_nodes:
             references.append({
                 'file': node.metadata.get('file_name', 'Unknown'),
-                # 'score': round(node.score, 3) if node.score else None,
-                'text_chunk': node.text[:200] + "..."  # Preview of the chunk
+                'text_chunk': ''.join(node.text.split(':')[1:])[:200].strip() + "...",  # Preview of the chunk
+                'images': node.metadata.get('images', [])  # Include image metadata if available
             })
         
+        # Match citations in the answer with the references list
         answer_with_citations = str(response)
-        # print(f"###############\n{answer_with_citations}\n###############\n")
-        # print(f"###############\n{references}\n###############\n")
+        citations_in_answer = sorted({int(citation.strip('[]')) for citation in re.findall(r'\[(\d+)\]', answer_with_citations)})
+        
+        # Remap references to match the order of citations in the answer
+        reference_mapping = {original_idx: new_idx for new_idx, original_idx in enumerate(citations_in_answer, 1)}
+        references = [ref for idx, ref in enumerate(references, 1) if idx in citations_in_answer]
+
+        # Replace [n] in the answer with remapped HTML anchors
+        def replace_citation(match):
+            original_number = int(match.group(1))
+            new_number = reference_mapping.get(original_number, original_number)
+            return f'<a href="#ref-{new_number}" class="citation">[{new_number}]</a>'
+
+        answer_with_citations = re.sub(r'\[(\d+)\]', replace_citation, answer_with_citations)
+
         return {
             "references": references,
             "answer_with_citations": answer_with_citations
         }
-    
+
+    def format_response(self, result: Dict[str, Any], show_sources: bool = True) -> str:
+        """
+        Format the query response into a readable string.
+        Args:
+            result (Dict[str, Any]): Query result dictionary containing answer and sources
+            show_sources (bool): Whether to include source information in output
+        Returns:
+            str: Formatted string containing answer and optional source information
+        """
+        # Remove code block markers and HTML tags from the answer
+        output = result['answer_with_citations']
+        output = output.replace('```html', '').replace('```', '')
+        
+        if show_sources:
+            references_content = '<div class="references">\n'
+            references_content += "<p>References:</p>\n"
+            references_content += '<ol class="reference-list">\n'  # Changed to ordered list
+            for idx, reference in enumerate(result['references'], 1):
+                references_content += f'<li id="ref-{idx}" class="reference-item">\n'
+                references_content += f'<p class="reference-file">{reference["file"]}</p>\n'
+                references_content += f'<p class="preview">{reference["text_chunk"]}</p>\n'
+
+                # Add images to references content
+                if 'images' in reference and reference['images']:
+                    for image in reference['images']:
+                        references_content += f'<img class="image-preview" src="{image["src"]}" alt="{image["alt"]}">\n'
+
+                references_content += '</li>\n'
+            references_content += '</ol>\n'
+            references_content += '</div>\n'
+            output += references_content
+        return output
 
     def recommend_questions(self, recommended_question_number: int=3) -> str:
         """
@@ -202,43 +246,6 @@ class RAGSystem:
             response = str(response).removeprefix("```html").removesuffix("```").strip()
 
         return response
-
-    def format_response(self, result: Dict[str, Any], show_sources: bool = True) -> str:
-        """
-        Format the query response into a readable string.
-        Args:
-            result (Dict[str, Any]): Query result dictionary containing answer and sources
-            show_sources (bool): Whether to include source information in output
-        Returns:
-            str: Formatted string containing answer and optional source information
-        """
-        # Remove code block markers and HTML tags from the answer
-        output = result['answer_with_citations']
-        output = output.replace('```html', '').replace('```', '')
-        
-        if show_sources:
-            references_content = '<div class="references">\n'
-            references_content += "<p>References:</p>\n"
-            references_content += '<ul class="reference-list">\n'
-            for idx, reference in enumerate(result['references'], 1):
-                references_content += f'<li class="reference-item">\n'
-                references_content += f'<p>{idx}</p>\n'
-                references_content += f'<p>{reference["file"]}</p>\n'
-                # references_content += f'<p class="relevance-score">Relevance Score: {reference["score"]}</p>\n'
-                references_content += f'<p class="preview">{reference["text_chunk"]}</p>\n'
-                references_content += f'<img class="icon" src="images/favicon.ico">\n'
-                references_content += f'<img class="image-preview" src="images/path">\n'
-                references_content += '</li>\n'
-            references_content += '</ul>\n'
-            references_content += '</div>\n'
-            output += references_content
-        return output
-    
-    @staticmethod
-    def image_filter(file_path):
-        ignored_extensions = {'.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp', '.ico'}
-        _, ext = os.path.splitext(file_path)
-        return ext.lower() not in ignored_extensions
     
 
 if __name__ == "__main__":

@@ -28,13 +28,9 @@ class UTAWeb:
                 'LOG_ENABLED': True,
                 'LOG_LEVEL': 'ERROR',
                 'ROBOTSTXT_OBEY': True,
-                'CONCURRENT_REQUESTS_PER_DOMAIN': 2,
+                'CONCURRENT_REQUESTS_PER_DOMAIN': 10,
                 'DOWNLOAD_DELAY': 1,
                 'DOWNLOAD_TIMEOUT': 10
-                # 'ITEM_PIPELINES': {
-                #     'scrapy.pipelines.images.ImagesPipeline': 1, 
-                # },
-                # 'IMAGES_STORE': ''
             })
 
     def initialize_rag(self, directory_path: str=None, load_from_disk: bool=True):
@@ -178,8 +174,8 @@ if __name__ == "__main__":
     # domain_limit = 'https://www.signavio.com/' # None or specific domain, such as 'www.bmw.com/en-au'
     # exclude_domains = ['www.signavio.com/de', 'www.signavio.com/es', 'www.signavio.com/fr', 'www.signavio.com/it', 'www.signavio.com/ja', 'www.signavio.com/ko', 'www.signavio.com/pt-br']
 
-    utaweb.crawl_web(web_url=web_url, company_name=company_name, domain_limit=domain_limit, exclude_domains=None)
+    # utaweb.crawl_web(web_url=web_url, company_name=company_name, domain_limit=domain_limit, exclude_domains=None)
     # utaweb.query(query="Explain the MINT study program?", web_url=web_url)
     # utaweb.query(query="How many Nobel awardees graduated from TUM?", web_url=web_url)
     # utaweb.query(query="Can you explain to me who is Donald Trump?", web_url=web_url)
-    # utaweb.query_test(web_url=web_url, company_name=company_name)
+    utaweb.query_test(web_url=web_url, company_name=company_name)
